@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { ArrowRight, BookOpen, Check, ChevronDown, CircleHelp, Heart, Leaf, Menu, Minus, PawPrint, Plus, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, Truck, UserRound, X } from 'lucide-react';
-import { Link, Route, Switch, useLocation } from 'wouter';
+import { Link, Route, Switch, useLocation, useRoute } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -82,6 +82,35 @@ function Loader() {
 function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }) {
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.body.classList.add('menu-open');
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.classList.remove('menu-open');
+    };
+  }, [menuOpen]);
+  useEffect(() => setMenuOpen(false), [location]);
+
+  const mobileItems = [
+    ['/', 'Home'],
+    ['/rescue', 'Report a dog'],
+    ['/puppies', 'Puppies'],
+    ['/adopt', 'Adoption'],
+    ['/products', 'Products'],
+    ['/volunteer', 'Volunteer'],
+    ['/foster', 'Foster'],
+    ['/stories', 'Stories'],
+    ['/learn', 'Education'],
+    ['/about', 'About'],
+    ['/contact', 'Contact'],
+    ['/donate', 'Donate'],
+  ];
+
   return <header>
     <div className="topline">Street by street. Paw by paw. Saving lives.</div>
     <div className="nav-wrap">
@@ -91,11 +120,12 @@ function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }
         <div className="nav-actions">
           <Link href="/donate" className="btn btn-primary" data-testid="link-nav-donate">Give support <Heart size={15} /></Link>
           <button className="icon-btn" aria-label={`Open cart, ${cartCount} items`} onClick={onCart} data-testid="button-open-cart"><ShoppingBag size={18} /><span className="sr-only">{cartCount} items</span></button>
-          <button className="icon-btn menu-toggle" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(!menuOpen)} data-testid="button-mobile-menu">{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
+          <button className="icon-btn menu-toggle" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)} data-testid="button-mobile-menu">{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
         </div>
       </nav>
-      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>{[...navItems, ['/foster', 'Foster'], ['/volunteer', 'Volunteer'], ['/about', 'About'], ['/contact', 'Contact']].map(([href, label]) => <Link key={href} href={href} onClick={() => setMenuOpen(false)} data-testid={`link-mobile-${href.slice(1)}`}>{label}<ArrowRight size={14} /></Link>)}</div>
+      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`} id="mobile-navigation" aria-label="Mobile navigation" aria-hidden={!menuOpen}>{mobileItems.map(([href, label]) => <Link key={href} href={href} onClick={() => setMenuOpen(false)} className={href === '/rescue' || href === '/donate' ? 'mobile-priority' : ''} data-testid={`link-mobile-${href === '/' ? 'home' : href.slice(1)}`}>{label}<ArrowRight size={14} /></Link>)}</div>
     </div>
+    {menuOpen && <button className="menu-backdrop" aria-label="Close navigation" onClick={() => setMenuOpen(false)} />}
   </header>;
 }
 
@@ -110,14 +140,29 @@ function Footer() {
 
 function Shell({ children, cart, setCart }: { children: ReactNode; cart: CartLine[]; setCart: Dispatch<SetStateAction<CartLine[]>> }) {
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutNotice, setCheckoutNotice] = useState(false);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const total = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
   const changeQuantity = (id: string, delta: number) => setCart(items => items.map(item => item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item).filter(item => item.quantity > 0));
-  return <div className="site-shell"><Loader /><Header cartCount={cartCount} onCart={() => setCartOpen(true)} />{children}<Footer />
+  useEffect(() => {
+    if (!cartOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCartOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.body.classList.add('cart-open');
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.classList.remove('cart-open');
+    };
+  }, [cartOpen]);
+
+  return <div className="site-shell"><Loader /><Header cartCount={cartCount} onCart={() => { setCheckoutNotice(false); setCartOpen(true); }} />{children}<Footer />
+    <nav className="mobile-quick-actions" aria-label="Quick actions"><Link href="/rescue"><Stethoscope size={16} />Report</Link><Link href="/adopt"><Heart size={16} />Adopt</Link><Link href="/donate"><Heart size={16} />Donate</Link></nav>
     <div className={`drawer-backdrop ${cartOpen ? 'open' : ''}`} onClick={() => setCartOpen(false)} />
-    <aside className={`cart-drawer ${cartOpen ? 'open' : ''}`} aria-label="Shopping cart" aria-hidden={!cartOpen}>
+    <aside className={`cart-drawer ${cartOpen ? 'open' : ''}`} aria-label="Shopping cart" aria-hidden={!cartOpen} aria-modal="true" role="dialog">
       <div className="drawer-head"><h2>Your cart</h2><button className="icon-btn" onClick={() => setCartOpen(false)} aria-label="Close cart" data-testid="button-close-cart"><X size={18} /></button></div>
-      {cart.length === 0 ? <div className="empty-state" style={{ marginTop: 24 }}><ShoppingBag size={27} /><p>Your cart is waiting for something kind.</p><Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)} data-testid="link-empty-cart">Browse the shop</Link></div> : <><div className="cart-items">{cart.map(item => <div className="cart-row" key={item.id} data-testid={`row-cart-${item.id}`}><div className="cart-thumb"><PawPrint size={20} /></div><div><strong>{item.name}</strong><small>${item.price.toFixed(2)} each</small><div className="qty"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Decrease ${item.name}`} data-testid={`button-decrease-${item.id}`}><Minus size={12} /></button><span data-testid={`text-quantity-${item.id}`}>{item.quantity}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Increase ${item.name}`} data-testid={`button-increase-${item.id}`}><Plus size={12} /></button></div></div><button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => setCart(items => items.filter(line => line.id !== item.id))} aria-label={`Remove ${item.name}`} data-testid={`button-remove-${item.id}`}><X size={14} /></button></div>)}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>${total.toFixed(2)}</strong></div><button className="btn btn-dark" style={{ width: '100%' }} onClick={() => alert('Checkout is a placeholder for the future. No payment was processed.')} data-testid="button-checkout-placeholder">Continue to checkout <ArrowRight size={15} /></button><p style={{ color: '#7d8982', fontSize: 11, lineHeight: 1.45, marginTop: 12 }}>Demo checkout only. Payment is not processed on this site.</p></div></>}
+      {cart.length === 0 ? <div className="empty-state" style={{ marginTop: 24 }}><ShoppingBag size={27} /><p>Your cart is waiting for something kind.</p><Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)} data-testid="link-empty-cart">Browse the shop</Link></div> : <><div className="cart-items">{cart.map(item => <div className="cart-row" key={item.id} data-testid={`row-cart-${item.id}`}><div className="cart-thumb"><PawPrint size={20} /></div><div><strong>{item.name}</strong><small>${item.price.toFixed(2)} each</small><div className="qty"><button onClick={() => changeQuantity(item.id, -1)} aria-label={`Decrease ${item.name}`} data-testid={`button-decrease-${item.id}`}><Minus size={12} /></button><span data-testid={`text-quantity-${item.id}`}>{item.quantity}</span><button onClick={() => changeQuantity(item.id, 1)} aria-label={`Increase ${item.name}`} data-testid={`button-increase-${item.id}`}><Plus size={12} /></button></div></div><button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => setCart(items => items.filter(line => line.id !== item.id))} aria-label={`Remove ${item.name}`} data-testid={`button-remove-${item.id}`}><X size={14} /></button></div>)}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>${total.toFixed(2)}</strong></div>{checkoutNotice && <div className="notice success" role="status" data-testid="status-checkout-placeholder"><Check size={16} /> Checkout is not connected yet. No payment was processed and no order was placed.</div>}<button className="btn btn-dark" style={{ width: '100%' }} onClick={() => setCheckoutNotice(true)} data-testid="button-checkout-placeholder">Continue to checkout <ArrowRight size={15} /></button><p style={{ color: '#7d8982', fontSize: 11, lineHeight: 1.45, marginTop: 12 }}>Demo checkout only. Payment is not processed on this site.</p></div></>}
     </aside>
   </div>;
 }
