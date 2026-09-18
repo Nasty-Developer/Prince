@@ -1,1 +1,2 @@
 - [External media QA](external-media-qa.md) — verify remote image URLs during final browser checks; stale media can create console 404s even when app routes are healthy.
+- [Firebase admin authorization](firebase-admin-auth.md) — verify Firebase ID tokens server-side; authorize admins only through custom claims or an explicit UID allowlist.

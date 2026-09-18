@@ -18,3 +18,14 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+VITE_FIREBASE_API_KEY = "AIzaSyA8G33ypou2t6xDt75Z3rcdIQVOgQr5daI"
+VITE_FIREBASE_APP_ID = "1:893340598484:web:5c66c53c1c8f915a56fb41"
+VITE_FIREBASE_AUTH_DOMAIN = "savestreetdogs-7aafe.firebaseapp.com"
+VITE_FIREBASE_MEASUREMENT_ID = "G-70NB86Y3VE"
+VITE_FIREBASE_MESSAGING_SENDER_ID = "893340598484"
+VITE_FIREBASE_PROJECT_ID = "savestreetdogs-7aafe"
+VITE_FIREBASE_STORAGE_BUCKET = "savestreetdogs-7aafe.firebasestorage.app"
