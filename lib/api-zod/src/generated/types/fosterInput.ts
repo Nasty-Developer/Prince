@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface FosterInput {
+  /** @minLength 2 */
+  name: string;
+  email: string;
+  city: string;
+  message?: string;
 }

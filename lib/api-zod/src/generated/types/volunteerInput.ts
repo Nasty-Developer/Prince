@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface VolunteerInput {
+  /** @minLength 2 */
+  name: string;
+  email: string;
+  interest: string;
+  message?: string;
 }
