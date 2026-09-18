@@ -1,0 +1,1 @@
+- [External media QA](external-media-qa.md) — verify remote image URLs during final browser checks; stale media can create console 404s even when app routes are healthy.

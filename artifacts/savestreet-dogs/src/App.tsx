@@ -18,7 +18,7 @@ const dogImages = {
   puppy: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=900',
   small: 'https://images.pexels.com/photos/551628/pexels-photo-551628.jpeg?auto=compress&cs=tinysrgb&w=900',
   portrait: 'https://images.pexels.com/photos/1490908/pexels-photo-1490908.jpeg?auto=compress&cs=tinysrgb&w=900',
-  brown: 'https://images.pexels.com/photos/160846/pexels-photo-160846.jpeg?auto=compress&cs=tinysrgb&w=900',
+  brown: 'https://images.pexels.com/photos/356378/pexels-photo-356378.jpeg?auto=compress&cs=tinysrgb&w=900',
 };
 
 const products: Product[] = [
