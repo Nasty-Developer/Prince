@@ -1,0 +1,1259 @@
+BUILD A COMPLETE WEBSITE: SAVESTREET DOGS 🐾
+
+Create a premium, modern, emotionally engaging, responsive animal-rescue website called:
+
+SaveStreet Dogs
+
+The website should be designed as a real-world platform dedicated to helping street dogs and puppies, supporting rescue efforts, spreading awareness, connecting animals with adopters, and allowing people to contribute through donations, volunteering, and purchases.
+
+The website must NOT look like a generic template. It should feel like a carefully designed modern animal-welfare organization with excellent UI/UX, strong storytelling, accessibility, mobile responsiveness, and smooth interactions.
+
+---
+
+1. CORE PURPOSE
+
+The main purpose of SaveStreet Dogs is:
+
+- Help injured and abandoned street dogs
+- Help vulnerable puppies
+- Allow people to report dogs that need help
+- Connect rescued dogs with potential adopters
+- Encourage responsible adoption
+- Provide food and basic support
+- Promote vaccination and sterilization awareness
+- Recruit volunteers
+- Accept donations
+- Sell animal-support products
+- Share rescue stories
+- Educate visitors about street-animal welfare
+
+The website should make visitors immediately understand:
+
+“I can help this animal.”
+
+Every major page should have a clear and meaningful call-to-action.
+
+---
+
+2. BRAND IDENTITY
+
+Brand name:
+
+SaveStreet Dogs
+
+Suggested tagline:
+
+“Street by street. Paw by paw. Saving lives.”
+
+Alternative supporting message:
+
+“Every street dog deserves safety, care, and a chance at a better life.”
+
+Create a friendly but professional visual identity.
+
+The website should feel:
+
+- Compassionate
+- Trustworthy
+- Hopeful
+- Modern
+- Safe
+- Community-driven
+- Animal-friendly
+- Professional
+
+Avoid making the design overly childish.
+
+Use a sophisticated combination of:
+
+- Warm neutral backgrounds
+- Natural green tones
+- Soft earthy colors
+- White space
+- Gentle accent colors
+- High-quality dog imagery
+
+Do not overuse colors.
+
+---
+
+3. TECH STACK
+
+Use a modern production-ready stack.
+
+Preferred:
+
+- React
+- TypeScript
+- Vite or Next.js
+- Tailwind CSS
+- Modern component architecture
+- Responsive design
+- Accessible HTML
+- Reusable components
+- Proper state management where necessary
+
+If a backend is required, create a clean API architecture that can later connect to:
+
+- PostgreSQL
+- Firebase
+- Supabase
+- or another production database.
+
+Keep the code modular and easy to maintain.
+
+---
+
+4. FIRST LOADING SCREEN
+
+Create a beautiful branded loading experience.
+
+When the website initially loads:
+
+Display the SaveStreet Dogs logo/wordmark.
+
+Show a subtle animated paw-print or puppy-related loading animation.
+
+Example:
+
+🐾
+
+SaveStreet Dogs
+
+“Loading a little hope...”
+
+The loading screen should:
+
+- Feel premium
+- Be short
+- Not annoy the user
+- Have a smooth fade transition
+- Work properly on mobile
+- Respect reduced-motion accessibility settings
+
+Do NOT create an excessively long loading animation.
+
+---
+
+5. NAVIGATION
+
+Create a responsive navigation bar.
+
+Desktop:
+
+Logo | Home | Rescue | Puppies | Adoption | Products | Volunteer | Stories | About | Donate
+
+Include a prominent:
+
+🚨 Report a Dog
+
+button.
+
+Mobile:
+
+Use a clean hamburger menu.
+
+The navigation should remain easy to use on small screens.
+
+---
+
+6. HERO SECTION
+
+The homepage hero should immediately communicate the mission.
+
+Use a beautiful high-quality image/video-style visual of a rescued street dog or puppy.
+
+Main headline:
+
+Every Paw Deserves a Chance.
+
+Supporting text:
+
+Together, we can rescue, protect, feed, treat, and find loving homes for street dogs and puppies.
+
+Primary CTA:
+
+🐾 Help a Dog
+
+Secondary CTA:
+
+🏠 Adopt a Puppy
+
+Additional CTA:
+
+🚨 Report a Dog
+
+Create a visually strong hero layout.
+
+Use subtle animation, but don't make it distracting.
+
+---
+
+7. IMPACT SECTION
+
+Add an impact statistics section.
+
+Example:
+
+Our Impact
+
+- 🐕 Dogs Rescued
+- 🩺 Animals Treated
+- 🏠 Successful Adoptions
+- 🍲 Meals Provided
+- 💉 Vaccinations Supported
+
+Make these values dynamic so they can later come from a database.
+
+Use animated counters when the section enters the viewport.
+
+Do not invent fake real-world statistics.
+
+For demo purposes, clearly mark values as sample/demo data.
+
+---
+
+8. EMERGENCY / REPORT A DOG
+
+Create a prominent emergency section.
+
+Title:
+
+A Dog Needs Help?
+
+Description:
+
+“If you see an injured, abandoned, or vulnerable street dog, report it so the right people can respond.”
+
+Create a form containing:
+
+- Name
+- Contact information
+- Location
+- Dog condition
+- Description
+- Urgency level
+- Photo upload
+- Optional additional information
+
+Categories:
+
+- Injured
+- Sick
+- Abandoned
+- Puppy in danger
+- Accident
+- Lost dog
+- Other
+
+Urgency:
+
+- Normal
+- Important
+- Emergency
+
+Add:
+
+Submit Rescue Report
+
+The form should have validation and clear error messages.
+
+Never expose submitted personal information publicly.
+
+---
+
+9. PUPPIES SECTION 🐶
+
+Create a dedicated page:
+
+Puppies
+
+This should be one of the most beautiful parts of the website.
+
+Create puppy cards with:
+
+- Large image
+- Name
+- Approximate age
+- Location
+- Rescue status
+- Health status
+- Adoption status
+
+Example status:
+
+🟢 Looking for a home
+
+🟡 Under treatment
+
+🔵 Foster needed
+
+❤️ Adopted
+
+Each puppy should have:
+
+View Profile
+
+A puppy profile page should include:
+
+- Photos
+- Story
+- Current status
+- Personality
+- Care requirements
+- Medical information only when appropriate and authorized
+- Adoption information
+- Foster information
+- Support button
+
+Add filters:
+
+- Age
+- Location
+- Adoption status
+- Size
+- Special needs
+
+Do NOT create misleading medical claims.
+
+---
+
+10. ADOPTION SECTION 🏠
+
+Create a dedicated adoption experience.
+
+Headline:
+
+Give a Dog a Home.
+
+Explain responsible adoption.
+
+Create an adoption listing grid.
+
+Each dog card:
+
+- Photo
+- Name
+- Age
+- Location
+- Temperament
+- Adoption status
+
+CTA:
+
+Meet This Dog
+
+Create an adoption application form with:
+
+- Applicant name
+- Contact information
+- City
+- Living situation
+- Experience with animals
+- Household information
+- Reason for adoption
+- Agreement to responsible pet ownership
+
+Include a clear statement that adoption applications may require human review.
+
+---
+
+11. PRODUCTS SECTION 🛍️
+
+Create a complete Products section.
+
+This is NOT just a donation page.
+
+Create an online store where users can purchase products that help support the mission.
+
+Possible products:
+
+- SaveStreet Dogs T-shirts
+- Hoodies
+- Tote bags
+- Dog collars
+- Dog bandanas
+- Rescue-themed stickers
+- Mugs
+- Keychains
+- Dog bowls
+- Supporter merchandise
+- Puppy care kits
+- Educational materials
+
+Product cards should contain:
+
+- Product image
+- Product name
+- Short description
+- Price
+- Availability
+- Rating/review area if implemented
+- Add to Cart button
+
+Create:
+
+Product listing page
+
+Include:
+
+- Search
+- Categories
+- Sorting
+- Price filtering
+- Product cards
+
+Categories:
+
+- Clothing
+- Accessories
+- Dog Care
+- Home
+- Stickers & Gifts
+- Rescue Support
+
+Product detail page
+
+Include:
+
+- Image gallery
+- Product description
+- Price
+- Quantity selector
+- Variants where appropriate
+- Add to cart
+- Related products
+
+Cart
+
+Include:
+
+- Product list
+- Quantity controls
+- Remove item
+- Subtotal
+- Shipping placeholder
+- Total
+- Checkout button
+
+Make the architecture ready for future payment integration.
+
+Do NOT implement fake payment processing.
+
+Clearly separate:
+
+Product purchase
+
+from:
+
+Donation
+
+because they are different actions.
+
+Add an optional message:
+
+“Your purchase helps support street-animal welfare.”
+
+Do not make unsupported claims such as “₹X feeds one dog” unless the organization actually verifies that amount.
+
+---
+
+12. DONATION SECTION 💝
+
+Create a dedicated donation page.
+
+Headline:
+
+Your Support Can Change a Life.
+
+Donation options:
+
+- One-time donation
+- Monthly support
+
+Suggested amounts can be displayed, but allow custom amounts.
+
+Example:
+
+₹100
+₹250
+₹500
+₹1,000
+Custom
+
+Explain where donations may support:
+
+- Food
+- Rescue operations
+- Veterinary care
+- Vaccination
+- Sterilization
+- Temporary shelter
+- Transportation
+- Emergency support
+
+Do not claim specific financial impact without verified data.
+
+Prepare the UI for future secure payment integration.
+
+---
+
+13. VOLUNTEER SECTION 🤝
+
+Create:
+
+Become a Volunteer
+
+Possible volunteer categories:
+
+- Rescue support
+- Feeding
+- Foster care
+- Adoption support
+- Photography
+- Social media
+- Fundraising
+- Website/technical support
+- Event support
+
+Create a volunteer registration form.
+
+---
+
+14. FOSTER SECTION
+
+Create a dedicated foster page.
+
+Explain:
+
+“Not ready for permanent adoption? Fostering can still save a life.”
+
+Include:
+
+- What fostering means
+- What is expected
+- Basic responsibilities
+- FAQ
+- Foster application
+
+CTA:
+
+Become a Foster Home
+
+---
+
+15. RESCUE STORIES 📖
+
+Create a beautiful storytelling section.
+
+Each story should include:
+
+- Before rescue
+- Rescue journey
+- Treatment/support
+- Recovery
+- Adoption/future
+
+Use a timeline-style UI.
+
+Example:
+
+Found → Rescued → Treated → Fostered → Adopted
+
+Create story cards on the homepage.
+
+---
+
+16. EDUCATION / AWARENESS
+
+Create an educational section.
+
+Topics:
+
+- How to safely help a street dog
+- What to do if you find an injured puppy
+- Responsible feeding
+- Vaccination awareness
+- Sterilization awareness
+- Responsible adoption
+- Why street dogs need community support
+- How to approach frightened animals safely
+
+Keep information practical and responsible.
+
+Do not encourage visitors to put themselves in dangerous situations.
+
+---
+
+17. COMMUNITY IMPACT MAP
+
+Create a map-style section showing rescue activity.
+
+Example markers:
+
+📍 Rescue
+📍 Adoption
+📍 Foster
+📍 Veterinary support
+
+Use demo data initially.
+
+Clearly indicate when locations are examples.
+
+Avoid exposing sensitive exact locations of animals where that could put them at risk.
+
+---
+
+18. ABOUT US
+
+Create an About page explaining:
+
+- Mission
+- Vision
+- Values
+- Why SaveStreet Dogs exists
+- Community involvement
+- Animal welfare principles
+
+Include a strong statement:
+
+“We believe compassion should not depend on whether an animal has a home.”
+
+---
+
+19. FAQ
+
+Create a searchable/collapsible FAQ.
+
+Questions such as:
+
+- How can I report a dog?
+- Can I adopt a puppy?
+- How does fostering work?
+- How can I volunteer?
+- Where does donation money go?
+- Can I donate food?
+- Can I support a specific rescue?
+- Can I purchase products to support the organization?
+
+---
+
+20. FOOTER
+
+Create a professional footer.
+
+Include:
+
+SaveStreet Dogs logo
+
+Navigation links
+
+- Rescue
+- Puppies
+- Adoption
+- Products
+- Volunteer
+- Foster
+- Donate
+- Stories
+- About
+- Contact
+- Privacy Policy
+- Terms
+
+Social media icons.
+
+Newsletter/signup area if implemented.
+
+Footer statement:
+
+“For the paws that cannot ask for help.”
+
+---
+
+21. UI/UX REQUIREMENTS
+
+The UX is extremely important.
+
+The website should feel:
+
+fast + emotional + trustworthy + simple
+
+Use:
+
+- Large readable typography
+- Clear hierarchy
+- Consistent spacing
+- Rounded cards
+- High-quality imagery
+- Soft shadows
+- Subtle hover effects
+- Smooth page transitions
+- Skeleton loading states
+- Toast notifications
+- Form validation
+- Empty states
+- Error states
+- Success states
+
+Never sacrifice usability for animations.
+
+---
+
+22. MOBILE EXPERIENCE
+
+The website must be excellent on mobile.
+
+Test layouts for:
+
+- 320px
+- 375px
+- 390px
+- 414px
+- Tablet
+- Desktop
+- Large desktop
+
+Buttons should be easy to tap.
+
+Forms should be mobile-friendly.
+
+Images should be optimized.
+
+Navigation must work perfectly.
+
+---
+
+23. ACCESSIBILITY
+
+Follow accessibility best practices.
+
+Include:
+
+- Semantic HTML
+- Keyboard navigation
+- Alt text
+- Proper labels
+- Accessible forms
+- Good contrast
+- Focus states
+- Screen-reader-friendly navigation
+- Reduced-motion support
+
+Do not rely only on color to communicate status.
+
+---
+
+24. ANIMATIONS
+
+Use tasteful animations.
+
+Examples:
+
+- Puppy card hover
+- Paw-print loading animation
+- Scroll reveal
+- Counter animation
+- Button micro-interactions
+- Image fade-in
+- Page transitions
+
+Animations must be subtle and performant.
+
+Respect:
+
+"prefers-reduced-motion"
+
+---
+
+25. IMAGE HANDLING
+
+Use high-quality animal imagery.
+
+Prioritize:
+
+- Street dogs
+- Puppies
+- Rescue situations
+- Happy adopted dogs
+- Volunteers
+- Community feeding
+- Veterinary care
+- Dogs with families
+
+Avoid overly distressing imagery.
+
+The website should inspire people to help rather than exploit animal suffering for emotional manipulation.
+
+Use proper image optimization and lazy loading.
+
+---
+
+26. TRUST & TRANSPARENCY
+
+Create a section explaining:
+
+Where Your Support Goes
+
+Use visual categories:
+
+🍲 Food
+🩺 Medical Care
+💉 Vaccination
+🏠 Shelter/Foster
+🚑 Rescue
+📚 Awareness
+
+If real financial reports are added later, create charts and downloadable reports.
+
+Do NOT create fake certifications, fake testimonials, fake statistics, fake partners, or fake NGO registrations.
+
+---
+
+27. SEARCH
+
+Implement global search.
+
+Search:
+
+- Dogs
+- Puppies
+- Stories
+- Products
+- Educational articles
+
+Show useful empty states.
+
+Example:
+
+“No puppies found. The internet has failed us temporarily.”
+
+Keep production copy professional, though. The example is only to demonstrate the empty-state concept.
+
+---
+
+28. SEO
+
+Implement:
+
+- Page titles
+- Meta descriptions
+- Open Graph metadata
+- Semantic headings
+- Sitemap
+- Robots configuration
+- Structured data where appropriate
+- Clean URLs
+
+Example URLs:
+
+"/"
+
+"/puppies"
+
+"/dogs"
+
+"/adopt"
+
+"/rescue"
+
+"/report"
+
+"/products"
+
+"/products/:id"
+
+"/donate"
+
+"/volunteer"
+
+"/foster"
+
+"/stories"
+
+"/about"
+
+"/contact"
+
+---
+
+29. PERFORMANCE
+
+Optimize for:
+
+- Fast initial loading
+- Image compression
+- Lazy loading
+- Code splitting
+- Minimal unnecessary JavaScript
+- Efficient API calls
+- Caching where appropriate
+
+Target excellent Lighthouse scores.
+
+---
+
+30. ERROR HANDLING
+
+Create polished error states.
+
+Examples:
+
+404 page:
+
+“This page wandered off. 🐾”
+
+Provide:
+
+Return Home
+
+Network/API error:
+
+“We couldn't load this right now. Please try again.”
+
+Never show raw stack traces to users.
+
+---
+
+31. ADMIN DASHBOARD ARCHITECTURE
+
+Prepare a protected admin dashboard.
+
+Admin features:
+
+Dogs
+
+- Add dog
+- Edit dog
+- Update status
+- Upload images
+- Mark adopted
+- Archive profile
+
+Rescue Reports
+
+- View reports
+- Change status
+- Assign volunteer
+- Add notes
+- Mark resolved
+
+Adoption
+
+- Review applications
+- Update application status
+
+Products
+
+- Add products
+- Edit products
+- Inventory
+- Pricing
+- Categories
+
+Stories
+
+- Create/edit stories
+- Publish/unpublish
+
+Volunteers
+
+- Review applications
+
+Donations
+
+- Donation records
+- Reporting interface
+
+Do not expose the admin dashboard publicly.
+
+Use proper authentication/authorization architecture.
+
+---
+
+32. DATABASE MODEL
+
+Design reusable models for:
+
+User
+
+Dog
+
+Puppy
+
+RescueReport
+
+AdoptionApplication
+
+FosterApplication
+
+VolunteerApplication
+
+Product
+
+ProductCategory
+
+Cart
+
+Order
+
+Donation
+
+Story
+
+EducationalArticle
+
+Admin
+
+Media
+
+Use relational relationships where appropriate.
+
+Do not store sensitive personal data unnecessarily.
+
+---
+
+33. SECURITY
+
+Implement secure development practices.
+
+Important:
+
+- Validate all form inputs
+- Sanitize user-generated content
+- Protect admin routes
+- Never expose secrets in frontend code
+- Use environment variables
+- Secure file uploads
+- Restrict upload types
+- Rate-limit sensitive endpoints where appropriate
+- Do not expose personal information
+- Do not store payment card information directly
+
+Create ".env.example".
+
+Never put API keys or secrets directly into source code.
+
+---
+
+34. ADMIN DEMO DATA
+
+If the application needs sample data, create clearly labeled demo data.
+
+Example:
+
+- Demo Puppy
+- Demo Rescue Story
+- Demo Product
+
+Do not present demo information as real SaveStreet Dogs impact.
+
+---
+
+35. HOMEPAGE STRUCTURE
+
+Build the homepage approximately in this order:
+
+1. Loading screen
+2. Navigation
+3. Hero
+4. Emergency Report CTA
+5. Impact
+6. Puppies needing homes
+7. How we help
+8. Rescue stories
+9. Adoption CTA
+10. Products
+11. Volunteer/Foster
+12. Donation section
+13. Awareness/education
+14. Community impact
+15. Final CTA
+16. Footer
+
+Make the page visually dynamic rather than a collection of identical cards.
+
+---
+
+36. FINAL CALL TO ACTION
+
+End the homepage with a powerful but respectful CTA:
+
+One small action can make a difference.
+
+Buttons:
+
+🐾 Help a Dog
+
+🏠 Adopt
+
+🤝 Volunteer
+
+💝 Support
+
+---
+
+37. DESIGN QUALITY
+
+This is extremely important:
+
+Do NOT create:
+
+- Generic Bootstrap appearance
+- Excessive gradients
+- Huge unnecessary text
+- Random animations
+- Poorly aligned cards
+- Tiny mobile buttons
+- Fake statistics
+- Fake reviews
+- Fake NGO credentials
+- Fake payment confirmations
+- Fake rescue claims
+
+The website should look like it could genuinely be launched by a modern animal-welfare organization.
+
+Use a strong visual hierarchy.
+
+Make the puppy/dog imagery the emotional center of the experience.
+
+---
+
+38. COMPONENT ARCHITECTURE
+
+Create reusable components such as:
+
+Navbar
+
+Footer
+
+HeroSection
+
+DogCard
+
+PuppyCard
+
+ProductCard
+
+StoryCard
+
+ImpactCounter
+
+ReportDogForm
+
+AdoptionForm
+
+VolunteerForm
+
+FosterForm
+
+DonationWidget
+
+ProductGrid
+
+CartDrawer
+
+Modal
+
+Toast
+
+LoadingScreen
+
+SkeletonCard
+
+EmptyState
+
+ErrorState
+
+SectionHeader
+
+CTASection
+
+FAQAccordion
+
+Use reusable components instead of duplicating markup.
+
+---
+
+39. RESPONSIVE PRODUCT EXPERIENCE
+
+The product store must work especially well on mobile.
+
+On mobile:
+
+- Two-column product grid where appropriate
+- Sticky cart access
+- Easy quantity controls
+- Large Add to Cart buttons
+- Fast checkout flow
+- Product image gallery optimized for touch
+
+---
+
+40. OVERALL EXPERIENCE
+
+The final website should make a visitor feel:
+
+“This organization cares about animals, is trustworthy, and gives me simple ways to help.”
+
+The website should balance emotion with credibility.
+
+The primary goal is not merely to look beautiful.
+
+The primary goal is:
+
+Turn compassion into action.
+
+---
+
+41. IMPLEMENTATION INSTRUCTIONS
+
+Build the website completely rather than only creating a landing-page mockup.
+
+Start with:
+
+1. Project architecture
+2. Design system
+3. Global styles
+4. Loading screen
+5. Navigation
+6. Homepage
+7. Puppies/dogs
+8. Rescue reporting
+9. Adoption
+10. Products/store
+11. Cart
+12. Donation
+13. Volunteer/foster
+14. Stories
+15. Education
+16. About/contact
+17. Authentication architecture
+18. Admin dashboard architecture
+19. Database/API structure
+20. Error/loading states
+21. SEO
+22. Accessibility
+23. Performance optimization
+
+After implementation, inspect the entire application for:
+
+- Broken links
+- Console errors
+- Responsive issues
+- Missing images
+- Form issues
+- Accessibility issues
+- Layout overflow
+- Incorrect buttons
+- Broken routes
+- API failures
+- Poor mobile UX
+
+Fix all issues you find.
+
+The final result should be a polished, cohesive, production-ready foundation for:
+
+🐾 SAVESTREET DOGS
+
+Street by street. Paw by paw. Saving lives.

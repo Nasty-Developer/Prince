@@ -1,0 +1,76 @@
+IMPORTANT: ADD MY EXACT FIREBASE CONFIGURATION NOW 🔥
+
+Use the EXACT Firebase values I provided. Do not ask me to enter them again and do not replace them with placeholders.
+
+Add this exact configuration to the existing SaveStreet Dogs project:
+
+apiKey:
+AIzaSyA8G33ypou2t6xDt75Z3rcdIQVOgQr5daI
+
+authDomain:
+savestreetdogs-7aafe.firebaseapp.com
+
+projectId:
+savestreetdogs-7aafe
+
+storageBucket:
+savestreetdogs-7aafe.firebasestorage.app
+
+messagingSenderId:
+893340598484
+
+appId:
+1:893340598484:web:5c66c53c1c8f915a56fb41
+
+measurementId:
+G-70NB86Y3VE
+
+USE THESE EXACT VALUES.
+
+Implementation:
+
+1. Add/configure Firebase in the existing SaveStreet Dogs project.
+2. Use the existing Firebase project:
+   savestreetdogs-7aafe
+3. Do not create another Firebase project.
+4. Do not use dummy values or placeholders.
+5. If Firebase is already initialized, update the existing configuration instead of creating a duplicate Firebase setup.
+6. Use Firebase Authentication for:
+   - Sign Up
+   - Sign In
+   - Sign Out
+   - Forgot/Reset Password
+   - Session persistence
+7. Use Firebase Authentication for Admin Sign In and Sign Out.
+8. Connect the existing Admin Panel to this Firebase project.
+9. Connect Firestore/database and Firebase Storage where required by the existing application.
+10. Use Firebase Storage for real puppy/product image uploads where appropriate.
+11. Keep the configuration in the correct environment/configuration structure for this project.
+12. Do not put private server credentials or service-account keys in frontend code.
+
+MOST IMPORTANT:
+
+Actually ADD these values to the project and initialize Firebase with them.
+
+Then verify that Firebase initializes successfully and that there are no Firebase initialization errors.
+
+After that verify:
+
+User:
+- Sign Up works
+- Sign In works
+- Sign Out works
+- Forgot Password works
+- Session persists after refresh
+
+Admin:
+- /admin/login works
+- Admin authenticates through Firebase
+- Admin authorization works
+- /admin opens only for authorized admins
+- Admin Sign Out works
+- Unauthorized users cannot access the Admin Panel
+
+Do not just tell me that Firebase is configured.
+
+Actually implement it, run the application, test the Firebase connection, and fix any errors you find.
