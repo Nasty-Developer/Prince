@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "postgresql-16"]
 
 [deployment]
 router = "application"
@@ -31,3 +31,6 @@ VITE_FIREBASE_PROJECT_ID = "savestreetdogs-7aafe"
 VITE_FIREBASE_STORAGE_BUCKET = "savestreetdogs-7aafe.firebasestorage.app"
 ADMIN_FIREBASE_UIDS = "bsoDr0mbJFcCJNxETEoNqJyFIsV2"
 VITE_ADMIN_FIREBASE_UIDS = "bsoDr0mbJFcCJNxETEoNqJyFIsV2"
+
+[nix]
+channel = "stable-25_05"

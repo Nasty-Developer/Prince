@@ -11,7 +11,7 @@ export interface Product {
   name: string;
   description: string;
   /** @minimum 0 */
-  pricePaise: number;
+  priceRupees: number;
   /** @minimum 0 */
   stock: number;
   available: boolean;

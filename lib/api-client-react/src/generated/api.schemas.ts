@@ -101,7 +101,7 @@ export interface Product {
   name: string;
   description: string;
   /** @minimum 0 */
-  pricePaise: number;
+  priceRupees: number;
   /** @minimum 0 */
   stock: number;
   available: boolean;
@@ -116,7 +116,7 @@ export interface ProductInput {
   name: string;
   description?: string;
   /** @minimum 0 */
-  pricePaise?: number;
+  priceRupees?: number;
   /** @minimum 0 */
   stock?: number;
   available?: boolean;
@@ -151,10 +151,10 @@ export interface Order {
   state: string;
   pinCode: string;
   deliveryNotes: string;
-  subtotalPaise: number;
+  subtotalRupees: number;
   /** @nullable */
-  deliveryChargePaise?: number | null;
-  totalPaise: number;
+  deliveryChargeRupees?: number | null;
+  totalRupees: number;
   paymentStatus: string;
   status: string;
   /** @nullable */

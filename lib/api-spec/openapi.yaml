@@ -551,12 +551,12 @@ components:
         internalNotes: { type: string }
     Product:
       type: object
-      required: [id, name, description, pricePaise, stock, available, category, imageUrls, createdAt, updatedAt]
+      required: [id, name, description, priceRupees, stock, available, category, imageUrls, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         description: { type: string }
-        pricePaise: { type: integer, minimum: 0 }
+        priceRupees: { type: integer, minimum: 0 }
         stock: { type: integer, minimum: 0 }
         available: { type: boolean }
         category: { type: string }
@@ -571,7 +571,7 @@ components:
       properties:
         name: { type: string, minLength: 1 }
         description: { type: string }
-        pricePaise: { type: integer, minimum: 0, default: 6000 }
+        priceRupees: { type: integer, minimum: 0, default: 60 }
         stock: { type: integer, minimum: 0, default: 0 }
         available: { type: boolean, default: true }
         category: { type: string }
@@ -598,7 +598,7 @@ components:
         fosterRequests: { type: integer }
     Order:
       type: object
-      required: [id, orderCode, customerName, phone, email, address, city, state, pinCode, deliveryNotes, subtotalPaise, totalPaise, paymentStatus, status, expectedDelivery, delayReason, deliveryPerson, deliveryPhone, trackingId, createdAt, updatedAt]
+      required: [id, orderCode, customerName, phone, email, address, city, state, pinCode, deliveryNotes, subtotalRupees, totalRupees, paymentStatus, status, expectedDelivery, delayReason, deliveryPerson, deliveryPhone, trackingId, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         orderCode: { type: string }
@@ -610,9 +610,9 @@ components:
         state: { type: string }
         pinCode: { type: string }
         deliveryNotes: { type: string }
-        subtotalPaise: { type: integer }
-        deliveryChargePaise: { type: ["integer", "null"] }
-        totalPaise: { type: integer }
+        subtotalRupees: { type: integer }
+        deliveryChargeRupees: { type: ["integer", "null"] }
+        totalRupees: { type: integer }
         paymentStatus: { type: string }
         status: { type: string }
         expectedDelivery: { type: ["string", "null"], format: date }

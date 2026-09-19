@@ -126,7 +126,7 @@ export const ListProductsQueryParams = zod.object({
   "category": zod.coerce.string().optional()
 })
 
-export const listProductsResponsePricePaiseMin = 0;
+export const listProductsResponsePriceRupeesMin = 0;
 
 export const listProductsResponseStockMin = 0;
 
@@ -136,7 +136,7 @@ export const ListProductsResponseItem = zod.object({
   "id": zod.string().uuid(),
   "name": zod.string(),
   "description": zod.string(),
-  "pricePaise": zod.number().int().min(listProductsResponsePricePaiseMin),
+  "priceRupees": zod.number().int().min(listProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listProductsResponseStockMin),
   "available": zod.boolean(),
   "category": zod.string(),
@@ -154,7 +154,7 @@ export const GetProductParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
-export const getProductResponsePricePaiseMin = 0;
+export const getProductResponsePriceRupeesMin = 0;
 
 export const getProductResponseStockMin = 0;
 
@@ -164,7 +164,7 @@ export const GetProductResponse = zod.object({
   "id": zod.string().uuid(),
   "name": zod.string(),
   "description": zod.string(),
-  "pricePaise": zod.number().int().min(getProductResponsePricePaiseMin),
+  "priceRupees": zod.number().int().min(getProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(getProductResponseStockMin),
   "available": zod.boolean(),
   "category": zod.string(),
@@ -421,7 +421,7 @@ export const UpdateAdoptionRequestResponse = zod.object({
 /**
  * @summary List all products
  */
-export const listAdminProductsResponsePricePaiseMin = 0;
+export const listAdminProductsResponsePriceRupeesMin = 0;
 
 export const listAdminProductsResponseStockMin = 0;
 
@@ -431,7 +431,7 @@ export const ListAdminProductsResponseItem = zod.object({
   "id": zod.string().uuid(),
   "name": zod.string(),
   "description": zod.string(),
-  "pricePaise": zod.number().int().min(listAdminProductsResponsePricePaiseMin),
+  "priceRupees": zod.number().int().min(listAdminProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listAdminProductsResponseStockMin),
   "available": zod.boolean(),
   "category": zod.string(),
@@ -446,8 +446,8 @@ export const ListAdminProductsResponse = zod.array(ListAdminProductsResponseItem
  * @summary Add a product
  */
 
-export const createProductBodyPricePaiseDefault = 6000;
-export const createProductBodyPricePaiseMin = 0;
+export const createProductBodyPriceRupeesDefault = 60;
+export const createProductBodyPriceRupeesMin = 0;
 
 export const createProductBodyStockDefault = 0;
 export const createProductBodyStockMin = 0;
@@ -457,14 +457,14 @@ export const createProductBodyAvailableDefault = true;
 export const CreateProductBody = zod.object({
   "name": zod.string().min(1),
   "description": zod.string().optional(),
-  "pricePaise": zod.number().int().min(createProductBodyPricePaiseMin).default(createProductBodyPricePaiseDefault),
+  "priceRupees": zod.number().int().min(createProductBodyPriceRupeesMin).default(createProductBodyPriceRupeesDefault),
   "stock": zod.number().int().min(createProductBodyStockMin).default(createProductBodyStockDefault),
   "available": zod.boolean().default(createProductBodyAvailableDefault),
   "category": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
 })
 
-export const createProductResponsePricePaiseMin = 0;
+export const createProductResponsePriceRupeesMin = 0;
 
 export const createProductResponseStockMin = 0;
 
@@ -474,7 +474,7 @@ export const CreateProductResponse = zod.object({
   "id": zod.string().uuid(),
   "name": zod.string(),
   "description": zod.string(),
-  "pricePaise": zod.number().int().min(createProductResponsePricePaiseMin),
+  "priceRupees": zod.number().int().min(createProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(createProductResponseStockMin),
   "available": zod.boolean(),
   "category": zod.string(),
@@ -492,8 +492,8 @@ export const UpdateProductParams = zod.object({
 })
 
 
-export const updateProductBodyOnePricePaiseDefault = 6000;
-export const updateProductBodyOnePricePaiseMin = 0;
+export const updateProductBodyOnePriceRupeesDefault = 60;
+export const updateProductBodyOnePriceRupeesMin = 0;
 
 export const updateProductBodyOneStockDefault = 0;
 export const updateProductBodyOneStockMin = 0;
@@ -503,14 +503,14 @@ export const updateProductBodyOneAvailableDefault = true;
 export const UpdateProductBody = zod.object({
   "name": zod.string().min(1),
   "description": zod.string().optional(),
-  "pricePaise": zod.number().int().min(updateProductBodyOnePricePaiseMin).default(updateProductBodyOnePricePaiseDefault),
+  "priceRupees": zod.number().int().min(updateProductBodyOnePriceRupeesMin).default(updateProductBodyOnePriceRupeesDefault),
   "stock": zod.number().int().min(updateProductBodyOneStockMin).default(updateProductBodyOneStockDefault),
   "available": zod.boolean().default(updateProductBodyOneAvailableDefault),
   "category": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
 })
 
-export const updateProductResponsePricePaiseMin = 0;
+export const updateProductResponsePriceRupeesMin = 0;
 
 export const updateProductResponseStockMin = 0;
 
@@ -520,7 +520,7 @@ export const UpdateProductResponse = zod.object({
   "id": zod.string().uuid(),
   "name": zod.string(),
   "description": zod.string(),
-  "pricePaise": zod.number().int().min(updateProductResponsePricePaiseMin),
+  "priceRupees": zod.number().int().min(updateProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(updateProductResponseStockMin),
   "available": zod.boolean(),
   "category": zod.string(),
@@ -554,9 +554,9 @@ export const ListAdminOrdersResponseItem = zod.object({
   "state": zod.string(),
   "pinCode": zod.string(),
   "deliveryNotes": zod.string(),
-  "subtotalPaise": zod.number().int(),
-  "deliveryChargePaise": zod.number().int().nullish(),
-  "totalPaise": zod.number().int(),
+  "subtotalRupees": zod.number().int(),
+  "deliveryChargeRupees": zod.number().int().nullish(),
+  "totalRupees": zod.number().int(),
   "paymentStatus": zod.string(),
   "status": zod.string(),
   "expectedDelivery": zod.coerce.date().nullable(),
@@ -598,9 +598,9 @@ export const UpdateAdminOrderResponse = zod.object({
   "state": zod.string(),
   "pinCode": zod.string(),
   "deliveryNotes": zod.string(),
-  "subtotalPaise": zod.number().int(),
-  "deliveryChargePaise": zod.number().int().nullish(),
-  "totalPaise": zod.number().int(),
+  "subtotalRupees": zod.number().int(),
+  "deliveryChargeRupees": zod.number().int().nullish(),
+  "totalRupees": zod.number().int(),
   "paymentStatus": zod.string(),
   "status": zod.string(),
   "expectedDelivery": zod.coerce.date().nullable(),

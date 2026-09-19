@@ -125,6 +125,95 @@ router.get("/products/:id", async (req, res): Promise<void> => {
   res.json(productResponse(product));
 });
 
+const CreateOrderBody = z.object({
+  customerName: z.string().min(2),
+  phone: z.string().min(6),
+  email: z.string().email(),
+  address: z.string().min(5),
+  city: z.string().min(2),
+  state: z.string().min(2),
+  pinCode: z.string().min(4),
+  deliveryNotes: z.string().max(2000).optional(),
+  items: z.array(z.object({
+    productId: z.string().uuid(),
+    quantity: z.number().int().min(1).max(99),
+  })).min(1),
+});
+
+router.post("/orders", async (req, res): Promise<void> => {
+  const parsed = CreateOrderBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const requested = new Map<string, number>();
+  for (const item of parsed.data.items) {
+    requested.set(item.productId, (requested.get(item.productId) ?? 0) + item.quantity);
+  }
+  const productIds = [...requested.keys()];
+  const products = await db.select().from(productsTable).where(inArray(productsTable.id, productIds));
+  const productById = new Map(products.map((product) => [product.id, product]));
+  for (const [productId, quantity] of requested) {
+    const product = productById.get(productId);
+    if (!product || !product.available) {
+      res.status(400).json({ error: "One of the selected products is no longer available." });
+      return;
+    }
+    if (product.stock < quantity) {
+      res.status(400).json({ error: `${product.name} does not have enough stock.` });
+      return;
+    }
+  }
+
+  const subtotalRupees = parsed.data.items.reduce((sum, item) => {
+    const product = productById.get(item.productId)!;
+    return sum + product.priceRupees * item.quantity;
+  }, 0);
+  const deliveryChargeRupees = 0;
+  const totalRupees = subtotalRupees + deliveryChargeRupees;
+  const orderCode = `SS-${Date.now().toString(36).toUpperCase()}`;
+
+  const order = await db.transaction(async (tx) => {
+    const [createdOrder] = await tx.insert(ordersTable).values({
+      orderCode,
+      customerName: parsed.data.customerName,
+      phone: parsed.data.phone,
+      email: parsed.data.email,
+      address: parsed.data.address,
+      city: parsed.data.city,
+      state: parsed.data.state,
+      pinCode: parsed.data.pinCode,
+      deliveryNotes: parsed.data.deliveryNotes ?? "",
+      subtotalRupees,
+      deliveryChargeRupees,
+      totalRupees,
+    }).returning();
+
+    await tx.insert(orderItemsTable).values(parsed.data.items.map((item) => {
+      const product = productById.get(item.productId)!;
+      return {
+        orderId: createdOrder.id,
+        productId: product.id,
+        productName: product.name,
+        productImageUrl: product.imageUrls[0] ?? "",
+        quantity: item.quantity,
+        unitPriceRupees: product.priceRupees,
+      };
+    }));
+
+    for (const [productId, quantity] of requested) {
+      const product = productById.get(productId)!;
+      await tx.update(productsTable)
+        .set({ stock: product.stock - quantity, updatedAt: new Date() })
+        .where(eq(productsTable.id, productId));
+    }
+    return createdOrder;
+  });
+
+  res.status(201).json(order);
+});
+
 const adminRouter: IRouter = Router();
 adminRouter.use(requireAdmin);
 
@@ -342,7 +431,8 @@ adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
   const [payment] = await db.insert(paymentsTable).values({
     orderId: order.id,
     status: status.data,
-    amountPaise: order.totalPaise,
+    // The application stores order totals in INR. Razorpay's boundary amount is paise.
+    amountPaise: order.totalRupees * 100,
     paymentId: parsed.data.paymentId ?? "",
     provider: parsed.data.provider ?? "razorpay",
     verifiedAt: status.data === "Payment Successful" ? new Date() : null,
@@ -384,9 +474,9 @@ const submissionTables: Record<string, AdminSubmissionTable> = {
   foster: fosterApplicationsTable,
 };
 const submissionStatus = {
-  rescue: z.enum(["New", "Investigating", "Resolved", "Closed"]),
-  volunteer: z.enum(["New", "Contacted", "Approved", "Rejected", "Closed"]),
-  foster: z.enum(["New", "Contacted", "Approved", "Rejected", "Closed"]),
+  rescue: z.enum(["New", "Reviewing", "Assigned", "In Progress", "Resolved", "Closed"]),
+  volunteer: z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed"]),
+  foster: z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed"]),
 } as const;
 for (const [kind, rawTable] of Object.entries(submissionTables)) {
   const table = rawTable as any;

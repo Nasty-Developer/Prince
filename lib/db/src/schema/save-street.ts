@@ -57,7 +57,7 @@ export const productsTable = pgTable("products", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
-  pricePaise: integer("price_paise").notNull().default(6000),
+  priceRupees: integer("price_rupees").notNull().default(60),
   stock: integer("stock").notNull().default(0),
   available: boolean("available").notNull().default(true),
   category: text("category").notNull().default("Mission goods"),
@@ -77,9 +77,9 @@ export const ordersTable = pgTable("orders", {
   state: text("state").notNull(),
   pinCode: text("pin_code").notNull(),
   deliveryNotes: text("delivery_notes").notNull().default(""),
-  subtotalPaise: integer("subtotal_paise").notNull(),
-  deliveryChargePaise: integer("delivery_charge_paise"),
-  totalPaise: integer("total_paise").notNull(),
+  subtotalRupees: integer("subtotal_rupees").notNull(),
+  deliveryChargeRupees: integer("delivery_charge_rupees"),
+  totalRupees: integer("total_rupees").notNull(),
   paymentStatus: text("payment_status").notNull().default("Payment Pending"),
   status: text("status").notNull().default("Payment Pending"),
   expectedDelivery: date("expected_delivery", { mode: "string" }),
@@ -97,7 +97,7 @@ export const orderItemsTable = pgTable("order_items", {
   productName: text("product_name").notNull(),
   productImageUrl: text("product_image_url").notNull().default(""),
   quantity: integer("quantity").notNull(),
-  unitPricePaise: integer("unit_price_paise").notNull(),
+  unitPriceRupees: integer("unit_price_rupees").notNull(),
 });
 
 export const paymentsTable = pgTable("payments", {

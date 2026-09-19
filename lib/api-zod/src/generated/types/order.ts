@@ -17,10 +17,10 @@ export interface Order {
   state: string;
   pinCode: string;
   deliveryNotes: string;
-  subtotalPaise: number;
+  subtotalRupees: number;
   /** @nullable */
-  deliveryChargePaise?: number | null;
-  totalPaise: number;
+  deliveryChargeRupees?: number | null;
+  totalRupees: number;
   paymentStatus: string;
   status: string;
   /** @nullable */
