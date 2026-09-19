@@ -1,0 +1,1 @@
+- [Imported Replit repositories](imported-replit-repos.md) — preserve managed artifacts and regenerate API clients after copying an existing monorepo.

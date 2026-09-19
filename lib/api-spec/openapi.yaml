@@ -1,22 +1,25 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 0.2.0
+  description: SaveStreet Dogs public and admin API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: puppies
+  - name: adoption
+  - name: products
+  - name: orders
+  - name: admin
+  - name: submissions
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +27,790 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /puppies:
+    get:
+      operationId: listPuppies
+      tags: [puppies]
+      summary: List active puppies
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - in: query
+          name: size
+          schema: { type: string }
+      responses:
+        "200":
+          description: Active puppy listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Puppy" }
+  /puppies/{id}:
+    get:
+      operationId: getPuppy
+      tags: [puppies]
+      summary: Get a puppy profile
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Puppy profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Puppy" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /adoption-requests:
+    post:
+      operationId: createAdoptionRequest
+      tags: [adoption]
+      summary: Submit an adoption request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdoptionRequestInput" }
+      responses:
+        "201":
+          description: Request saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdoptionRequest" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List available products
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - in: query
+          name: category
+          schema: { type: string }
+      responses:
+        "200":
+          description: Available products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get a product
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a UPI order pending manual verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderInput" }
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /orders/{orderCode}:
+    get:
+      operationId: getOrderTracking
+      tags: [orders]
+      summary: Get an order tracking view for its owner
+      parameters:
+        - in: path
+          name: orderCode
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Order tracking details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderDetail" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get dashboard counts
+      responses:
+        "200":
+          description: Dashboard counts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminDashboard" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/puppies:
+    get:
+      operationId: listAdminPuppies
+      tags: [admin]
+      summary: List all puppies
+      responses:
+        "200":
+          description: Puppy management list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Puppy" }
+    post:
+      operationId: createPuppy
+      tags: [admin]
+      summary: Add a puppy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PuppyInput" }
+      responses:
+        "201":
+          description: Puppy created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Puppy" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/puppies/{id}:
+    patch:
+      operationId: updatePuppy
+      tags: [admin]
+      summary: Edit a puppy
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PuppyUpdate" }
+      responses:
+        "200":
+          description: Puppy updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Puppy" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      operationId: archivePuppy
+      tags: [admin]
+      summary: Archive a puppy
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Puppy archived
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/adoption-requests:
+    get:
+      operationId: listAdoptionRequests
+      tags: [admin]
+      summary: List adoption requests
+      responses:
+        "200":
+          description: Adoption requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdoptionRequest" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAdminAdoptionRequest
+      tags: [admin]
+      summary: Create an adoption request received offline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdoptionRequestInput" }
+      responses:
+        "201":
+          description: Request saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdoptionRequest" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/adoption-requests/{id}:
+    patch:
+      operationId: updateAdoptionRequest
+      tags: [admin]
+      summary: Update adoption request status and notes
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdoptionRequestUpdate" }
+      responses:
+        "200":
+          description: Adoption request updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdoptionRequest" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/products:
+    get:
+      operationId: listAdminProducts
+      tags: [admin]
+      summary: List all products
+      responses:
+        "200":
+          description: Product management list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+    post:
+      operationId: createProduct
+      tags: [admin]
+      summary: Add a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [admin]
+      summary: Edit a product
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductUpdate" }
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      operationId: archiveProduct
+      tags: [admin]
+      summary: Archive a product
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Product archived
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/orders:
+    get:
+      operationId: listAdminOrders
+      tags: [admin, orders]
+      summary: List customer orders
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/orders/{id}:
+    get:
+      operationId: getAdminOrder
+      tags: [admin, orders]
+      summary: Get an order with its items and delivery records
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderDetail" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    patch:
+      operationId: updateAdminOrder
+      tags: [admin, orders]
+      summary: Update order status, delivery, and delay details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderUpdate" }
+      responses:
+        "200":
+          description: Order updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/orders/{id}/payment:
+    patch:
+      operationId: verifyOrderPayment
+      tags: [admin, orders]
+      summary: Verify an order payment manually
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentVerification"
+      responses:
+        "200":
+          description: Payment status recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payment" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /submissions/rescue:
+    post:
+      operationId: createRescueReport
+      tags: [submissions]
+      summary: Submit a rescue report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RescueReportInput" }
+      responses:
+        "201":
+          description: Rescue report saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmissionReceipt" }
+  /submissions/volunteer:
+    post:
+      operationId: createVolunteerApplication
+      tags: [submissions]
+      summary: Submit volunteer interest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VolunteerInput" }
+      responses:
+        "201":
+          description: Volunteer interest saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmissionReceipt" }
+  /submissions/foster:
+    post:
+      operationId: createFosterApplication
+      tags: [submissions]
+      summary: Submit foster interest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FosterInput" }
+      responses:
+        "201":
+          description: Foster interest saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmissionReceipt" }
 components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    Search:
+      in: query
+      name: search
+      schema: { type: string }
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Sign in required
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Admin authorization required
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    Puppy:
+      type: object
+      required: [id, name, location, age, gender, size, temperament, description, adoptionInfo, healthInfo, vaccinationInfo, rescueStory, status, notes, imageUrls, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        location: { type: string }
+        age: { type: string }
+        gender: { type: string }
+        size: { type: string }
+        temperament: { type: string }
+        description: { type: string }
+        adoptionInfo: { type: string }
+        healthInfo: { type: string }
+        vaccinationInfo: { type: string }
+        rescueStory: { type: string }
+        status: { type: string }
+        notes: { type: string }
+        imageUrls:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PuppyInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        location: { type: string }
+        age: { type: string }
+        gender: { type: string }
+        size: { type: string }
+        temperament: { type: string }
+        description: { type: string }
+        adoptionInfo: { type: string }
+        healthInfo: { type: string }
+        vaccinationInfo: { type: string }
+        rescueStory: { type: string }
+        status: { type: string }
+        notes: { type: string }
+        imageUrls:
+          type: array
+          items: { type: string }
+    PuppyUpdate:
+      allOf:
+        - $ref: "#/components/schemas/PuppyInput"
+    AdoptionRequest:
+      type: object
+      required: [id, applicantName, phone, email, city, address, livingSituation, animalExperience, householdInformation, reason, additionalMessage, status, internalNotes, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        puppyId: { type: ["string", "null"], format: uuid }
+        puppyName: { type: ["string", "null"] }
+        applicantName: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        city: { type: string }
+        address: { type: string }
+        livingSituation: { type: string }
+        animalExperience: { type: string }
+        householdInformation: { type: string }
+        reason: { type: string }
+        additionalMessage: { type: string }
+        status: { type: string }
+        internalNotes: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AdoptionRequestInput:
+      type: object
+      required: [applicantName, phone, email, city]
+      properties:
+        puppyId: { type: ["string", "null"], format: uuid }
+        applicantName: { type: string, minLength: 2 }
+        phone: { type: string, minLength: 6 }
+        email: { type: string, format: email }
+        city: { type: string, minLength: 2 }
+        address: { type: string }
+        livingSituation: { type: string }
+        animalExperience: { type: string }
+        householdInformation: { type: string }
+        reason: { type: string }
+        additionalMessage: { type: string }
+    AdoptionRequestUpdate:
+      type: object
+      properties:
+        status: { type: string }
+        internalNotes: { type: string }
+    Product:
+      type: object
+      required: [id, name, description, priceRupees, stock, available, stockStatus, category, imageUrls, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        priceRupees: { type: integer, minimum: 0 }
+        stock: { type: integer, minimum: 0 }
+        available: { type: boolean }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK] }
+        category: { type: string }
+        imageUrls:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ProductInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        priceRupees: { type: integer, minimum: 0, default: 60 }
+        stock: { type: integer, minimum: 0, default: 0 }
+        available: { type: boolean, default: true }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK], default: IN STOCK }
+        category: { type: string }
+        imageUrls:
+          type: array
+          items: { type: string }
+    ProductUpdate:
+      allOf:
+        - $ref: "#/components/schemas/ProductInput"
+    AdminDashboard:
+      type: object
+      required: [availablePuppies, adoptionRequests, pendingOrders, paidOrders, preparingOrders, dispatchedOrders, deliveredOrders, delayedOrders, rescueReports, volunteers, fosterRequests]
+      properties:
+        availablePuppies: { type: integer }
+        adoptionRequests: { type: integer }
+        pendingOrders: { type: integer }
+        paidOrders: { type: integer }
+        preparingOrders: { type: integer }
+        dispatchedOrders: { type: integer }
+        deliveredOrders: { type: integer }
+        delayedOrders: { type: integer }
+        rescueReports: { type: integer }
+        volunteers: { type: integer }
+        fosterRequests: { type: integer }
+    Order:
+      type: object
+      required: [id, orderCode, customerName, phone, email, address, city, state, pinCode, deliveryNotes, subtotalRupees, totalRupees, paymentStatus, status, expectedDelivery, delayReason, deliveryPerson, deliveryPhone, trackingId, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        customerName: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        pinCode: { type: string }
+        deliveryNotes: { type: string }
+        subtotalRupees: { type: integer }
+        deliveryChargeRupees: { type: ["integer", "null"] }
+        totalRupees: { type: integer }
+        paymentStatus: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
+        status: { type: string, enum: [Payment Pending, Payment Verified, Preparing, Ready to Dispatch, Dispatched, Out for Delivery, Delivered, Delayed, Cancelled] }
+        expectedDelivery: { type: ["string", "null"], format: date }
+        delayReason: { type: string }
+        deliveryPerson: { type: string }
+        deliveryPhone: { type: string }
+        trackingId: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    OrderInput:
+      type: object
+      required: [customerName, phone, email, address, city, state, pinCode, items, paymentDone]
+      properties:
+        customerName: { type: string, minLength: 2 }
+        phone: { type: string, minLength: 6 }
+        email: { type: string, format: email }
+        address: { type: string, minLength: 5 }
+        city: { type: string, minLength: 2 }
+        state: { type: string, minLength: 2 }
+        pinCode: { type: string, minLength: 4 }
+        deliveryNotes: { type: string }
+        paymentDone: { type: boolean, enum: [true] }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: string, format: uuid }
+              quantity: { type: integer, minimum: 1, maximum: 99 }
+    OrderItem:
+      type: object
+      required: [productName, productImageUrl, quantity, unitPriceRupees]
+      properties:
+        productId: { type: ["string", "null"], format: uuid }
+        productName: { type: string }
+        productImageUrl: { type: string }
+        quantity: { type: integer }
+        unitPriceRupees: { type: integer }
+    OrderDetail:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/OrderItem" }
+            deliveries:
+              type: array
+              items: { type: object }
+    Payment:
+      type: object
+      required: [id, orderId, provider, paymentId, status, amountPaise, verifiedAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        provider: { type: string }
+        paymentId: { type: string }
+        status: { type: string }
+        amountPaise: { type: integer }
+        verifiedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    PaymentVerification:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
+        paymentId: { type: string }
+    OrderUpdate:
+      type: object
+      properties:
+        status: { type: string }
+        expectedDelivery: { type: ["string", "null"], format: date }
+        delayReason: { type: string }
+        deliveryPerson: { type: string }
+        deliveryPhone: { type: string }
+        trackingId: { type: string }
+        deliveryNotes: { type: string }
+    RescueReportInput:
+      type: object
+      required: [reporterName, email, location, details]
+      properties:
+        reporterName: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        location: { type: string, minLength: 2 }
+        details: { type: string, minLength: 10 }
+        category: { type: string }
+        urgency: { type: string }
+    VolunteerInput:
+      type: object
+      required: [name, email, interest]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        interest: { type: string }
+        message: { type: string }
+    FosterInput:
+      type: object
+      required: [name, email, city]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        city: { type: string }
+        message: { type: string }
+    SubmissionReceipt:
+      type: object
+      required: [id, message]
+      properties:
+        id: { type: string, format: uuid }
+        message: { type: string }
