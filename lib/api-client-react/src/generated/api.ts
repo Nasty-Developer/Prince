@@ -32,7 +32,11 @@ import type {
   ListPuppiesParams,
   NotFoundResponse,
   Order,
+  OrderDetail,
+  OrderInput,
   OrderUpdate,
+  Payment,
+  PaymentVerification,
   Product,
   ProductInput,
   ProductUpdate,
@@ -530,6 +534,154 @@ export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TE
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetProductQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateOrderUrl = () => {
+
+
+
+
+  return `/api/orders`
+}
+
+/**
+ * @summary Create a UPI order pending manual verification
+ */
+export const createOrder = async (orderInput: OrderInput, options?: Parameters<typeof customFetch>[1]): Promise<Order> => {
+
+  return customFetch<Order>(getCreateOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(orderInput)
+  }
+);}
+
+
+
+
+
+export const getCreateOrderMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<OrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<OrderInput>}, TContext> => {
+
+const mutationKey = ['createOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrder>>, {data: BodyType<OrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createOrder>>>
+    export type CreateOrderMutationBody = BodyType<OrderInput>
+    export type CreateOrderMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse>
+
+    /**
+ * @summary Create a UPI order pending manual verification
+ */
+export const useCreateOrder = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<OrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createOrder>>,
+        TError,
+        {data: BodyType<OrderInput>},
+        TContext
+      > => {
+      return useMutation(getCreateOrderMutationOptions(options));
+    }
+
+export const getGetOrderTrackingUrl = (orderCode: string,) => {
+
+
+
+
+  return `/api/orders/${orderCode}`
+}
+
+/**
+ * @summary Get an order tracking view for its owner
+ */
+export const getOrderTracking = async (orderCode: string, options?: Parameters<typeof customFetch>[1]): Promise<OrderDetail> => {
+
+  return customFetch<OrderDetail>(getGetOrderTrackingUrl(orderCode),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrderTrackingQueryKey = (orderCode: string,) => {
+    return [
+    `/api/orders/${orderCode}`
+    ] as const;
+    }
+
+
+export const getGetOrderTrackingQueryOptions = <TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(orderCode: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrderTrackingQueryKey(orderCode);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrderTracking>>> = ({ signal }) => getOrderTracking(orderCode, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: orderCode !== null && orderCode !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrderTrackingQueryResult = NonNullable<Awaited<ReturnType<typeof getOrderTracking>>>
+export type GetOrderTrackingQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Get an order tracking view for its owner
+ */
+
+export function useGetOrderTracking<TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ orderCode: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrderTrackingQueryOptions(orderCode,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1498,6 +1650,83 @@ export function useListAdminOrders<TData = Awaited<ReturnType<typeof listAdminOr
 
 
 
+export const getGetAdminOrderUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/orders/${id}`
+}
+
+/**
+ * @summary Get an order with its items and delivery records
+ */
+export const getAdminOrder = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<OrderDetail> => {
+
+  return customFetch<OrderDetail>(getGetAdminOrderUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminOrderQueryKey = (id: string,) => {
+    return [
+    `/api/admin/orders/${id}`
+    ] as const;
+    }
+
+
+export const getGetAdminOrderQueryOptions = <TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminOrderQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminOrder>>> = ({ signal }) => getAdminOrder(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminOrderQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminOrder>>>
+export type GetAdminOrderQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Get an order with its items and delivery records
+ */
+
+export function useGetAdminOrder<TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminOrderQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getUpdateAdminOrderUrl = (id: string,) => {
 
 
@@ -1568,6 +1797,78 @@ export const useUpdateAdminOrder = <TError = ErrorType<UnauthorizedResponse | Fo
         TContext
       > => {
       return useMutation(getUpdateAdminOrderMutationOptions(options));
+    }
+
+export const getVerifyOrderPaymentUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/payment`
+}
+
+/**
+ * @summary Verify an order payment manually
+ */
+export const verifyOrderPayment = async (id: string,
+    paymentVerification: PaymentVerification, options?: Parameters<typeof customFetch>[1]): Promise<Payment> => {
+
+  return customFetch<Payment>(getVerifyOrderPaymentUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(paymentVerification)
+  }
+);}
+
+
+
+
+
+export const getVerifyOrderPaymentMutationOptions = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyOrderPayment>>, TError,{id: string;data: BodyType<PaymentVerification>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyOrderPayment>>, TError,{id: string;data: BodyType<PaymentVerification>}, TContext> => {
+
+const mutationKey = ['verifyOrderPayment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyOrderPayment>>, {id: string;data: BodyType<PaymentVerification>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  verifyOrderPayment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyOrderPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof verifyOrderPayment>>>
+    export type VerifyOrderPaymentMutationBody = BodyType<PaymentVerification>
+    export type VerifyOrderPaymentMutationError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+    /**
+ * @summary Verify an order payment manually
+ */
+export const useVerifyOrderPayment = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyOrderPayment>>, TError,{id: string;data: BodyType<PaymentVerification>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyOrderPayment>>,
+        TError,
+        {id: string;data: BodyType<PaymentVerification>},
+        TContext
+      > => {
+      return useMutation(getVerifyOrderPaymentMutationOptions(options));
     }
 
 export const getCreateRescueReportUrl = () => {

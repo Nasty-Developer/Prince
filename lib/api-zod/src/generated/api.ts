@@ -36,6 +36,7 @@ export const ListPuppiesResponseItem = zod.object({
   "adoptionInfo": zod.string(),
   "healthInfo": zod.string(),
   "vaccinationInfo": zod.string(),
+  "rescueStory": zod.string(),
   "status": zod.string(),
   "notes": zod.string(),
   "imageUrls": zod.array(zod.string()),
@@ -64,6 +65,7 @@ export const GetPuppyResponse = zod.object({
   "adoptionInfo": zod.string(),
   "healthInfo": zod.string(),
   "vaccinationInfo": zod.string(),
+  "rescueStory": zod.string(),
   "status": zod.string(),
   "notes": zod.string(),
   "imageUrls": zod.array(zod.string()),
@@ -139,6 +141,7 @@ export const ListProductsResponseItem = zod.object({
   "priceRupees": zod.number().int().min(listProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listProductsResponseStockMin),
   "available": zod.boolean(),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
   "imageUrls": zod.array(zod.string()),
   "createdAt": zod.coerce.date(),
@@ -167,11 +170,118 @@ export const GetProductResponse = zod.object({
   "priceRupees": zod.number().int().min(getProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(getProductResponseStockMin),
   "available": zod.boolean(),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
   "imageUrls": zod.array(zod.string()),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
+
+
+/**
+ * @summary Create a UPI order pending manual verification
+ */
+export const createOrderBodyCustomerNameMin = 2;
+
+export const createOrderBodyPhoneMin = 6;
+
+export const createOrderBodyAddressMin = 5;
+
+export const createOrderBodyCityMin = 2;
+
+export const createOrderBodyStateMin = 2;
+
+export const createOrderBodyPinCodeMin = 4;
+
+export const createOrderBodyItemsItemQuantityMax = 99;
+
+
+
+
+export const CreateOrderBody = zod.object({
+  "customerName": zod.string().min(createOrderBodyCustomerNameMin),
+  "phone": zod.string().min(createOrderBodyPhoneMin),
+  "email": zod.string().email(),
+  "address": zod.string().min(createOrderBodyAddressMin),
+  "city": zod.string().min(createOrderBodyCityMin),
+  "state": zod.string().min(createOrderBodyStateMin),
+  "pinCode": zod.string().min(createOrderBodyPinCodeMin),
+  "deliveryNotes": zod.string().optional(),
+  "paymentDone": zod.literal(true),
+  "items": zod.array(zod.object({
+  "productId": zod.string().uuid(),
+  "quantity": zod.number().int().min(1).max(createOrderBodyItemsItemQuantityMax)
+})).min(1)
+})
+
+export const CreateOrderResponse = zod.object({
+  "id": zod.string().uuid(),
+  "orderCode": zod.string(),
+  "customerName": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "pinCode": zod.string(),
+  "deliveryNotes": zod.string(),
+  "subtotalRupees": zod.number().int(),
+  "deliveryChargeRupees": zod.number().int().nullish(),
+  "totalRupees": zod.number().int(),
+  "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "expectedDelivery": zod.coerce.date().nullable(),
+  "delayReason": zod.string(),
+  "deliveryPerson": zod.string(),
+  "deliveryPhone": zod.string(),
+  "trackingId": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get an order tracking view for its owner
+ */
+export const GetOrderTrackingParams = zod.object({
+  "orderCode": zod.coerce.string()
+})
+
+export const GetOrderTrackingResponse = zod.object({
+  "id": zod.string().uuid(),
+  "orderCode": zod.string(),
+  "customerName": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "pinCode": zod.string(),
+  "deliveryNotes": zod.string(),
+  "subtotalRupees": zod.number().int(),
+  "deliveryChargeRupees": zod.number().int().nullish(),
+  "totalRupees": zod.number().int(),
+  "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "expectedDelivery": zod.coerce.date().nullable(),
+  "delayReason": zod.string(),
+  "deliveryPerson": zod.string(),
+  "deliveryPhone": zod.string(),
+  "trackingId": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "items": zod.array(zod.object({
+  "productId": zod.string().uuid().nullish(),
+  "productName": zod.string(),
+  "productImageUrl": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceRupees": zod.number().int()
+})),
+  "deliveries": zod.array(zod.object({
+
+}).passthrough()).optional()
+}))
 
 
 /**
@@ -207,6 +317,7 @@ export const ListAdminPuppiesResponseItem = zod.object({
   "adoptionInfo": zod.string(),
   "healthInfo": zod.string(),
   "vaccinationInfo": zod.string(),
+  "rescueStory": zod.string(),
   "status": zod.string(),
   "notes": zod.string(),
   "imageUrls": zod.array(zod.string()),
@@ -233,6 +344,7 @@ export const CreatePuppyBody = zod.object({
   "adoptionInfo": zod.string().optional(),
   "healthInfo": zod.string().optional(),
   "vaccinationInfo": zod.string().optional(),
+  "rescueStory": zod.string().optional(),
   "status": zod.string().optional(),
   "notes": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
@@ -250,6 +362,7 @@ export const CreatePuppyResponse = zod.object({
   "adoptionInfo": zod.string(),
   "healthInfo": zod.string(),
   "vaccinationInfo": zod.string(),
+  "rescueStory": zod.string(),
   "status": zod.string(),
   "notes": zod.string(),
   "imageUrls": zod.array(zod.string()),
@@ -279,6 +392,7 @@ export const UpdatePuppyBody = zod.object({
   "adoptionInfo": zod.string().optional(),
   "healthInfo": zod.string().optional(),
   "vaccinationInfo": zod.string().optional(),
+  "rescueStory": zod.string().optional(),
   "status": zod.string().optional(),
   "notes": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
@@ -296,6 +410,7 @@ export const UpdatePuppyResponse = zod.object({
   "adoptionInfo": zod.string(),
   "healthInfo": zod.string(),
   "vaccinationInfo": zod.string(),
+  "rescueStory": zod.string(),
   "status": zod.string(),
   "notes": zod.string(),
   "imageUrls": zod.array(zod.string()),
@@ -434,6 +549,7 @@ export const ListAdminProductsResponseItem = zod.object({
   "priceRupees": zod.number().int().min(listAdminProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listAdminProductsResponseStockMin),
   "available": zod.boolean(),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
   "imageUrls": zod.array(zod.string()),
   "createdAt": zod.coerce.date(),
@@ -453,6 +569,7 @@ export const createProductBodyStockDefault = 0;
 export const createProductBodyStockMin = 0;
 
 export const createProductBodyAvailableDefault = true;
+export const createProductBodyStockStatusDefault = `IN STOCK`;
 
 export const CreateProductBody = zod.object({
   "name": zod.string().min(1),
@@ -460,6 +577,7 @@ export const CreateProductBody = zod.object({
   "priceRupees": zod.number().int().min(createProductBodyPriceRupeesMin).default(createProductBodyPriceRupeesDefault),
   "stock": zod.number().int().min(createProductBodyStockMin).default(createProductBodyStockDefault),
   "available": zod.boolean().default(createProductBodyAvailableDefault),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']).default(createProductBodyStockStatusDefault),
   "category": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
 })
@@ -477,6 +595,7 @@ export const CreateProductResponse = zod.object({
   "priceRupees": zod.number().int().min(createProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(createProductResponseStockMin),
   "available": zod.boolean(),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
   "imageUrls": zod.array(zod.string()),
   "createdAt": zod.coerce.date(),
@@ -499,6 +618,7 @@ export const updateProductBodyOneStockDefault = 0;
 export const updateProductBodyOneStockMin = 0;
 
 export const updateProductBodyOneAvailableDefault = true;
+export const updateProductBodyOneStockStatusDefault = `IN STOCK`;
 
 export const UpdateProductBody = zod.object({
   "name": zod.string().min(1),
@@ -506,6 +626,7 @@ export const UpdateProductBody = zod.object({
   "priceRupees": zod.number().int().min(updateProductBodyOnePriceRupeesMin).default(updateProductBodyOnePriceRupeesDefault),
   "stock": zod.number().int().min(updateProductBodyOneStockMin).default(updateProductBodyOneStockDefault),
   "available": zod.boolean().default(updateProductBodyOneAvailableDefault),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']).default(updateProductBodyOneStockStatusDefault),
   "category": zod.string().optional(),
   "imageUrls": zod.array(zod.string()).optional()
 })
@@ -523,6 +644,7 @@ export const UpdateProductResponse = zod.object({
   "priceRupees": zod.number().int().min(updateProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(updateProductResponseStockMin),
   "available": zod.boolean(),
+  "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
   "imageUrls": zod.array(zod.string()),
   "createdAt": zod.coerce.date(),
@@ -557,8 +679,8 @@ export const ListAdminOrdersResponseItem = zod.object({
   "subtotalRupees": zod.number().int(),
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
-  "paymentStatus": zod.string(),
-  "status": zod.string(),
+  "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -568,6 +690,50 @@ export const ListAdminOrdersResponseItem = zod.object({
   "updatedAt": zod.coerce.date()
 })
 export const ListAdminOrdersResponse = zod.array(ListAdminOrdersResponseItem)
+
+
+/**
+ * @summary Get an order with its items and delivery records
+ */
+export const GetAdminOrderParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const GetAdminOrderResponse = zod.object({
+  "id": zod.string().uuid(),
+  "orderCode": zod.string(),
+  "customerName": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "pinCode": zod.string(),
+  "deliveryNotes": zod.string(),
+  "subtotalRupees": zod.number().int(),
+  "deliveryChargeRupees": zod.number().int().nullish(),
+  "totalRupees": zod.number().int(),
+  "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "expectedDelivery": zod.coerce.date().nullable(),
+  "delayReason": zod.string(),
+  "deliveryPerson": zod.string(),
+  "deliveryPhone": zod.string(),
+  "trackingId": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "items": zod.array(zod.object({
+  "productId": zod.string().uuid().nullish(),
+  "productName": zod.string(),
+  "productImageUrl": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceRupees": zod.number().int()
+})),
+  "deliveries": zod.array(zod.object({
+
+}).passthrough()).optional()
+}))
 
 
 /**
@@ -601,8 +767,8 @@ export const UpdateAdminOrderResponse = zod.object({
   "subtotalRupees": zod.number().int(),
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
-  "paymentStatus": zod.string(),
-  "status": zod.string(),
+  "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -610,6 +776,30 @@ export const UpdateAdminOrderResponse = zod.object({
   "trackingId": zod.string(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Verify an order payment manually
+ */
+export const VerifyOrderPaymentParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const VerifyOrderPaymentBody = zod.object({
+  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
+  "paymentId": zod.string().optional()
+})
+
+export const VerifyOrderPaymentResponse = zod.object({
+  "id": zod.string().uuid(),
+  "orderId": zod.string().uuid(),
+  "provider": zod.string(),
+  "paymentId": zod.string(),
+  "status": zod.string(),
+  "amountPaise": zod.number().int(),
+  "verifiedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
 })
 
 

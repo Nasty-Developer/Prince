@@ -25,6 +25,7 @@ export interface Puppy {
   adoptionInfo: string;
   healthInfo: string;
   vaccinationInfo: string;
+  rescueStory: string;
   status: string;
   notes: string;
   imageUrls: string[];
@@ -44,6 +45,7 @@ export interface PuppyInput {
   adoptionInfo?: string;
   healthInfo?: string;
   vaccinationInfo?: string;
+  rescueStory?: string;
   status?: string;
   notes?: string;
   imageUrls?: string[];
@@ -96,6 +98,15 @@ export interface AdoptionRequestUpdate {
   internalNotes?: string;
 }
 
+export type ProductStockStatus = typeof ProductStockStatus[keyof typeof ProductStockStatus];
+
+
+export const ProductStockStatus = {
+  IN_STOCK: 'IN STOCK',
+  LOW_STOCK: 'LOW STOCK',
+  NO_STOCK: 'NO STOCK',
+} as const;
+
 export interface Product {
   id: string;
   name: string;
@@ -105,11 +116,21 @@ export interface Product {
   /** @minimum 0 */
   stock: number;
   available: boolean;
+  stockStatus: ProductStockStatus;
   category: string;
   imageUrls: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+export type ProductInputStockStatus = typeof ProductInputStockStatus[keyof typeof ProductInputStockStatus];
+
+
+export const ProductInputStockStatus = {
+  IN_STOCK: 'IN STOCK',
+  LOW_STOCK: 'LOW STOCK',
+  NO_STOCK: 'NO STOCK',
+} as const;
 
 export interface ProductInput {
   /** @minLength 1 */
@@ -120,6 +141,7 @@ export interface ProductInput {
   /** @minimum 0 */
   stock?: number;
   available?: boolean;
+  stockStatus?: ProductInputStockStatus;
   category?: string;
   imageUrls?: string[];
 }
@@ -140,6 +162,31 @@ export interface AdminDashboard {
   fosterRequests: number;
 }
 
+export type OrderPaymentStatus = typeof OrderPaymentStatus[keyof typeof OrderPaymentStatus];
+
+
+export const OrderPaymentStatus = {
+  Payment_Pending: 'Payment Pending',
+  Payment_Verified: 'Payment Verified',
+  Payment_Failed: 'Payment Failed',
+  Payment_Refunded: 'Payment Refunded',
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  Payment_Pending: 'Payment Pending',
+  Payment_Verified: 'Payment Verified',
+  Preparing: 'Preparing',
+  Ready_to_Dispatch: 'Ready to Dispatch',
+  Dispatched: 'Dispatched',
+  Out_for_Delivery: 'Out for Delivery',
+  Delivered: 'Delivered',
+  Delayed: 'Delayed',
+  Cancelled: 'Cancelled',
+} as const;
+
 export interface Order {
   id: string;
   orderCode: string;
@@ -155,8 +202,8 @@ export interface Order {
   /** @nullable */
   deliveryChargeRupees?: number | null;
   totalRupees: number;
-  paymentStatus: string;
-  status: string;
+  paymentStatus: OrderPaymentStatus;
+  status: OrderStatus;
   /** @nullable */
   expectedDelivery: string | null;
   delayReason: string;
@@ -165,6 +212,78 @@ export interface Order {
   trackingId: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export type OrderInputItemsItem = {
+  productId: string;
+  /**
+     * @minimum 1
+     * @maximum 99
+     */
+  quantity: number;
+};
+
+export interface OrderInput {
+  /** @minLength 2 */
+  customerName: string;
+  /** @minLength 6 */
+  phone: string;
+  email: string;
+  /** @minLength 5 */
+  address: string;
+  /** @minLength 2 */
+  city: string;
+  /** @minLength 2 */
+  state: string;
+  /** @minLength 4 */
+  pinCode: string;
+  deliveryNotes?: string;
+  paymentDone: true;
+  /** @minItems 1 */
+  items: OrderInputItemsItem[];
+}
+
+export interface OrderItem {
+  /** @nullable */
+  productId?: string | null;
+  productName: string;
+  productImageUrl: string;
+  quantity: number;
+  unitPriceRupees: number;
+}
+
+export type OrderDetailDeliveriesItem = { [key: string]: unknown };
+
+export type OrderDetail = Order & {
+  items: OrderItem[];
+  deliveries?: OrderDetailDeliveriesItem[];
+};
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  provider: string;
+  paymentId: string;
+  status: string;
+  amountPaise: number;
+  /** @nullable */
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
+export type PaymentVerificationStatus = typeof PaymentVerificationStatus[keyof typeof PaymentVerificationStatus];
+
+
+export const PaymentVerificationStatus = {
+  Payment_Pending: 'Payment Pending',
+  Payment_Verified: 'Payment Verified',
+  Payment_Failed: 'Payment Failed',
+  Payment_Refunded: 'Payment Refunded',
+} as const;
+
+export interface PaymentVerification {
+  status: PaymentVerificationStatus;
+  paymentId?: string;
 }
 
 export interface OrderUpdate {

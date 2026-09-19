@@ -5,6 +5,8 @@
  * SaveStreet Dogs public and admin API
  * OpenAPI spec version: 0.2.0
  */
+import type { OrderPaymentStatus } from './orderPaymentStatus';
+import type { OrderStatus } from './orderStatus';
 
 export interface Order {
   id: string;
@@ -21,8 +23,8 @@ export interface Order {
   /** @nullable */
   deliveryChargeRupees?: number | null;
   totalRupees: number;
-  paymentStatus: string;
-  status: string;
+  paymentStatus: OrderPaymentStatus;
+  status: OrderStatus;
   /** @nullable */
   expectedDelivery: Date | null;
   delayReason: string;

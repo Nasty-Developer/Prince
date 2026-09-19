@@ -28,6 +28,7 @@ export const puppiesTable = pgTable("puppies", {
   adoptionInfo: text("adoption_info").notNull().default(""),
   healthInfo: text("health_info").notNull().default(""),
   vaccinationInfo: text("vaccination_info").notNull().default(""),
+  rescueStory: text("rescue_story").notNull().default(""),
   status: text("status").notNull().default("Available"),
   notes: text("notes").notNull().default(""),
   imageUrls: jsonb("image_urls").$type<string[]>().notNull().default([]),
@@ -60,6 +61,7 @@ export const productsTable = pgTable("products", {
   priceRupees: integer("price_rupees").notNull().default(60),
   stock: integer("stock").notNull().default(0),
   available: boolean("available").notNull().default(true),
+  stockStatus: text("stock_status").notNull().default("IN STOCK"),
   category: text("category").notNull().default("Mission goods"),
   imageUrls: jsonb("image_urls").$type<string[]>().notNull().default([]),
   ...timestamps,
@@ -103,7 +105,7 @@ export const orderItemsTable = pgTable("order_items", {
 export const paymentsTable = pgTable("payments", {
   id: uuid("id").defaultRandom().primaryKey(),
   orderId: uuid("order_id").notNull().references(() => ordersTable.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull().default("razorpay"),
+  provider: text("provider").notNull().default("UPI"),
   paymentId: text("payment_id").notNull().default(""),
   status: text("status").notNull().default("Payment Pending"),
   amountPaise: integer("amount_paise").notNull(),
@@ -185,7 +187,8 @@ export const insertWebsiteSettingSchema = createInsertSchema(websiteSettingsTabl
 export const puppyStatusSchema = z.enum(["Available", "Under Care", "Foster Needed", "Adoption Pending", "Adopted", "Archived"]);
 export const adoptionRequestStatusSchema = z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed", "Cancelled"]);
 export const orderStatusSchema = z.enum(["Payment Pending", "Payment Verified", "Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered", "Delayed", "Cancelled"]);
-export const paymentStatusSchema = z.enum(["Payment Pending", "Payment Processing", "Payment Successful", "Payment Failed", "Payment Refunded"]);
+export const paymentStatusSchema = z.enum(["Payment Pending", "Payment Verified", "Payment Failed", "Payment Refunded"]);
+export const productStockStatusSchema = z.enum(["IN STOCK", "LOW STOCK", "NO STOCK"]);
 
 export type Puppy = typeof puppiesTable.$inferSelect;
 export type InsertPuppy = z.infer<typeof insertPuppySchema>;

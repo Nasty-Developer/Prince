@@ -18,6 +18,7 @@ export interface Puppy {
   adoptionInfo: string;
   healthInfo: string;
   vaccinationInfo: string;
+  rescueStory: string;
   status: string;
   notes: string;
   imageUrls: string[];

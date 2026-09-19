@@ -5,6 +5,7 @@
  * SaveStreet Dogs public and admin API
  * OpenAPI spec version: 0.2.0
  */
+import type { ProductStockStatus } from './productStockStatus';
 
 export interface Product {
   id: string;
@@ -15,6 +16,7 @@ export interface Product {
   /** @minimum 0 */
   stock: number;
   available: boolean;
+  stockStatus: ProductStockStatus;
   category: string;
   imageUrls: string[];
   createdAt: Date;

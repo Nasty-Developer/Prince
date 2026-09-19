@@ -111,6 +111,48 @@ paths:
               schema: { $ref: "#/components/schemas/Product" }
         "404":
           $ref: "#/components/responses/NotFound"
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a UPI order pending manual verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderInput" }
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /orders/{orderCode}:
+    get:
+      operationId: getOrderTracking
+      tags: [orders]
+      summary: Get an order tracking view for its owner
+      parameters:
+        - in: path
+          name: orderCode
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Order tracking details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderDetail" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /admin/dashboard:
     get:
       operationId: getAdminDashboard
@@ -350,6 +392,24 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
   /admin/orders/{id}:
+    get:
+      operationId: getAdminOrder
+      tags: [admin, orders]
+      summary: Get an order with its items and delivery records
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderDetail" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
     patch:
       operationId: updateAdminOrder
       tags: [admin, orders]
@@ -367,6 +427,31 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/orders/{id}/payment:
+    patch:
+      operationId: verifyOrderPayment
+      tags: [admin, orders]
+      summary: Verify an order payment manually
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentVerification"
+      responses:
+        "200":
+          description: Payment status recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payment" }
         "404":
           $ref: "#/components/responses/NotFound"
         "401":
@@ -466,7 +551,7 @@ components:
         error: { type: string }
     Puppy:
       type: object
-      required: [id, name, location, age, gender, size, temperament, description, adoptionInfo, healthInfo, vaccinationInfo, status, notes, imageUrls, createdAt, updatedAt]
+      required: [id, name, location, age, gender, size, temperament, description, adoptionInfo, healthInfo, vaccinationInfo, rescueStory, status, notes, imageUrls, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
@@ -479,6 +564,7 @@ components:
         adoptionInfo: { type: string }
         healthInfo: { type: string }
         vaccinationInfo: { type: string }
+        rescueStory: { type: string }
         status: { type: string }
         notes: { type: string }
         imageUrls:
@@ -500,6 +586,7 @@ components:
         adoptionInfo: { type: string }
         healthInfo: { type: string }
         vaccinationInfo: { type: string }
+        rescueStory: { type: string }
         status: { type: string }
         notes: { type: string }
         imageUrls:
@@ -551,7 +638,7 @@ components:
         internalNotes: { type: string }
     Product:
       type: object
-      required: [id, name, description, priceRupees, stock, available, category, imageUrls, createdAt, updatedAt]
+      required: [id, name, description, priceRupees, stock, available, stockStatus, category, imageUrls, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
@@ -559,6 +646,7 @@ components:
         priceRupees: { type: integer, minimum: 0 }
         stock: { type: integer, minimum: 0 }
         available: { type: boolean }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK] }
         category: { type: string }
         imageUrls:
           type: array
@@ -574,6 +662,7 @@ components:
         priceRupees: { type: integer, minimum: 0, default: 60 }
         stock: { type: integer, minimum: 0, default: 0 }
         available: { type: boolean, default: true }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK], default: IN STOCK }
         category: { type: string }
         imageUrls:
           type: array
@@ -613,8 +702,8 @@ components:
         subtotalRupees: { type: integer }
         deliveryChargeRupees: { type: ["integer", "null"] }
         totalRupees: { type: integer }
-        paymentStatus: { type: string }
-        status: { type: string }
+        paymentStatus: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
+        status: { type: string, enum: [Payment Pending, Payment Verified, Preparing, Ready to Dispatch, Dispatched, Out for Delivery, Delivered, Delayed, Cancelled] }
         expectedDelivery: { type: ["string", "null"], format: date }
         delayReason: { type: string }
         deliveryPerson: { type: string }
@@ -622,6 +711,67 @@ components:
         trackingId: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    OrderInput:
+      type: object
+      required: [customerName, phone, email, address, city, state, pinCode, items, paymentDone]
+      properties:
+        customerName: { type: string, minLength: 2 }
+        phone: { type: string, minLength: 6 }
+        email: { type: string, format: email }
+        address: { type: string, minLength: 5 }
+        city: { type: string, minLength: 2 }
+        state: { type: string, minLength: 2 }
+        pinCode: { type: string, minLength: 4 }
+        deliveryNotes: { type: string }
+        paymentDone: { type: boolean, enum: [true] }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: string, format: uuid }
+              quantity: { type: integer, minimum: 1, maximum: 99 }
+    OrderItem:
+      type: object
+      required: [productName, productImageUrl, quantity, unitPriceRupees]
+      properties:
+        productId: { type: ["string", "null"], format: uuid }
+        productName: { type: string }
+        productImageUrl: { type: string }
+        quantity: { type: integer }
+        unitPriceRupees: { type: integer }
+    OrderDetail:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/OrderItem" }
+            deliveries:
+              type: array
+              items: { type: object }
+    Payment:
+      type: object
+      required: [id, orderId, provider, paymentId, status, amountPaise, verifiedAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        provider: { type: string }
+        paymentId: { type: string }
+        status: { type: string }
+        amountPaise: { type: integer }
+        verifiedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    PaymentVerification:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
+        paymentId: { type: string }
     OrderUpdate:
       type: object
       properties:
