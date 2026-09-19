@@ -1,0 +1,249 @@
+URGENT — THE PUBLIC PRODUCTS PAGE IS BROKEN. FIX THE REAL PRODUCT DATA, IMAGE MAPPING, PRICE, AND LAYOUT.
+
+I just checked the live /products page and the product is NOT rendering correctly.
+
+CURRENT PROBLEMS VISIBLE:
+- Product image is showing as an orange placeholder/circle instead of the actual uploaded product image.
+- Product name is displaying corrupted/gibberish text.
+- Product description is displaying corrupted/gibberish text.
+- Price is showing something like ₹60546 instead of the actual INR price.
+- Product card text is overlapping/broken.
+- The public product page is not correctly rendering the real product record.
+
+DO NOT CREATE A NEW PRODUCT SYSTEM.
+DO NOT USE MOCK DATA.
+DO NOT REBUILD THE WEBSITE FROM SCRATCH.
+
+FIX THE EXISTING PRODUCT PIPELINE END-TO-END.
+
+==================================================
+1. REAL PRODUCT DATA
+==================================================
+
+Trace the product data from:
+
+Database
+→ API/backend
+→ API response
+→ frontend product model
+→ /products page
+
+Find why the product name and description are becoming gibberish.
+
+The public page must show the EXACT stored product name and description from the database.
+
+Do not transform, truncate, encode, decode, or corrupt the strings.
+
+==================================================
+2. PRICE FIX — VERY IMPORTANT
+==================================================
+
+Product price is:
+
+₹60 PER PIECE.
+
+The public site must display:
+
+₹60
+
+NOT:
+₹6000
+₹60546
+60 paise
+or any other incorrect value.
+
+Quantity calculation must be:
+
+1 × ₹60 = ₹60
+2 × ₹60 = ₹120
+3 × ₹60 = ₹180
+4 × ₹60 = ₹240
+
+The application's user-facing price must be treated as INR/RUPEES.
+
+If the backend currently has fields such as pricePaise, inspect the existing schema and fix the conversion so the UI does NOT display the internal storage amount incorrectly.
+
+If an internal payment gateway later requires paise, conversion should happen ONLY at the payment boundary.
+
+Do NOT display internal paise values in the Shop, Cart, Checkout, Admin or Orders UI.
+
+==================================================
+3. PRODUCT IMAGE FIX — CRITICAL
+==================================================
+
+The attached real product images must be used.
+
+When a product is created or updated:
+
+Product record
+→ exact image reference
+→ persistent image storage
+→ API returns exact image
+→ frontend renders exact image
+
+Do NOT show the orange placeholder/circle when a real product image exists.
+
+Do NOT use a shared default image if the product has a real image.
+
+Do NOT accidentally use the SaveStreet Dogs logo as the product image.
+
+Each product must keep its OWN correct image.
+
+Verify:
+- Admin product image preview
+- Admin product list image
+- Public Shop image
+- Product Details image
+- Cart image
+- Order image
+
+The exact same correct image must appear everywhere.
+
+If stored image paths are relative/object paths, normalize them correctly before rendering on the public page.
+
+Do not use temporary browser object URLs as permanent image URLs.
+
+==================================================
+4. PRODUCT CARD UI FIX
+==================================================
+
+Fix the broken product card layout shown on /products.
+
+Make sure:
+- Image stays inside its image container
+- Product name is readable
+- Description is readable
+- Price is readable
+- Add to Cart button is correctly positioned
+- No text overlaps
+- No clipping
+- No broken typography
+- No excessive whitespace
+- Card remains responsive
+
+Use the existing SaveStreet Dogs design language.
+
+==================================================
+5. PRODUCT DETAILS
+==================================================
+
+When clicking a product:
+
+Open the real product details page.
+
+Show:
+- Correct image
+- Correct product name
+- Correct description
+- Correct ₹ price
+- Stock status
+- Quantity selector
+- Add to Cart
+
+Do not create a separate fake/static product detail object.
+
+Use the SAME real database product record.
+
+==================================================
+6. STOCK STATUS
+==================================================
+
+The product must support exactly:
+
+IN STOCK
+LOW STOCK
+NO STOCK
+
+IN STOCK:
+- Purchasable
+- Add to Cart enabled
+
+LOW STOCK:
+- Purchasable
+- Show Low Stock
+
+NO STOCK:
+- Add to Cart disabled
+- Show No Stock
+
+Persist this in the database.
+
+==================================================
+7. ATTACHED IMAGES
+==================================================
+
+I already attached the real product images to the project.
+
+DO NOT ask me to upload them again.
+
+Find the existing attached image files in the project and correctly map them to their respective products.
+
+Also remember:
+
+savedogs logo.jpg = SaveStreet Dogs logo only.
+
+Do NOT use the logo as a product image.
+
+The UPI scanner image is for payment/checkout only.
+
+Do NOT use the scanner image as a product image.
+
+==================================================
+8. REMOVE CORRUPTED DATA
+==================================================
+
+Identify the current corrupted/gibberish product record(s).
+
+If they are fake/demo records, remove/archive them.
+
+Do NOT invent replacement product data.
+
+Use the actual attached product images and real product information.
+
+==================================================
+9. END-TO-END TEST
+==================================================
+
+Test this exact flow:
+
+Admin
+→ Products
+→ Add/Edit Product
+→ Upload correct image
+→ Enter product name
+→ Enter ₹60
+→ Select stock status
+→ Save
+
+Then verify:
+
+Admin list
+→ correct image
+→ correct name
+→ correct ₹60
+
+Public /products
+→ correct image
+→ correct name
+→ correct description
+→ ₹60
+→ Add to Cart works
+
+Cart
+→ correct product
+→ correct image
+→ correct quantity
+→ correct total
+
+Quantity tests:
+
+1 = ₹60
+2 = ₹120
+3 = ₹180
+
+Do NOT stop after changing CSS.
+
+Find and fix the actual data/API/image/price pipeline causing the broken product rendering.
+
+FINAL ACCEPTANCE:
+The /products page must look clean and must show the real product image, real product name, real description and correct INR price of ₹60 per piece.

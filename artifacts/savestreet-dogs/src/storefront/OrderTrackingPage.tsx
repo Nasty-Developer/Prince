@@ -31,11 +31,28 @@ function formatDate(value?: string) {
 }
 
 function normaliseItems(order: TrackedOrder): OrderProduct[] {
-  return order.items ?? order.products ?? [];
+  return (order.items ?? order.products ?? []).map((item) => ({
+    ...item,
+    name: item.name ?? item.productName,
+    imagePath: item.imagePath ?? item.imageUrl ?? item.productImageUrl,
+    unitPriceRupees: item.unitPriceRupees ?? item.priceRupees,
+  }));
 }
 
 function normaliseTimeline(order: TrackedOrder): OrderTimelineEntry[] {
-  return order.timeline ?? order.statusTimeline ?? [];
+  if (order.timeline?.length || order.statusTimeline?.length) return order.timeline ?? order.statusTimeline ?? [];
+  const statuses = ["Payment Pending", "Payment Verified", "Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered"];
+  const current = order.orderStatus ?? order.status ?? "Payment Pending";
+  const currentIndex = statuses.indexOf(current);
+  const timeline: OrderTimelineEntry[] = statuses.map((status, index) => ({
+    status,
+    label: status,
+    completed: current === "Delayed" ? index < Math.max(0, statuses.indexOf("Dispatched")) : currentIndex >= 0 && index <= currentIndex,
+    current: status === current,
+    date: index === 0 ? order.createdAt : undefined,
+  }));
+  if (current === "Delayed") timeline.push({ status: "Delayed", label: "Delayed", description: order.delayReason, completed: false, current: true, date: order.updatedAt });
+  return timeline;
 }
 
 function StateCard({ title, text, action }: { title: string; text: string; action?: ReactNode }) {
@@ -135,7 +152,8 @@ export default function OrderTrackingPage() {
   const total = Number(firstDefined(order.totalRupees, order.total, items.reduce((sum, item) => sum + Number(item.totalRupees ?? (item.quantity ?? 0) * Number(item.unitPriceRupees ?? item.priceRupees ?? 0)), 0)) ?? 0);
   const destination = order.delivery;
   const deliveryNotes = destination?.notes ?? order.deliveryNotes;
-  const expectedDate = order.expectedDate ?? order.estimatedDeliveryDate;
+  const expectedDate = order.expectedDate ?? order.estimatedDeliveryDate ?? order.expectedDelivery;
+  const currentStatus = order.orderStatus ?? order.status;
 
   return (
     <main className="storefront-page">
@@ -147,7 +165,7 @@ export default function OrderTrackingPage() {
           </div>
           <div className="storefront-order-meta">
             <span className="storefront-pill">{order.orderCode ?? orderCode}</span>
-            {order.orderStatus && <span className="storefront-pill">{titleCase(order.orderStatus)}</span>}
+            {currentStatus && <span className="storefront-pill">{titleCase(currentStatus)}</span>}
           </div>
         </header>
 
@@ -198,7 +216,7 @@ export default function OrderTrackingPage() {
 
           <aside className="storefront-summary">
             <p className="storefront-kicker">Delivery status</p>
-            <h2>{titleCase(order.orderStatus)}</h2>
+            <h2>{titleCase(currentStatus)}</h2>
             {expectedDate && <p className="storefront-summary-note"><CalendarDays size={14} style={{ verticalAlign: "middle", marginRight: 6 }} /> Expected {formatDate(expectedDate)}</p>}
             {order.delayReason && <div className="storefront-alert" style={{ marginTop: 18 }}>{order.delayReason}</div>}
             <div className="storefront-timeline">

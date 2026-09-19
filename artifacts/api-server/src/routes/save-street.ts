@@ -19,6 +19,7 @@ import {
   cmsStoriesTable,
   websiteSettingsTable,
   paymentStatusSchema,
+  productStockStatusSchema,
 } from "@workspace/db";
 import {
   CreateAdoptionRequestBody,
@@ -53,6 +54,10 @@ import { requireAdmin, requireUser } from "../middlewares/auth";
 
 const router: IRouter = Router();
 const ACTIVE_PUPPY_STATUSES = ["Available", "Under Care", "Foster Needed", "Adoption Pending"];
+
+function stockStatusFor(stock: number) {
+  return productStockStatusSchema.parse(stock <= 0 ? "NO STOCK" : stock < 5 ? "LOW STOCK" : "IN STOCK");
+}
 
 function puppyResponse(puppy: typeof puppiesTable.$inferSelect) {
   return GetPuppyResponse.parse(puppy);
@@ -228,8 +233,7 @@ router.get("/orders/:orderCode", requireUser, async (req, res): Promise<void> =>
     res.status(404).json({ error: "Order not found" });
     return;
   }
-  const isAdmin = req.firebaseUser?.admin === true || req.firebaseUser?.role === "admin";
-  if (!isAdmin && order.userId !== req.firebaseUser?.uid) {
+  if (order.userId !== req.firebaseUser?.uid) {
     res.status(403).json({ error: "You cannot view this order" });
     return;
   }
@@ -360,7 +364,13 @@ adminRouter.post("/products", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [product] = await db.insert(productsTable).values(parsed.data).returning();
+  const stock = parsed.data.stock ?? 0;
+  const [product] = await db.insert(productsTable).values({
+    ...parsed.data,
+    stock,
+    stockStatus: stockStatusFor(stock),
+    available: stock > 0 && parsed.data.available !== false,
+  }).returning();
   res.status(201).json(productResponse(product));
 });
 
@@ -370,7 +380,16 @@ adminRouter.patch("/products/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [product] = await db.update(productsTable).set({ ...parsed.data, updatedAt: new Date() }).where(eq(productsTable.id, req.params.id)).returning();
+  const nextStock = parsed.data.stock;
+  const [product] = await db.update(productsTable).set({
+    ...parsed.data,
+    ...(nextStock === undefined ? {} : {
+      stock: nextStock,
+      stockStatus: stockStatusFor(nextStock),
+      available: nextStock > 0 && parsed.data.available !== false,
+    }),
+    updatedAt: new Date(),
+  }).where(eq(productsTable.id, req.params.id)).returning();
   if (!product) {
     res.status(404).json({ error: "Product not found" });
     return;
@@ -454,17 +473,35 @@ adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Order not found" });
     return;
   }
-  const [payment] = await db.insert(paymentsTable).values({
-    orderId: order.id,
-    status: status.data,
-    // The application stores order totals in INR. Razorpay's boundary amount is paise.
-    amountPaise: order.totalRupees * 100,
-    paymentId: parsed.data.paymentId ?? "",
-    provider: parsed.data.provider ?? "razorpay",
-    verifiedAt: status.data === "Payment Verified" ? new Date() : null,
-  }).returning();
-  await db.update(ordersTable).set({ paymentStatus: status.data, updatedAt: new Date() }).where(eq(ordersTable.id, order.id));
-  res.status(201).json(payment);
+  const payment = await db.transaction(async (tx) => {
+    const [existingPayment] = await tx.select().from(paymentsTable)
+      .where(eq(paymentsTable.orderId, order.id))
+      .orderBy(desc(paymentsTable.createdAt))
+      .limit(1);
+    const paymentValues = {
+      status: status.data,
+      amountPaise: order.totalRupees * 100,
+      ...(parsed.data.paymentId !== undefined ? { paymentId: parsed.data.paymentId } : {}),
+      ...(parsed.data.provider !== undefined ? { provider: parsed.data.provider } : {}),
+      verifiedAt: status.data === "Payment Verified" ? new Date() : null,
+      updatedAt: new Date(),
+    };
+    const [savedPayment] = existingPayment
+      ? await tx.update(paymentsTable).set(paymentValues).where(eq(paymentsTable.id, existingPayment.id)).returning()
+      : await tx.insert(paymentsTable).values({
+        orderId: order.id,
+        ...paymentValues,
+        paymentId: parsed.data.paymentId ?? "",
+        provider: parsed.data.provider ?? "UPI",
+      }).returning();
+    await tx.update(ordersTable).set({
+      paymentStatus: status.data,
+      ...(status.data === "Payment Verified" && order.status === "Payment Pending" ? { status: "Payment Verified" } : {}),
+      updatedAt: new Date(),
+    }).where(eq(ordersTable.id, order.id));
+    return savedPayment;
+  });
+  res.status(200).json(payment);
 });
 
 adminRouter.patch("/orders/:id/delivery", async (req, res): Promise<void> => {

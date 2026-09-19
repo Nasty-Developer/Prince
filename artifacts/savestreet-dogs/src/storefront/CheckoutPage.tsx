@@ -120,7 +120,7 @@ export default function CheckoutPage({ cart, setCart }: CheckoutPageProps) {
               <ShieldCheck size={24} />
               <h2>Order received.</h2>
               <p>
-                Your request is saved. The SaveStreet team will review the payment and coordinate delivery; this page does not verify payment.
+                 Your order is saved as payment pending. The SaveStreet team will verify the UPI payment and then update the delivery status.
               </p>
               <span className="storefront-code">{order.orderCode}</span>
               <div>

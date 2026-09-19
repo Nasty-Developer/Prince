@@ -1,4 +1,5 @@
-import { auth } from "@/lib/firebase";
+import { auth, storage } from "@/lib/firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export type AdminApiError = Error & { status?: number };
 
@@ -18,13 +19,12 @@ export async function adminJson<T>(path: string, init: RequestInit = {}): Promis
 }
 
 export async function uploadAdminImage(file: File): Promise<string> {
-  const ticket = await adminJson<{ uploadURL: string; objectPath: string }>(
-    "/api/storage/uploads/request-url",
-    { method: "POST", body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) },
-  );
-  const upload = await fetch(ticket.uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-  if (!upload.ok) throw new Error("The image upload did not complete.");
-  return ticket.objectPath;
+  if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
+  if (file.size > 10 * 1024 * 1024) throw new Error("Images must be 10 MB or smaller.");
+  const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+  const imageRef = ref(storage, `savestreet/${crypto.randomUUID()}-${safeName}`);
+  const uploaded = await uploadBytes(imageRef, file, { contentType: file.type });
+  return getDownloadURL(uploaded.ref);
 }
 
 export function objectUrl(path: string): string {

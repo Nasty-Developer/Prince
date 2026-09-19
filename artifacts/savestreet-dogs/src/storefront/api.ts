@@ -23,8 +23,10 @@ export type CreatedOrder = {
 export type OrderProduct = {
   productId?: string;
   name?: string;
+  productName?: string;
   imagePath?: string;
   imageUrl?: string;
+  productImageUrl?: string;
   imageUrls?: string[];
   quantity?: number;
   unitPriceRupees?: number;
@@ -44,6 +46,7 @@ export type OrderTimelineEntry = {
 
 export type TrackedOrder = {
   orderCode?: string;
+  id?: string;
   customerName?: string;
   phone?: string;
   email?: string;
@@ -54,6 +57,10 @@ export type TrackedOrder = {
   deliveryNotes?: string;
   paymentStatus?: string;
   orderStatus?: string;
+  status?: string;
+  expectedDelivery?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   expectedDate?: string;
   estimatedDeliveryDate?: string;
   delayReason?: string;
