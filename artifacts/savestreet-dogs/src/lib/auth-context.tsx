@@ -29,6 +29,13 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const clientAdminUidAllowlist = new Set(
+  (import.meta.env.VITE_ADMIN_FIREBASE_UIDS ?? "")
+    .split(",")
+    .map((value: string) => value.trim())
+    .filter(Boolean),
+);
+
 function authMessage(error: unknown): string {
   const code = error instanceof Error && "code" in error
     ? String((error as Error & { code?: string }).code)
@@ -93,7 +100,9 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
           const token = await nextUser.getIdTokenResult();
           if (active) {
             setIsAdmin(
-              token.claims.admin === true || token.claims.role === "admin",
+                token.claims.admin === true ||
+                  token.claims.role === "admin" ||
+                  clientAdminUidAllowlist.has(nextUser.uid),
             );
           }
         });
