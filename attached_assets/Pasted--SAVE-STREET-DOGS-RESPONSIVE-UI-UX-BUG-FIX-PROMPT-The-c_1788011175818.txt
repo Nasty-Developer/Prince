@@ -1,0 +1,613 @@
+
+
+SAVE STREET DOGS — RESPONSIVE & UI/UX BUG FIX PROMPT 🐾
+
+The current SaveStreet Dogs website needs a serious responsive UI/UX pass.
+
+Do NOT redesign the entire website from scratch unless necessary. Keep the existing visual identity and content, but fix the usability problems below and make the website properly functional across mobile, tablet, and desktop.
+
+---
+
+1. MOBILE RESPONSIVENESS IS A PRIORITY 📱
+
+The website currently does NOT feel properly responsive.
+
+Audit every page and component at:
+
+- 320px
+- 360px
+- 375px
+- 390px
+- 414px
+- 768px
+- 1024px
+- 1280px+
+- Large desktop screens
+
+Fix:
+
+- Horizontal overflow
+- Elements going outside the viewport
+- Text being cut off
+- Buttons overlapping
+- Cards becoming too narrow
+- Images overflowing
+- Incorrect padding/margins
+- Sections becoming excessively tall
+- Navigation issues
+- Forms that don't fit mobile screens
+- Product grids breaking
+- Modals/drawers overflowing
+- Footer layout problems
+
+Use a mobile-first responsive approach.
+
+There must NEVER be a horizontal scrollbar on normal pages.
+
+---
+
+2. THREE-LINE HAMBURGER NAVIGATION ☰
+
+This is extremely important.
+
+On smaller screens, the desktop navigation should automatically collapse into a clearly visible three-line hamburger menu.
+
+The hamburger icon must be:
+
+☰
+
+and must be clearly visible in the top navigation.
+
+Place it on the right side of the mobile header.
+
+Example:
+
+[ SaveStreet Dogs logo ] [ ☰ ]
+
+When clicked/tapped, it should open a smooth mobile navigation drawer or dropdown.
+
+The menu should contain:
+
+- Home
+- Rescue
+- Puppies
+- Adoption
+- Products
+- Volunteer
+- Foster
+- Stories
+- Education
+- About
+- Contact
+- Donate
+- 🚨 Report a Dog
+
+Make the most important actions visually prominent.
+
+---
+
+3. HAMBURGER MENU FUNCTIONALITY
+
+The hamburger menu is NOT just a visual icon.
+
+It must actually work.
+
+When the user taps it:
+
+1. Menu opens.
+2. Background page should not become awkwardly scrollable.
+3. Navigation items are easy to tap.
+4. Menu closes when an item is selected.
+5. Menu has a visible close button or can toggle back.
+6. Menu closes when appropriate outside interaction occurs.
+7. ESC should close it on desktop/tablet where applicable.
+8. It should work correctly on Android and iOS-sized screens.
+9. No navigation item should be hidden behind the browser edge.
+10. The menu should not cover the entire page in an unusable way.
+
+Use proper accessible navigation semantics.
+
+Add:
+
+"aria-label="Open navigation""
+
+and:
+
+"aria-label="Close navigation""
+
+as appropriate.
+
+---
+
+4. BUTTONS CURRENTLY DON'T WORK PROPERLY 🔘
+
+Audit EVERY button on the website.
+
+Do not leave buttons that look clickable but do nothing.
+
+Every CTA must have a real action.
+
+Examples:
+
+Help a Dog
+
+Should navigate to:
+
+"/rescue" or "/report"
+
+Adopt a Puppy
+
+Should navigate to:
+
+"/adopt" or "/puppies"
+
+Report a Dog
+
+Should navigate to:
+
+"/report"
+
+View Profile
+
+Should open the corresponding dog/puppy profile.
+
+Become a Volunteer
+
+Should navigate to:
+
+"/volunteer"
+
+Become a Foster
+
+Should navigate to:
+
+"/foster"
+
+Donate
+
+Should navigate to:
+
+"/donate"
+
+Products
+
+Should navigate to:
+
+"/products"
+
+Add to Cart
+
+Must actually add the selected product to the cart.
+
+View Cart
+
+Must open/navigate to the cart.
+
+Quantity + / -
+
+Must actually change product quantity.
+
+Remove
+
+Must remove the selected product.
+
+---
+
+5. BUTTON STATES
+
+Every interactive button needs proper states:
+
+- Default
+- Hover
+- Focus
+- Active/pressed
+- Disabled
+- Loading
+
+For example, when submitting a form:
+
+Instead of allowing multiple clicks, show:
+
+Submitting...
+
+and disable the button temporarily.
+
+After success:
+
+Report Submitted ✓
+
+Use toast notifications or inline success states where appropriate.
+
+---
+
+6. DON'T USE FAKE INTERACTIONS
+
+Do NOT use:
+
+- "href="#"" for important navigation
+- Buttons that only trigger "console.log()"
+- Fake checkout success
+- Fake donation success
+- Fake API responses presented as real
+- Dead buttons
+- Placeholder links that appear finished
+
+If a backend/payment integration is not implemented yet, create a proper placeholder state explaining that the feature is not yet connected.
+
+Do not pretend a transaction occurred.
+
+---
+
+7. MOBILE QUICK-ACTION EXPERIENCE 🚨🐶
+
+People visiting this website may be trying to help an animal quickly.
+
+Make the most important actions extremely easy to find.
+
+On mobile, prioritize:
+
+🚨 Report a Dog
+
+🐶 Puppies
+
+🏠 Adopt
+
+💝 Donate
+
+These should be accessible within one or two taps.
+
+Consider adding a compact mobile sticky action bar at the bottom containing:
+
+Report | Adopt | Donate
+
+Do this only if it improves UX and doesn't cover important content.
+
+---
+
+8. HEADER BEHAVIOR
+
+Create a clean responsive header.
+
+Desktop:
+
+Logo + full navigation + primary CTA.
+
+Tablet:
+
+Reduce navigation spacing or transition toward hamburger navigation.
+
+Mobile:
+
+Logo + hamburger icon + optional small primary action.
+
+The header should not become huge vertically.
+
+If using a sticky header, make sure it does not cover page content when navigating to anchors.
+
+---
+
+9. MOBILE CARDS
+
+Audit all cards.
+
+Dog cards:
+
+- Image
+- Name
+- Age
+- Status
+- CTA
+
+Product cards:
+
+- Image
+- Product name
+- Price
+- Add to Cart
+
+Cards must resize naturally.
+
+Avoid fixed heights that cause text or buttons to overflow.
+
+Buttons should remain visible.
+
+---
+
+10. PRODUCT SECTION MOBILE UX 🛍️
+
+The Products section must be fully responsive.
+
+Desktop:
+
+4-column or 3-column grid depending on screen width.
+
+Tablet:
+
+2–3 columns.
+
+Mobile:
+
+1–2 columns depending on available width.
+
+Product detail pages should work perfectly on touch screens.
+
+The Add to Cart button must be easy to tap.
+
+Cart drawer/modal must fit within the viewport.
+
+---
+
+11. FORMS 📋
+
+Audit:
+
+- Report a Dog
+- Adoption
+- Volunteer
+- Foster
+- Contact
+- Donation
+
+forms.
+
+On mobile:
+
+- Inputs should be full width.
+- Labels should be clearly visible.
+- No fields should overflow.
+- Buttons should be large enough to tap.
+- Error messages should appear near the relevant field.
+- Keyboard-friendly input types should be used.
+
+Examples:
+
+Email fields should use email input.
+
+Phone fields should use appropriate telephone input.
+
+---
+
+12. IMAGE RESPONSIVENESS
+
+Every image should:
+
+- Maintain aspect ratio
+- Avoid distortion
+- Stay inside its container
+- Load efficiently
+- Have appropriate alt text
+
+Use responsive image sizing.
+
+Do not allow images to cause horizontal overflow.
+
+---
+
+13. TYPOGRAPHY RESPONSIVENESS
+
+Some headings are currently too large for small screens.
+
+Create responsive typography.
+
+For example:
+
+Desktop:
+
+Large hero heading.
+
+Mobile:
+
+Scale it down automatically.
+
+Do not allow:
+
+- Text clipping
+- Overlapping text
+- Extremely long lines
+- Tiny body text
+
+Keep body text comfortable to read.
+
+---
+
+14. TOUCH TARGETS
+
+All interactive controls on mobile should have comfortable touch targets.
+
+Especially:
+
+- Hamburger
+- Navigation links
+- Buttons
+- Product controls
+- Close buttons
+- Form controls
+
+Avoid tiny icons that require precision tapping. Humans have fingers, not laser pointers.
+
+---
+
+15. ACCESSIBILITY
+
+Make the mobile navigation and buttons accessible.
+
+Use:
+
+- Semantic buttons
+- Keyboard navigation
+- Visible focus states
+- ARIA labels where necessary
+- Screen-reader-friendly navigation
+- Proper form labels
+- Reduced-motion support
+
+Do not use a "<div>" as a button when a real "<button>" should be used.
+
+---
+
+16. ROUTING AUDIT
+
+Test every major route.
+
+Verify that:
+
+- Navigation works
+- Back button works
+- Direct URLs work
+- Refreshing a page doesn't break the application
+- 404 page works
+- Mobile navigation closes after route change
+
+Check all internal links.
+
+---
+
+17. FULL INTERACTION AUDIT
+
+Go through the entire website like a real visitor.
+
+Test:
+
+Homepage
+
+- Hero buttons
+- Navigation
+- Hamburger
+- Puppy cards
+- Product cards
+- Donation CTA
+- Volunteer CTA
+
+Puppies
+
+- Filters
+- Search
+- Profile buttons
+
+Adoption
+
+- Application form
+- Submit button
+
+Rescue
+
+- Report form
+- Submit button
+- Image upload UI
+
+Products
+
+- Search
+- Filters
+- Product details
+- Add to Cart
+- Cart
+- Quantity
+- Remove
+- Checkout placeholder
+
+Volunteer
+
+- Form
+- Submit
+
+Foster
+
+- Form
+- Submit
+
+Stories
+
+- Story cards
+- Story details
+
+About
+
+- Navigation
+- CTA buttons
+
+Footer
+
+- Every link
+
+Fix every dead interaction.
+
+---
+
+18. LOADING & ERROR STATES
+
+Make sure loading screens don't block the site unnecessarily.
+
+For asynchronous content:
+
+Use skeleton loaders.
+
+For errors:
+
+Show useful messages.
+
+Example:
+
+“We couldn't load this right now. Please try again.”
+
+Provide a working retry button.
+
+---
+
+19. PERFORMANCE
+
+After fixing responsiveness:
+
+Check that the website remains fast.
+
+Avoid unnecessarily heavy animations.
+
+Optimize images.
+
+Lazy-load below-the-fold images.
+
+Do not load huge assets on mobile when smaller versions are available.
+
+---
+
+20. FINAL QUALITY CHECK
+
+After making all changes, run a complete responsive QA pass.
+
+The final website must satisfy:
+
+✅ No horizontal scrolling
+✅ Hamburger menu visible on mobile
+✅ Hamburger menu actually works
+✅ All important buttons work
+✅ Internal navigation works
+✅ Forms work
+✅ Product cart works
+✅ Responsive product grid
+✅ Responsive puppy cards
+✅ Responsive images
+✅ Responsive typography
+✅ Mobile-friendly forms
+✅ Accessible buttons
+✅ Accessible navigation
+✅ No overlapping UI
+✅ No clipped text
+✅ No broken routes
+✅ No obvious console errors
+✅ No fake successful transactions
+
+Most importantly:
+
+MAKE THE WEBSITE EASY TO USE ON A PHONE.
+
+A visitor should be able to open SaveStreet Dogs on a phone and find:
+
+Report a Dog → Adopt → Puppies → Products → Donate
+
+within seconds.
+
+Do not merely make the desktop website shrink.
+
+Actually redesign the interaction behavior for mobile while preserving the existing SaveStreet Dogs visual identity.
+
+After implementing the fixes, test the website at multiple viewport sizes and fix any remaining issues before considering the task complete.
