@@ -130,6 +130,7 @@ export const rescueReportsTable = pgTable("rescue_reports", {
   category: text("category").notNull().default("Other"),
   urgency: text("urgency").notNull().default("Normal"),
   status: text("status").notNull().default("New"),
+  internalNotes: text("internal_notes").notNull().default(""),
   ...timestamps,
 });
 
@@ -140,6 +141,7 @@ export const volunteerApplicationsTable = pgTable("volunteer_applications", {
   interest: text("interest").notNull(),
   message: text("message").notNull().default(""),
   status: text("status").notNull().default("New"),
+  internalNotes: text("internal_notes").notNull().default(""),
   ...timestamps,
 });
 
@@ -150,6 +152,7 @@ export const fosterApplicationsTable = pgTable("foster_applications", {
   city: text("city").notNull(),
   message: text("message").notNull().default(""),
   status: text("status").notNull().default("New"),
+  internalNotes: text("internal_notes").notNull().default(""),
   ...timestamps,
 });
 
@@ -157,6 +160,27 @@ export const insertPuppySchema = createInsertSchema(puppiesTable).omit({ id: tru
 export const insertAdoptionRequestSchema = createInsertSchema(adoptionRequestsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertProductSchema = createInsertSchema(productsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertOrderSchema = createInsertSchema(ordersTable).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const cmsStoriesTable = pgTable("cms_stories", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  excerpt: text("excerpt").notNull().default(""),
+  body: text("body").notNull().default(""),
+  imageUrl: text("image_url").notNull().default(""),
+  published: boolean("published").notNull().default(false),
+  ...timestamps,
+});
+
+export const websiteSettingsTable = pgTable("website_settings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull().default(""),
+  ...timestamps,
+});
+
+export const insertCmsStorySchema = createInsertSchema(cmsStoriesTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertWebsiteSettingSchema = createInsertSchema(websiteSettingsTable).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const puppyStatusSchema = z.enum(["Available", "Under Care", "Foster Needed", "Adoption Pending", "Adopted", "Archived"]);
 export const adoptionRequestStatusSchema = z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed", "Cancelled"]);
@@ -171,6 +195,8 @@ export type Product = typeof productsTable.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof ordersTable.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type CmsStory = typeof cmsStoriesTable.$inferSelect;
+export type WebsiteSetting = typeof websiteSettingsTable.$inferSelect;
 export type OrderItem = typeof orderItemsTable.$inferSelect;
 export type Payment = typeof paymentsTable.$inferSelect;
 export type Delivery = typeof deliveriesTable.$inferSelect;

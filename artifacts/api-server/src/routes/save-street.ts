@@ -1,5 +1,6 @@
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { Router, type IRouter } from "express";
+import { z } from "zod";
 import { db } from "@workspace/db";
 import {
   adoptionRequestsTable,
@@ -13,6 +14,11 @@ import {
   puppyStatusSchema,
   rescueReportsTable,
   volunteerApplicationsTable,
+  orderItemsTable,
+  paymentsTable,
+  cmsStoriesTable,
+  websiteSettingsTable,
+  paymentStatusSchema,
 } from "@workspace/db";
 import {
   CreateAdoptionRequestBody,
@@ -271,6 +277,20 @@ adminRouter.get("/orders", async (_req, res): Promise<void> => {
   res.json(ListAdminOrdersResponse.parse(orders));
 });
 
+adminRouter.get("/orders/:id", async (req, res): Promise<void> => {
+  const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id));
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  const [items, payments, deliveries] = await Promise.all([
+    db.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, order.id)),
+    db.select().from(paymentsTable).where(eq(paymentsTable.orderId, order.id)).orderBy(desc(paymentsTable.createdAt)),
+    db.select().from(deliveriesTable).where(eq(deliveriesTable.orderId, order.id)).orderBy(desc(deliveriesTable.createdAt)),
+  ]);
+  res.json({ ...order, items, payments, deliveries });
+});
+
 adminRouter.patch("/orders/:id", async (req, res): Promise<void> => {
   const parsed = UpdateAdminOrderBody.safeParse(req.body);
   if (!parsed.success) {
@@ -299,7 +319,183 @@ adminRouter.patch("/orders/:id", async (req, res): Promise<void> => {
   res.json(order);
 });
 
+adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
+  const parsed = z.object({
+    status: z.string().min(1),
+    paymentId: z.string().optional(),
+    provider: z.string().optional(),
+  }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const status = paymentStatusSchema.safeParse(parsed.data.status);
+  if (!status.success) {
+    res.status(400).json({ error: "Invalid payment status" });
+    return;
+  }
+  const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id));
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  const [payment] = await db.insert(paymentsTable).values({
+    orderId: order.id,
+    status: status.data,
+    amountPaise: order.totalPaise,
+    paymentId: parsed.data.paymentId ?? "",
+    provider: parsed.data.provider ?? "razorpay",
+    verifiedAt: status.data === "Payment Successful" ? new Date() : null,
+  }).returning();
+  await db.update(ordersTable).set({ paymentStatus: status.data, updatedAt: new Date() }).where(eq(ordersTable.id, order.id));
+  res.status(201).json(payment);
+});
+
+adminRouter.patch("/orders/:id/delivery", async (req, res): Promise<void> => {
+  const parsed = z.object({
+    partnerName: z.string().optional(),
+    phone: z.string().optional(),
+    trackingId: z.string().optional(),
+    notes: z.string().optional(),
+  }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [order] = await db.select({ id: ordersTable.id }).from(ordersTable).where(eq(ordersTable.id, req.params.id));
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  const [delivery] = await db.insert(deliveriesTable).values({ orderId: order.id, ...parsed.data }).returning();
+  await db.update(ordersTable).set({
+    ...(parsed.data.trackingId !== undefined ? { trackingId: parsed.data.trackingId } : {}),
+    ...(parsed.data.partnerName !== undefined ? { deliveryPerson: parsed.data.partnerName } : {}),
+    ...(parsed.data.phone !== undefined ? { deliveryPhone: parsed.data.phone } : {}),
+    updatedAt: new Date(),
+  }).where(eq(ordersTable.id, order.id));
+  res.status(201).json(delivery);
+});
+
+type AdminSubmissionTable = typeof rescueReportsTable | typeof volunteerApplicationsTable | typeof fosterApplicationsTable;
+const submissionTables: Record<string, AdminSubmissionTable> = {
+  rescue: rescueReportsTable,
+  volunteer: volunteerApplicationsTable,
+  foster: fosterApplicationsTable,
+};
+const submissionStatus = {
+  rescue: z.enum(["New", "Investigating", "Resolved", "Closed"]),
+  volunteer: z.enum(["New", "Contacted", "Approved", "Rejected", "Closed"]),
+  foster: z.enum(["New", "Contacted", "Approved", "Rejected", "Closed"]),
+} as const;
+for (const [kind, rawTable] of Object.entries(submissionTables)) {
+  const table = rawTable as any;
+  const resource = kind === "rescue" ? "rescue-reports" : `${kind}-applications`;
+  adminRouter.get(`/${resource}`, async (_req, res): Promise<void> => {
+    res.json(await db.select().from(table).orderBy(desc(table.createdAt)));
+  });
+  adminRouter.get(`/${resource}/:id`, async (req, res): Promise<void> => {
+    const [record] = await db.select().from(table).where(eq(table.id, req.params.id));
+    if (!record) {
+      res.status(404).json({ error: `${kind} application not found` });
+      return;
+    }
+    res.json(record);
+  });
+  adminRouter.patch(`/${resource}/:id`, async (req, res): Promise<void> => {
+    const parsed = z.object({ status: submissionStatus[kind as keyof typeof submissionStatus].optional(), internalNotes: z.string().max(10000).optional() }).strict().safeParse(req.body);
+    if (!parsed.success || (!parsed.data.status && parsed.data.internalNotes === undefined)) {
+      res.status(400).json({ error: parsed.success ? "At least one field is required" : parsed.error.message });
+      return;
+    }
+    const [record] = await db.update(table).set({ ...parsed.data, updatedAt: new Date() }).where(eq(table.id, req.params.id)).returning();
+    if (!record) {
+      res.status(404).json({ error: `${kind} application not found` });
+      return;
+    }
+    res.json(record);
+  });
+}
+
+adminRouter.get("/customers", async (_req, res): Promise<void> => {
+  const [orders, adoptions] = await Promise.all([
+    db.select({ name: ordersTable.customerName, email: ordersTable.email, phone: ordersTable.phone, city: ordersTable.city, source: ordersTable.id, createdAt: ordersTable.createdAt }).from(ordersTable),
+    db.select({ name: adoptionRequestsTable.applicantName, email: adoptionRequestsTable.email, phone: adoptionRequestsTable.phone, city: adoptionRequestsTable.city, source: adoptionRequestsTable.id, createdAt: adoptionRequestsTable.createdAt }).from(adoptionRequestsTable),
+  ]);
+  const customers = new Map<string, typeof orders[number]>();
+  for (const customer of [...orders, ...adoptions]) {
+    const key = customer.email.toLowerCase();
+    if (!customers.has(key)) customers.set(key, customer);
+  }
+  res.json([...customers.values()]);
+});
+
+adminRouter.get("/dashboard/recent", async (_req, res): Promise<void> => {
+  const [orders, adoptions, rescues] = await Promise.all([
+    db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt)).limit(10),
+    db.select().from(adoptionRequestsTable).orderBy(desc(adoptionRequestsTable.createdAt)).limit(10),
+    db.select().from(rescueReportsTable).orderBy(desc(rescueReportsTable.createdAt)).limit(10),
+  ]);
+  res.json({ orders, adoptionRequests: adoptions, rescueReports: rescues });
+});
+
+adminRouter.get("/stories", async (_req, res): Promise<void> => {
+  res.json(await db.select().from(cmsStoriesTable).orderBy(desc(cmsStoriesTable.createdAt)));
+});
+adminRouter.post("/stories", async (req, res): Promise<void> => {
+  const parsed = z.object({
+    slug: z.string().min(1).max(160),
+    title: z.string().min(1).max(240),
+    excerpt: z.string().optional(),
+    body: z.string().optional(),
+    imageUrl: z.string().url().or(z.literal("")).optional(),
+    published: z.boolean().optional(),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const [story] = await db.insert(cmsStoriesTable).values(parsed.data).returning();
+  res.status(201).json(story);
+});
+adminRouter.patch("/stories/:id", async (req, res): Promise<void> => {
+  const parsed = z.object({
+    slug: z.string().min(1).max(160).optional(), title: z.string().min(1).max(240).optional(),
+    excerpt: z.string().optional(), body: z.string().optional(),
+    imageUrl: z.string().url().or(z.literal("")).optional(), published: z.boolean().optional(),
+  }).strict().safeParse(req.body);
+  if (!parsed.success || Object.keys(parsed.data).length === 0) { res.status(400).json({ error: parsed.success ? "No fields to update" : parsed.error.message }); return; }
+  const [story] = await db.update(cmsStoriesTable).set({ ...parsed.data, updatedAt: new Date() }).where(eq(cmsStoriesTable.id, req.params.id)).returning();
+  if (!story) { res.status(404).json({ error: "Story not found" }); return; }
+  res.json(story);
+});
+adminRouter.delete("/stories/:id", async (req, res): Promise<void> => {
+  const [story] = await db.delete(cmsStoriesTable).where(eq(cmsStoriesTable.id, req.params.id)).returning();
+  if (!story) { res.status(404).json({ error: "Story not found" }); return; }
+  res.sendStatus(204);
+});
+
+adminRouter.get("/settings", async (_req, res): Promise<void> => {
+  res.json(await db.select().from(websiteSettingsTable).orderBy(websiteSettingsTable.key));
+});
+adminRouter.put("/settings/:key", async (req, res): Promise<void> => {
+  const parsed = z.object({ value: z.string() }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const [setting] = await db.insert(websiteSettingsTable).values({ key: req.params.key, value: parsed.data.value })
+    .onConflictDoUpdate({ target: websiteSettingsTable.key, set: { value: parsed.data.value, updatedAt: new Date() } }).returning();
+  res.json(setting);
+});
+
 router.use("/admin", adminRouter);
+
+router.get("/stories", async (_req, res): Promise<void> => {
+  res.json(await db.select().from(cmsStoriesTable).where(eq(cmsStoriesTable.published, true)).orderBy(desc(cmsStoriesTable.createdAt)));
+});
+router.get("/stories/:slug", async (req, res): Promise<void> => {
+  const [story] = await db.select().from(cmsStoriesTable).where(and(eq(cmsStoriesTable.slug, req.params.slug), eq(cmsStoriesTable.published, true)));
+  if (!story) { res.status(404).json({ error: "Story not found" }); return; }
+  res.json(story);
+});
+router.get("/settings", async (_req, res): Promise<void> => {
+  res.json(await db.select({ key: websiteSettingsTable.key, value: websiteSettingsTable.value }).from(websiteSettingsTable));
+});
 
 router.post("/submissions/rescue", async (req, res): Promise<void> => {
   const parsed = CreateRescueReportBody.safeParse(req.body);

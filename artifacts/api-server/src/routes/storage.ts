@@ -6,12 +6,12 @@ import {
   ObjectNotFoundError,
   ObjectStorageService,
 } from '../lib/objectStorage';
-import { requireUser } from "../middlewares/auth";
+import { requireAdmin } from "../middlewares/auth";
 
 const requestUploadUrlBody = z.object({
-  name: z.string().min(1),
-  size: z.number().int().positive(),
-  contentType: z.string().min(1),
+  name: z.string().min(1).max(255),
+  size: z.number().int().positive().max(10 * 1024 * 1024),
+  contentType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
 });
 
 const router: IRouter = Router();
@@ -27,7 +27,7 @@ const objectStorageService = new ObjectStorageService();
  */
 router.post(
   '/storage/uploads/request-url',
-  requireUser,
+   requireAdmin,
   async (req: Request, res: Response) => {
     const parsed = requestUploadUrlBody.safeParse(req.body);
     if (!parsed.success) {

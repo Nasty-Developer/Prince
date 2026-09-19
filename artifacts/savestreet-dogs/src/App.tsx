@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FirebaseAuthProvider, useFirebaseAuth } from "@/lib/auth-context";
 import { auth } from "@/lib/firebase";
+import AdminApp from "@/admin";
 
 const queryClient = new QueryClient();
 const dogImages = {
@@ -113,7 +114,11 @@ function AdminList({ title, rows, empty }: { title: string; rows: Array<unknown>
 }
 function AppRoutes() {
   const [cart, setCart] = useState<CartLine[]>([]);
-  return <Shell cart={cart} setCart={setCart}><Switch><Route path="/" component={Home} /><Route path="/login"><AuthPage mode="signin" /></Route><Route path="/signup"><AuthPage mode="signup" /></Route><Route path="/forgot-password"><AuthPage mode="reset" /></Route><Route path="/admin/login"><AuthPage mode="admin" /></Route><Route path="/puppies/:id" component={PuppyProfile} /><Route path="/puppies" component={Puppies} /><Route path="/products"><Products cart={cart} setCart={setCart} /></Route><Route path="/rescue"><FormPage kind="rescue" /></Route><Route path="/adopt"><FormPage kind="adopt" /></Route><Route path="/foster"><FormPage kind="foster" /></Route><Route path="/volunteer"><FormPage kind="volunteer" /></Route><Route path="/contact"><FormPage kind="contact" /></Route><Route path="/admin" component={Admin} /><Route><NotFound /></Route></Switch></Shell>;
+  const [location] = useLocation();
+  if (location.startsWith("/admin") && location !== "/admin/login") {
+    return <Switch><Route path="/admin" component={AdminApp} /><Route path="/admin/:rest*" component={AdminApp} /><Route><NotFound /></Route></Switch>;
+  }
+  return <Shell cart={cart} setCart={setCart}><Switch><Route path="/" component={Home} /><Route path="/login"><AuthPage mode="signin" /></Route><Route path="/signup"><AuthPage mode="signup" /></Route><Route path="/forgot-password"><AuthPage mode="reset" /></Route><Route path="/admin/login"><AuthPage mode="admin" /></Route><Route path="/puppies/:id" component={PuppyProfile} /><Route path="/puppies" component={Puppies} /><Route path="/products"><Products cart={cart} setCart={setCart} /></Route><Route path="/rescue"><FormPage kind="rescue" /></Route><Route path="/adopt"><FormPage kind="adopt" /></Route><Route path="/foster"><FormPage kind="foster" /></Route><Route path="/volunteer"><FormPage kind="volunteer" /></Route><Route path="/contact"><FormPage kind="contact" /></Route><Route><NotFound /></Route></Switch></Shell>;
 }
 export default function App() {
   return <QueryClientProvider client={queryClient}><FirebaseAuthProvider><TooltipProvider><AppRoutes /><Toaster /></TooltipProvider></FirebaseAuthProvider></QueryClientProvider>;
