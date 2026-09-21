@@ -102,6 +102,10 @@
 .admin-upload input { padding: 5px; border: 0; background: transparent; }
 .admin-image-strip { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
 .admin-image-strip img { width: 58px; height: 58px; border-radius: 6px; object-fit: cover; border: 1px solid var(--admin-line); }
+.admin-image-preview-pending { position: relative; display: grid; gap: 3px; color: var(--admin-muted); font-size: 10px; }
+.admin-image-preview-pending img { opacity: .72; }
+.admin-table-thumb { width: 42px; height: 42px; display: grid; place-items: center; overflow: hidden; border-radius: 7px; background: var(--admin-soft); color: var(--admin-muted); }
+.admin-table-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .admin-detail { padding: 19px; }
 .admin-detail h3 { margin: 0 0 14px; font: 700 22px var(--app-font-serif); }
 .admin-detail-row { display: grid; grid-template-columns: 115px 1fr; gap: 12px; border-top: 1px solid #e5e9e1; padding: 10px 0; font-size: 12px; }

@@ -59,12 +59,24 @@ function stockStatusFor(stock: number) {
   return productStockStatusSchema.parse(stock <= 0 ? "NO STOCK" : stock < 5 ? "LOW STOCK" : "IN STOCK");
 }
 
+function browserImageUrl(path: string): string {
+  if (!path) return "";
+  if (path.startsWith("/api/storage/")) return path;
+  if (
+    path.startsWith("/objects/") &&
+    (process.env.PRIVATE_OBJECT_DIR || process.env.PUBLIC_OBJECT_SEARCH_PATHS)
+  ) {
+    return `/api/storage${path}`;
+  }
+  return path;
+}
+
 function puppyResponse(puppy: typeof puppiesTable.$inferSelect) {
-  return GetPuppyResponse.parse(puppy);
+  return GetPuppyResponse.parse({ ...puppy, imageUrls: puppy.imageUrls.map(browserImageUrl) });
 }
 
 function productResponse(product: typeof productsTable.$inferSelect) {
-  return GetProductResponse.parse(product);
+  return GetProductResponse.parse({ ...product, imageUrls: product.imageUrls.map(browserImageUrl) });
 }
 
 async function adoptionResponse(request: typeof adoptionRequestsTable.$inferSelect) {
@@ -122,7 +134,10 @@ router.get("/products", async (req, res): Promise<void> => {
   if (category) filters.push(eq(productsTable.category, category));
   if (search) filters.push(or(ilike(productsTable.name, `%${search}%`), ilike(productsTable.description, `%${search}%`))!);
   const products = await db.select().from(productsTable).where(and(...filters)).orderBy(desc(productsTable.createdAt));
-  res.json(ListProductsResponse.parse(products));
+  res.json(ListProductsResponse.parse(products.map((product) => ({
+    ...product,
+    imageUrls: product.imageUrls.map(browserImageUrl),
+  }))));
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
@@ -200,7 +215,7 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
         orderId: createdOrder.id,
         productId: product.id,
         productName: product.name,
-        productImageUrl: product.imageUrls[0] ?? "",
+         productImageUrl: browserImageUrl(product.imageUrls[0] ?? ""),
         quantity: item.quantity,
         unitPriceRupees: product.priceRupees,
       };
@@ -355,7 +370,10 @@ adminRouter.patch("/adoption-requests/:id", async (req, res): Promise<void> => {
 
 adminRouter.get("/products", async (_req, res): Promise<void> => {
   const products = await db.select().from(productsTable).orderBy(desc(productsTable.createdAt));
-  res.json(ListAdminProductsResponse.parse(products));
+  res.json(ListAdminProductsResponse.parse(products.map((product) => ({
+    ...product,
+    imageUrls: product.imageUrls.map(browserImageUrl),
+  }))));
 });
 
 adminRouter.post("/products", async (req, res): Promise<void> => {

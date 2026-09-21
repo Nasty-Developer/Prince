@@ -111,7 +111,15 @@ export async function storefrontJson<T>(
 
 export function storageImageUrl(path?: string): string | undefined {
   if (!path) return undefined;
-  if (path.startsWith("/objects/")) return `/api/storage${path}`;
+  if (path.startsWith("/api/storage/")) return path;
+  if (
+    path.startsWith("/objects/") &&
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1")
+  ) {
+    return `/api/storage${path}`;
+  }
   return path;
 }
 

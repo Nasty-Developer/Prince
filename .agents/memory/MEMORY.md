@@ -1,1 +1,2 @@
 - [Imported Replit repositories](imported-replit-repos.md) — preserve managed artifacts and regenerate API clients after copying an existing monorepo.
+- [Product image storage](product-image-storage.md) — use Firebase Storage download URLs in production; keep legacy Replit object paths isolated to development.
