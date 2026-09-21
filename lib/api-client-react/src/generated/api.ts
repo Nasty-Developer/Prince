@@ -36,6 +36,7 @@ import type {
   OrderInput,
   OrderUpdate,
   Payment,
+  PaymentSubmission,
   PaymentVerification,
   Product,
   ProductInput,
@@ -650,7 +651,7 @@ export const getGetOrderTrackingQueryKey = (orderCode: string,) => {
     }
 
 
-export const getGetOrderTrackingQueryOptions = <TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(orderCode: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetOrderTrackingQueryOptions = <TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(orderCode: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -669,14 +670,14 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetOrderTrackingQueryResult = NonNullable<Awaited<ReturnType<typeof getOrderTracking>>>
-export type GetOrderTrackingQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+export type GetOrderTrackingQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse>
 
 
 /**
  * @summary Get an order tracking view for its owner
  */
 
-export function useGetOrderTracking<TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+export function useGetOrderTracking<TData = Awaited<ReturnType<typeof getOrderTracking>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>>(
  orderCode: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrderTracking>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
@@ -693,6 +694,78 @@ export function useGetOrderTracking<TData = Awaited<ReturnType<typeof getOrderTr
 
 
 
+
+export const getSubmitOrderPaymentUrl = (orderCode: string,) => {
+
+
+
+
+  return `/api/orders/${orderCode}`
+}
+
+/**
+ * @summary Submit customer payment evidence for an approved order
+ */
+export const submitOrderPayment = async (orderCode: string,
+    paymentSubmission: PaymentSubmission, options?: Parameters<typeof customFetch>[1]): Promise<Payment> => {
+
+  return customFetch<Payment>(getSubmitOrderPaymentUrl(orderCode),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(paymentSubmission)
+  }
+);}
+
+
+
+
+
+export const getSubmitOrderPaymentMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitOrderPayment>>, TError,{orderCode: string;data: BodyType<PaymentSubmission>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitOrderPayment>>, TError,{orderCode: string;data: BodyType<PaymentSubmission>}, TContext> => {
+
+const mutationKey = ['submitOrderPayment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitOrderPayment>>, {orderCode: string;data: BodyType<PaymentSubmission>}> = (props) => {
+          const {orderCode,data} = props ?? {};
+
+          return  submitOrderPayment(orderCode,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitOrderPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof submitOrderPayment>>>
+    export type SubmitOrderPaymentMutationBody = BodyType<PaymentSubmission>
+    export type SubmitOrderPaymentMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | void>
+
+    /**
+ * @summary Submit customer payment evidence for an approved order
+ */
+export const useSubmitOrderPayment = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitOrderPayment>>, TError,{orderCode: string;data: BodyType<PaymentSubmission>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitOrderPayment>>,
+        TError,
+        {orderCode: string;data: BodyType<PaymentSubmission>},
+        TContext
+      > => {
+      return useMutation(getSubmitOrderPaymentMutationOptions(options));
+    }
 
 export const getGetAdminDashboardUrl = () => {
 

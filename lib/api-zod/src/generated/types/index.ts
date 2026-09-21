@@ -28,6 +28,7 @@ export * from './orderPaymentStatus';
 export * from './orderStatus';
 export * from './orderUpdate';
 export * from './payment';
+export * from './paymentSubmission';
 export * from './paymentVerification';
 export * from './paymentVerificationStatus';
 export * from './product';

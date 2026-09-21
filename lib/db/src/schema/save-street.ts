@@ -186,7 +186,7 @@ export const insertWebsiteSettingSchema = createInsertSchema(websiteSettingsTabl
 
 export const puppyStatusSchema = z.enum(["Available", "Under Care", "Foster Needed", "Adoption Pending", "Adopted", "Archived"]);
 export const adoptionRequestStatusSchema = z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed", "Cancelled"]);
-export const orderStatusSchema = z.enum(["Payment Pending", "Payment Verified", "Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered", "Delayed", "Cancelled"]);
+export const orderStatusSchema = z.enum(["Order Received", "Awaiting Admin Confirmation", "Payment Requested", "Payment Received", "Payment Pending", "Payment Verified", "Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered", "Delayed", "Cancelled"]);
 export const paymentStatusSchema = z.enum(["Payment Pending", "Payment Verified", "Payment Failed", "Payment Refunded"]);
 export const productStockStatusSchema = z.enum(["IN STOCK", "LOW STOCK", "NO STOCK"]);
 

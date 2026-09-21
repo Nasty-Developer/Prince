@@ -22,7 +22,6 @@ export interface OrderInput {
   /** @minLength 4 */
   pinCode: string;
   deliveryNotes?: string;
-  paymentDone: true;
   /** @minItems 1 */
   items: OrderInputItemsItem[];
 }

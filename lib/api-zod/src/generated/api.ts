@@ -207,7 +207,6 @@ export const CreateOrderBody = zod.object({
   "state": zod.string().min(createOrderBodyStateMin),
   "pinCode": zod.string().min(createOrderBodyPinCodeMin),
   "deliveryNotes": zod.string().optional(),
-  "paymentDone": zod.literal(true),
   "items": zod.array(zod.object({
   "productId": zod.string().uuid(),
   "quantity": zod.number().int().min(1).max(createOrderBodyItemsItemQuantityMax)
@@ -229,7 +228,7 @@ export const CreateOrderResponse = zod.object({
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
   "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
-  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "status": zod.enum(['Order Received', 'Awaiting Admin Confirmation', 'Payment Requested', 'Payment Received', 'Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -262,7 +261,7 @@ export const GetOrderTrackingResponse = zod.object({
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
   "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
-  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "status": zod.enum(['Order Received', 'Awaiting Admin Confirmation', 'Payment Requested', 'Payment Received', 'Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -280,8 +279,49 @@ export const GetOrderTrackingResponse = zod.object({
 })),
   "deliveries": zod.array(zod.object({
 
-}).passthrough()).optional()
+}).passthrough()).optional(),
+  "payments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "orderId": zod.string().uuid(),
+  "provider": zod.string(),
+  "paymentId": zod.string(),
+  "status": zod.string(),
+  "amountPaise": zod.number().int(),
+  "verifiedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})).optional()
 }))
+
+
+/**
+ * @summary Submit customer payment evidence for an approved order
+ */
+export const SubmitOrderPaymentParams = zod.object({
+  "orderCode": zod.coerce.string()
+})
+
+export const submitOrderPaymentBodyPaymentIdMin = 2;
+
+export const submitOrderPaymentBodyProviderDefault = `UPI`;
+export const submitOrderPaymentBodyProviderMin = 2;
+
+
+
+export const SubmitOrderPaymentBody = zod.object({
+  "paymentId": zod.string().min(submitOrderPaymentBodyPaymentIdMin),
+  "provider": zod.string().min(submitOrderPaymentBodyProviderMin).default(submitOrderPaymentBodyProviderDefault)
+})
+
+export const SubmitOrderPaymentResponse = zod.object({
+  "id": zod.string().uuid(),
+  "orderId": zod.string().uuid(),
+  "provider": zod.string(),
+  "paymentId": zod.string(),
+  "status": zod.string(),
+  "amountPaise": zod.number().int(),
+  "verifiedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
@@ -680,7 +720,7 @@ export const ListAdminOrdersResponseItem = zod.object({
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
   "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
-  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "status": zod.enum(['Order Received', 'Awaiting Admin Confirmation', 'Payment Requested', 'Payment Received', 'Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -714,7 +754,7 @@ export const GetAdminOrderResponse = zod.object({
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
   "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
-  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "status": zod.enum(['Order Received', 'Awaiting Admin Confirmation', 'Payment Requested', 'Payment Received', 'Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),
@@ -732,7 +772,17 @@ export const GetAdminOrderResponse = zod.object({
 })),
   "deliveries": zod.array(zod.object({
 
-}).passthrough()).optional()
+}).passthrough()).optional(),
+  "payments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "orderId": zod.string().uuid(),
+  "provider": zod.string(),
+  "paymentId": zod.string(),
+  "status": zod.string(),
+  "amountPaise": zod.number().int(),
+  "verifiedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})).optional()
 }))
 
 
@@ -743,6 +793,10 @@ export const UpdateAdminOrderParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const updateAdminOrderBodyDeliveryChargeRupeesMin = 0;
+
+
+
 export const UpdateAdminOrderBody = zod.object({
   "status": zod.string().optional(),
   "expectedDelivery": zod.coerce.date().nullish(),
@@ -750,7 +804,8 @@ export const UpdateAdminOrderBody = zod.object({
   "deliveryPerson": zod.string().optional(),
   "deliveryPhone": zod.string().optional(),
   "trackingId": zod.string().optional(),
-  "deliveryNotes": zod.string().optional()
+  "deliveryNotes": zod.string().optional(),
+  "deliveryChargeRupees": zod.number().int().min(updateAdminOrderBodyDeliveryChargeRupeesMin).optional()
 })
 
 export const UpdateAdminOrderResponse = zod.object({
@@ -768,7 +823,7 @@ export const UpdateAdminOrderResponse = zod.object({
   "deliveryChargeRupees": zod.number().int().nullish(),
   "totalRupees": zod.number().int(),
   "paymentStatus": zod.enum(['Payment Pending', 'Payment Verified', 'Payment Failed', 'Payment Refunded']),
-  "status": zod.enum(['Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
+  "status": zod.enum(['Order Received', 'Awaiting Admin Confirmation', 'Payment Requested', 'Payment Received', 'Payment Pending', 'Payment Verified', 'Preparing', 'Ready to Dispatch', 'Dispatched', 'Out for Delivery', 'Delivered', 'Delayed', 'Cancelled']),
   "expectedDelivery": zod.coerce.date().nullable(),
   "delayReason": zod.string(),
   "deliveryPerson": zod.string(),

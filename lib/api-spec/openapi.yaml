@@ -151,6 +151,34 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: submitOrderPayment
+      tags: [orders]
+      summary: Submit customer payment evidence for an approved order
+      parameters:
+        - in: path
+          name: orderCode
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentSubmission" }
+      responses:
+        "201":
+          description: Payment submitted for manual verification
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payment" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: The order is not ready for payment
         "404":
           $ref: "#/components/responses/NotFound"
   /admin/dashboard:
@@ -703,7 +731,7 @@ components:
         deliveryChargeRupees: { type: ["integer", "null"] }
         totalRupees: { type: integer }
         paymentStatus: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
-        status: { type: string, enum: [Payment Pending, Payment Verified, Preparing, Ready to Dispatch, Dispatched, Out for Delivery, Delivered, Delayed, Cancelled] }
+        status: { type: string, enum: [Order Received, Awaiting Admin Confirmation, Payment Requested, Payment Received, Payment Pending, Payment Verified, Preparing, Ready to Dispatch, Dispatched, Out for Delivery, Delivered, Delayed, Cancelled] }
         expectedDelivery: { type: ["string", "null"], format: date }
         delayReason: { type: string }
         deliveryPerson: { type: string }
@@ -713,7 +741,7 @@ components:
         updatedAt: { type: string, format: date-time }
     OrderInput:
       type: object
-      required: [customerName, phone, email, address, city, state, pinCode, items, paymentDone]
+      required: [customerName, phone, email, address, city, state, pinCode, items]
       properties:
         customerName: { type: string, minLength: 2 }
         phone: { type: string, minLength: 6 }
@@ -723,7 +751,6 @@ components:
         state: { type: string, minLength: 2 }
         pinCode: { type: string, minLength: 4 }
         deliveryNotes: { type: string }
-        paymentDone: { type: boolean, enum: [true] }
         items:
           type: array
           minItems: 1
@@ -754,6 +781,9 @@ components:
             deliveries:
               type: array
               items: { type: object }
+            payments:
+              type: array
+              items: { $ref: "#/components/schemas/Payment" }
     Payment:
       type: object
       required: [id, orderId, provider, paymentId, status, amountPaise, verifiedAt, createdAt]
@@ -772,6 +802,12 @@ components:
       properties:
         status: { type: string, enum: [Payment Pending, Payment Verified, Payment Failed, Payment Refunded] }
         paymentId: { type: string }
+    PaymentSubmission:
+      type: object
+      required: [paymentId]
+      properties:
+        paymentId: { type: string, minLength: 2 }
+        provider: { type: string, minLength: 2, default: UPI }
     OrderUpdate:
       type: object
       properties:
@@ -782,6 +818,7 @@ components:
         deliveryPhone: { type: string }
         trackingId: { type: string }
         deliveryNotes: { type: string }
+        deliveryChargeRupees: { type: integer, minimum: 0 }
     RescueReportInput:
       type: object
       required: [reporterName, email, location, details]

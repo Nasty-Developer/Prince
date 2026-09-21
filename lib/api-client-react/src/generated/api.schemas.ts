@@ -176,6 +176,10 @@ export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 
 export const OrderStatus = {
+  Order_Received: 'Order Received',
+  Awaiting_Admin_Confirmation: 'Awaiting Admin Confirmation',
+  Payment_Requested: 'Payment Requested',
+  Payment_Received: 'Payment Received',
   Payment_Pending: 'Payment Pending',
   Payment_Verified: 'Payment Verified',
   Preparing: 'Preparing',
@@ -238,7 +242,6 @@ export interface OrderInput {
   /** @minLength 4 */
   pinCode: string;
   deliveryNotes?: string;
-  paymentDone: true;
   /** @minItems 1 */
   items: OrderInputItemsItem[];
 }
@@ -254,11 +257,6 @@ export interface OrderItem {
 
 export type OrderDetailDeliveriesItem = { [key: string]: unknown };
 
-export type OrderDetail = Order & {
-  items: OrderItem[];
-  deliveries?: OrderDetailDeliveriesItem[];
-};
-
 export interface Payment {
   id: string;
   orderId: string;
@@ -270,6 +268,12 @@ export interface Payment {
   verifiedAt: string | null;
   createdAt: string;
 }
+
+export type OrderDetail = Order & {
+  items: OrderItem[];
+  deliveries?: OrderDetailDeliveriesItem[];
+  payments?: Payment[];
+};
 
 export type PaymentVerificationStatus = typeof PaymentVerificationStatus[keyof typeof PaymentVerificationStatus];
 
@@ -286,6 +290,13 @@ export interface PaymentVerification {
   paymentId?: string;
 }
 
+export interface PaymentSubmission {
+  /** @minLength 2 */
+  paymentId: string;
+  /** @minLength 2 */
+  provider?: string;
+}
+
 export interface OrderUpdate {
   status?: string;
   /** @nullable */
@@ -295,6 +306,8 @@ export interface OrderUpdate {
   deliveryPhone?: string;
   trackingId?: string;
   deliveryNotes?: string;
+  /** @minimum 0 */
+  deliveryChargeRupees?: number;
 }
 
 export interface RescueReportInput {

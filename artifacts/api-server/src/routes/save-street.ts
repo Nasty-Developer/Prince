@@ -49,6 +49,7 @@ import {
   GetOrderTrackingResponse,
   GetAdminOrderResponse,
   VerifyOrderPaymentBody,
+  SubmitOrderPaymentBody,
 } from "@workspace/api-zod";
 import { requireAdmin, requireUser } from "../middlewares/auth";
 
@@ -205,8 +206,8 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
       deliveryChargeRupees,
       totalRupees,
       paymentStatus: "Payment Pending",
-      status: "Payment Pending",
-      expectedDelivery: expectedDeliveryDate(),
+      status: "Order Received",
+      expectedDelivery: null,
     }).returning();
 
     await tx.insert(orderItemsTable).values(parsed.data.items.map((item) => {
@@ -257,6 +258,36 @@ router.get("/orders/:orderCode", requireUser, async (req, res): Promise<void> =>
     db.select().from(deliveriesTable).where(eq(deliveriesTable.orderId, order.id)).orderBy(desc(deliveriesTable.createdAt)),
   ]);
   res.json(GetOrderTrackingResponse.parse({ ...order, items, deliveries }));
+});
+
+router.post("/orders/:orderCode", requireUser, async (req, res): Promise<void> => {
+  const orderCode = Array.isArray(req.params.orderCode) ? req.params.orderCode[0] : req.params.orderCode;
+  const parsed = SubmitOrderPaymentBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [order] = await db.select().from(ordersTable).where(eq(ordersTable.orderCode, orderCode));
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  if (order.userId !== req.firebaseUser?.uid) {
+    res.status(403).json({ error: "You cannot submit payment for this order" });
+    return;
+  }
+  if (order.status !== "Payment Requested" || order.paymentStatus === "Payment Verified") {
+    res.status(409).json({ error: "Payment is not currently requested for this order." });
+    return;
+  }
+  const [payment] = await db.insert(paymentsTable).values({
+    orderId: order.id,
+    provider: parsed.data.provider ?? "UPI",
+    paymentId: parsed.data.paymentId.trim(),
+    status: "Payment Pending",
+    amountPaise: order.totalRupees * 100,
+  }).returning();
+  res.status(201).json(payment);
 });
 
 const adminRouter: IRouter = Router();
@@ -450,7 +481,30 @@ adminRouter.patch("/orders/:id", async (req, res): Promise<void> => {
     return;
   }
   if (parsed.data.status) orderStatusSchema.parse(parsed.data.status);
-  const { expectedDelivery, ...orderFields } = parsed.data;
+  const [existingOrder] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id));
+  if (!existingOrder) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  if (parsed.data.status === "Payment Verified" || parsed.data.status === "Payment Received") {
+    res.status(400).json({ error: "Use payment verification to confirm payment." });
+    return;
+  }
+  const deliveryChargeRupees = parsed.data.deliveryChargeRupees ?? existingOrder.deliveryChargeRupees;
+  if (deliveryChargeRupees !== null && deliveryChargeRupees !== undefined && deliveryChargeRupees < 0) {
+    res.status(400).json({ error: "Delivery charge cannot be negative." });
+    return;
+  }
+  if (parsed.data.status === "Payment Requested" && (deliveryChargeRupees === null || deliveryChargeRupees === undefined)) {
+    res.status(400).json({ error: "Set the delivery charge before requesting payment." });
+    return;
+  }
+  const paidStatuses = ["Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered"];
+  if (parsed.data.status && paidStatuses.includes(parsed.data.status) && existingOrder.paymentStatus !== "Payment Verified") {
+    res.status(400).json({ error: "Payment must be verified before fulfillment begins." });
+    return;
+  }
+  const { expectedDelivery, deliveryChargeRupees: _ignoredCharge, ...orderFields } = parsed.data;
   const expectedDeliveryValue =
     expectedDelivery === undefined
       ? undefined
@@ -461,6 +515,10 @@ adminRouter.patch("/orders/:id", async (req, res): Promise<void> => {
           : expectedDelivery.toISOString().slice(0, 10);
   const [order] = await db.update(ordersTable).set({
     ...orderFields,
+    ...(deliveryChargeRupees !== undefined ? {
+      deliveryChargeRupees,
+      totalRupees: existingOrder.subtotalRupees + (deliveryChargeRupees ?? 0),
+    } : {}),
     ...(expectedDeliveryValue !== undefined ? { expectedDelivery: expectedDeliveryValue } : {}),
     updatedAt: new Date(),
   }).where(eq(ordersTable.id, req.params.id)).returning();
@@ -491,6 +549,17 @@ adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Order not found" });
     return;
   }
+  if (status.data === "Payment Verified") {
+    const paymentReference = parsed.data.paymentId?.trim() || "";
+    if (order.status !== "Payment Requested" && order.status !== "Payment Pending") {
+      res.status(400).json({ error: "This order is not awaiting payment verification." });
+      return;
+    }
+    if (!paymentReference) {
+      res.status(400).json({ error: "A customer payment reference is required before verification." });
+      return;
+    }
+  }
   const payment = await db.transaction(async (tx) => {
     const [existingPayment] = await tx.select().from(paymentsTable)
       .where(eq(paymentsTable.orderId, order.id))
@@ -501,7 +570,7 @@ adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
       amountPaise: order.totalRupees * 100,
       ...(parsed.data.paymentId !== undefined ? { paymentId: parsed.data.paymentId } : {}),
       ...(parsed.data.provider !== undefined ? { provider: parsed.data.provider } : {}),
-      verifiedAt: status.data === "Payment Verified" ? new Date() : null,
+       verifiedAt: status.data === "Payment Verified" ? new Date() : null,
       updatedAt: new Date(),
     };
     const [savedPayment] = existingPayment
@@ -514,7 +583,10 @@ adminRouter.patch("/orders/:id/payment", async (req, res): Promise<void> => {
       }).returning();
     await tx.update(ordersTable).set({
       paymentStatus: status.data,
-      ...(status.data === "Payment Verified" && order.status === "Payment Pending" ? { status: "Payment Verified" } : {}),
+       ...(status.data === "Payment Verified" ? {
+         status: "Payment Received",
+         expectedDelivery: expectedDeliveryDate(2),
+       } : {}),
       updatedAt: new Date(),
     }).where(eq(ordersTable.id, order.id));
     return savedPayment;

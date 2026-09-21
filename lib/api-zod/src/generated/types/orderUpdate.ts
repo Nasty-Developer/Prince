@@ -15,4 +15,6 @@ export interface OrderUpdate {
   deliveryPhone?: string;
   trackingId?: string;
   deliveryNotes?: string;
+  /** @minimum 0 */
+  deliveryChargeRupees?: number;
 }

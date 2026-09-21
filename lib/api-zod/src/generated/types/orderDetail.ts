@@ -8,8 +8,10 @@
 import type { Order } from './order';
 import type { OrderDetailDeliveriesItem } from './orderDetailDeliveriesItem';
 import type { OrderItem } from './orderItem';
+import type { Payment } from './payment';
 
 export type OrderDetail = Order & {
   items: OrderItem[];
   deliveries?: OrderDetailDeliveriesItem[];
+  payments?: Payment[];
 };

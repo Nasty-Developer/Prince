@@ -1,5 +1,5 @@
 import { useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
-import { ArrowRight, Check, LockKeyhole, MapPin, PawPrint, ShieldCheck } from "lucide-react";
+import { ArrowRight, LockKeyhole, MapPin, PawPrint, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import type { Product } from "@workspace/api-client-react";
 import { useFirebaseAuth } from "@/lib/auth-context";
@@ -140,10 +140,10 @@ export default function CheckoutPage({ cart, setCart }: CheckoutPageProps) {
       <div className="storefront-wrap">
         <header className="storefront-hero">
           <div>
-            <p className="storefront-kicker">One last step</p>
+           <p className="storefront-kicker">Request an order</p>
             <h1>Your order,<br /><em>clearly handed over.</em></h1>
             <p className="storefront-hero-copy">
-              Pay by UPI, share where it should go, and keep the reference for the delivery trail.
+               Share where it should go. The SaveStreet team will review the order, set delivery, and request payment before you pay.
             </p>
           </div>
           <div className="storefront-reference">
@@ -190,24 +190,8 @@ export default function CheckoutPage({ cart, setCart }: CheckoutPageProps) {
                 <input id="deliveryNotes" name="deliveryNotes" placeholder="Optional landmark or timing note" />
               </div>
 
-              <div className="storefront-field storefront-field-wide">
-                <label>UPI payment</label>
-                <div className="storefront-payment">
-                  <img src="/assets/payment-qr.jpg" alt="UPI payment QR code for SaveStreet Dogs" />
-                  <div>
-                    <p>Scan the exact amount of <strong>{money(subtotal)}</strong> using any UPI app. Keep your payment confirmation for your records.</p>
-                    <label className="storefront-check">
-                      <input name="paymentDone" type="checkbox" required />
-                      <span>
-                        Payment Done
-                        <small>I have completed the UPI payment. The SaveStreet team will review it; this checkbox is not payment verification.</small>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
               <button type="submit" className="btn btn-primary" disabled={busy}>
-                {busy ? "Saving order…" : "Place order"} {!busy && <ArrowRight size={15} />}
+                 {busy ? "Saving request…" : "Submit order request"} {!busy && <ArrowRight size={15} />}
               </button>
             </form>
           </section>
@@ -228,7 +212,7 @@ export default function CheckoutPage({ cart, setCart }: CheckoutPageProps) {
               );
             })}
             <div className="storefront-total"><span>Total</span><strong>{money(subtotal)}</strong></div>
-            <p className="storefront-summary-note">All amounts are Indian rupees (INR). Delivery coordination follows the team’s payment review.</p>
+             <p className="storefront-summary-note">All amounts are Indian rupees (INR). Delivery is added by the team after review; payment is requested only after the final total is approved.</p>
           </aside>
         </div>
       </div>

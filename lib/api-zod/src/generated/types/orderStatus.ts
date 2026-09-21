@@ -10,6 +10,10 @@ export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 
 export const OrderStatus = {
+  Order_Received: 'Order Received',
+  Awaiting_Admin_Confirmation: 'Awaiting Admin Confirmation',
+  Payment_Requested: 'Payment Requested',
+  Payment_Received: 'Payment Received',
   Payment_Pending: 'Payment Pending',
   Payment_Verified: 'Payment Verified',
   Preparing: 'Preparing',
