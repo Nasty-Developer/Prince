@@ -1,0 +1,215 @@
+I want you to do a COMPLETE PERFORMANCE + LOADING OPTIMIZATION of the Save Street Dogs website.
+
+IMPORTANT: Do NOT change the existing design, branding, layout, colors, content, functionality, Firebase architecture, admin panel, or user experience unnecessarily. Keep the current visual design exactly as much as possible.
+
+The goal is to make the website feel MUCH FASTER and load significantly faster on both mobile and desktop, especially on slower networks.
+
+### 1. FIX THE INITIAL LOADING EXPERIENCE
+- Audit the current loading screen and application initialization.
+- The loading screen must appear immediately and be lightweight.
+- Do NOT keep users stuck on a loading screen while unnecessary data loads.
+- Show the main UI as soon as the critical content is ready.
+- Load non-critical content after the initial page becomes interactive.
+- Avoid unnecessary artificial delays, setTimeout loading delays, or animations that block the page.
+- If Firebase initialization is causing delays, initialize it efficiently without blocking the entire UI.
+- Make sure the loading screen cannot get stuck indefinitely if a Firebase/API request fails.
+- Add proper timeout/error handling for requests.
+
+### 2. OPTIMIZE IMAGES HEAVILY
+Audit EVERY image on the website.
+
+- Convert/use modern WebP or AVIF where appropriate.
+- Compress large images without visibly damaging quality.
+- Do NOT load huge original images when a smaller version is sufficient.
+- Add responsive image sizing/srcset where appropriate.
+- Use lazy loading for images below the fold.
+- Only prioritize/preload genuinely critical above-the-fold images.
+- Set width/height or aspect-ratio to prevent layout shifting.
+- Make sure the logo is lightweight and transparent as already required.
+- Optimize puppy images, product images, rescue images, story images, hero images, etc.
+- Do not load every product/puppy/rescue image immediately if it is not visible.
+
+### 3. REDUCE JAVASCRIPT
+- Audit the entire React application for unnecessary JavaScript.
+- Remove unused dependencies and dead code where safe.
+- Reduce unnecessary imports.
+- Use code splitting/lazy loading for large pages and admin-only modules.
+- Admin dashboard code must NOT be unnecessarily downloaded by normal public visitors.
+- Lazy-load heavy components that are not needed immediately.
+- Avoid loading large libraries for simple functionality.
+
+### 4. FIREBASE / FIRESTORE PERFORMANCE
+Audit all Firebase queries.
+
+- Do NOT fetch entire Firestore collections when only a few records are needed.
+- Fetch only the fields/data actually required where possible.
+- Limit queries.
+- Use pagination or limits for puppies, products, stories, rescue reports, orders, etc.
+- Avoid duplicate Firebase requests.
+- Prevent the same data from being fetched repeatedly when unnecessary.
+- Cache/reuse data where appropriate.
+- Make sure Firebase listeners are only used where real-time updates are actually necessary.
+- Unsubscribe from listeners when components unmount.
+- Public pages should not wait for admin-only Firebase data.
+- Make sure authentication state initialization does not block the entire website unnecessarily.
+
+### 5. API PERFORMANCE
+Audit all API calls.
+
+- Identify requests that are blocking the initial page.
+- Move non-critical API requests after initial rendering.
+- Avoid duplicate API calls.
+- Add sensible caching where safe.
+- Add request timeouts and graceful fallbacks.
+- If an API fails, the entire website must NOT remain stuck on the loading screen.
+- Show useful fallback UI instead.
+
+### 6. REACT PERFORMANCE
+Audit components for unnecessary re-renders.
+
+- Use React.lazy/Suspense where appropriate.
+- Use memoization only where it actually improves performance.
+- Avoid unnecessary state updates.
+- Avoid recreating expensive objects/functions unnecessarily.
+- Fix any useEffect dependency problems causing repeated requests.
+- Make sure scrolling remains smooth.
+- Make animations lightweight and GPU-friendly.
+
+### 7. ROUTING
+Public pages should load independently.
+
+When a user visits:
+- /
+- /learn
+- /puppies
+- /shop
+- /stories
+- /contact
+- etc.
+
+Do NOT load every page's heavy code/data before displaying the requested page.
+
+Use route-level code splitting where appropriate.
+
+Admin routes should be separately lazy-loaded and must not slow down the public website.
+
+### 8. CSS / FONT OPTIMIZATION
+- Remove unused CSS where safe.
+- Avoid unnecessarily huge CSS bundles.
+- Optimize font loading.
+- Avoid blocking the page while fonts load.
+- Prevent layout shifts.
+- Keep the current design exactly the same.
+
+### 9. PRELOAD ONLY WHAT MATTERS
+Only preload:
+- critical logo if actually needed
+- critical hero image if needed
+- critical fonts if needed
+
+Do NOT preload every image or page.
+
+### 10. NETWORK / CACHING
+Configure the production build for strong browser caching of static assets.
+
+Use hashed filenames for JS/CSS/image assets where supported.
+
+Make sure static assets can be cached efficiently.
+
+### 11. BUNDLE ANALYSIS
+Actually inspect the production bundle.
+
+Run the production build and identify:
+- largest JS chunks
+- largest CSS files
+- largest images
+- unnecessary dependencies
+- duplicated dependencies
+- components causing large bundles
+
+Then optimize the biggest problems instead of making random changes.
+
+### 12. MOBILE FIRST
+The biggest priority is MOBILE PERFORMANCE.
+
+Test/optimize for:
+- slow 4G
+- weaker Android phones
+- limited RAM
+- slower CPUs
+
+The site should become interactive as quickly as realistically possible.
+
+### 13. DO NOT BREAK FUNCTIONALITY
+After optimization, verify:
+
+- Firebase authentication
+- Sign in
+- Sign out
+- Puppies/adoption
+- Products
+- Reflective Collars product
+- Featured Products
+- Stories
+- Learn page
+- Rescue / Before & After section
+- Cart
+- Checkout
+- Admin panel
+- Admin authentication
+- Admin CRUD functionality
+- Images from Firebase Storage
+- Firestore data
+- Contact/WhatsApp/email links
+- Responsive navigation
+- Mobile layout
+
+Everything must continue working.
+
+### 14. IMPORTANT LOADING RULE
+The website must NEVER sit on a blank screen or infinite spinner because one non-critical Firebase/API request is slow or unavailable.
+
+Critical rendering and non-critical data loading must be separated.
+
+For example:
+
+1. Render app shell immediately.
+2. Render critical above-the-fold content.
+3. Load Firebase/public data.
+4. Lazy-load below-the-fold images/components.
+5. Load heavy pages only when visited.
+
+### 15. PRODUCTION TEST
+After making changes:
+
+- Run the complete production build.
+- Confirm the build succeeds.
+- Confirm no TypeScript errors.
+- Confirm no broken imports.
+- Confirm no console errors caused by the optimization.
+- Confirm no broken routes.
+- Confirm no Firebase initialization errors.
+- Confirm no infinite loading states.
+- Inspect the final production bundle.
+- Verify the generated output is:
+  artifacts/savestreet-dogs-main/dist/public
+
+Do NOT modify the Render deployment architecture.
+
+### FINAL REQUIREMENT
+Do a REAL performance audit first, then make the optimizations.
+
+Do NOT simply tell me what could be optimized.
+
+Actually implement the changes in the code.
+
+At the end, give me a concise report containing:
+1. What was slowing the site down.
+2. What you changed.
+3. Which images/assets were optimized.
+4. What Firebase/API requests were optimized.
+5. Bundle-size improvements if measurable.
+6. Production build result.
+7. Any remaining performance bottlenecks.
+
+The website should feel noticeably faster immediately, especially on mobile.

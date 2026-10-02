@@ -48,6 +48,43 @@ function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
 
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = 10_000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const inheritedSignals = [
+    init.signal,
+    isRequest(input) ? input.signal : undefined,
+  ].filter((signal): signal is AbortSignal => Boolean(signal));
+  let timedOut = false;
+  const listeners = inheritedSignals.map((signal) => {
+    const forwardAbort = () => controller.abort(signal.reason);
+    if (signal.aborted) forwardAbort();
+    else signal.addEventListener("abort", forwardAbort, { once: true });
+    return { signal, forwardAbort };
+  });
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (timedOut) {
+      throw new Error(`Request timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+    listeners.forEach(({ signal, forwardAbort }) =>
+      signal.removeEventListener("abort", forwardAbort),
+    );
+  }
+}
+
 function resolveMethod(input: RequestInfo | URL, explicitMethod?: string): string {
   if (explicitMethod) return explicitMethod.toUpperCase();
   if (isRequest(input)) return input.method.toUpperCase();
@@ -360,7 +397,7 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetchWithTimeout(input, { ...init, method, headers });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

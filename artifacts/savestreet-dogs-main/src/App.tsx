@@ -1,19 +1,15 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, UserRound, X } from "lucide-react";
 import { Link, Route, Switch, useLocation, useRoute } from "wouter";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { useGetAdminDashboard, useGetProduct, useGetPuppy, useListAdminProducts, useListAdminPuppies, useListAdoptionRequests, useListAdminOrders, useListProducts, useListPuppies } from "@workspace/api-client-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useGetProduct, useGetPuppy, useListProducts, useListPuppies } from "@workspace/api-client-react";
 import type { Product, Puppy } from "@workspace/api-client-react";
 import NotFound from "@/pages/not-found";
-import AuthPage from "@/components/auth-page";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FirebaseAuthProvider, useFirebaseAuth } from "@/lib/auth-context";
-import { auth } from "@/lib/firebase";
-import AdminApp from "@/admin";
-import OrderTrackingPage from "@/storefront/OrderTrackingPage";
-import { storageImageUrl } from "@/storefront/api";
+import { storageImageUrl, storefrontJson } from "@/storefront/api";
 import { ContactActionLinks, WhatsAppAction } from "@/components/site-contact-actions";
 import { SAVE_STREET_DOGS_LOGO } from "@/lib/brand";
 import {
@@ -27,21 +23,25 @@ import {
   useSiteContact,
 } from "@/lib/site-contact";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      retryDelay: 500,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+const AuthPage = lazy(() => import("@/components/auth-page"));
+const AdminApp = lazy(() => import("@/admin"));
+const OrderTrackingPage = lazy(() => import("@/storefront/OrderTrackingPage"));
 const dogImages = {
-  hero: "https://images.pexels.com/photos/1254140/pexels-photo-1254140.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  calm: "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=1000",
+  hero: (width: number) => `https://images.pexels.com/photos/1254140/pexels-photo-1254140.jpeg?auto=compress&cs=tinysrgb&w=${width}&q=78`,
+  calm: (width: number) => `https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=${width}&q=78`,
 };
 type CartLine = Product & { quantity: number };
 const money = (rupees: number) => `₹${rupees.toFixed(0)}`;
-const api = async (path: string, init?: RequestInit) => {
-  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
-  const headers = new Headers({ "Content-Type": "application/json", ...(init?.headers ?? {}) });
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(path, { credentials: "include", ...init, headers });
-  if (!response.ok) throw new Error((await response.json().catch(() => null))?.error ?? `Request failed (${response.status})`);
-  return response.status === 204 ? null : response.json();
-};
+const api = <T,>(path: string, init?: RequestInit) => storefrontJson<T>(path, init);
 
 function Meta({ title, description }: { title: string; description: string }) {
   useEffect(() => {
@@ -56,6 +56,15 @@ function PageHeader({ eyebrow, title, text }: { eyebrow: string; title: ReactNod
 function EmptyState({ title, text, action }: { title: string; text: string; action?: ReactNode }) {
   return <div className="empty-state"><PawPrint size={28} /><h3>{title}</h3><p>{text}</p>{action}</div>;
 }
+function RouteLoading({ label }: { label: string }) {
+  return <main><section className="content-section container"><div className="empty-state" role="status">Loading {label}…</div></section></main>;
+}
+function AdminRoute() {
+  return <Suspense fallback={<RouteLoading label="admin tools" />}><AdminApp /></Suspense>;
+}
+function AuthRoute({ mode }: { mode: "signin" | "signup" | "reset" | "admin" }) {
+  return <Suspense fallback={<RouteLoading label="sign-in" />}><AuthPage mode={mode} /></Suspense>;
+}
 function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
@@ -67,7 +76,7 @@ function Header({ cartCount, onCart }: { cartCount: number; onCart: () => void }
       <div className="nav-wrap">
         <nav className="nav">
           <Link href="/" className="brand" aria-label="SaveStreet Dogs home">
-            <img className="brand-logo" src={SAVE_STREET_DOGS_LOGO} alt="SaveStreet Dogs" />
+            <img className="brand-logo" src={SAVE_STREET_DOGS_LOGO} alt="SaveStreet Dogs" width="504" height="336" decoding="async" />
           </Link>
           <div className="nav-links">{items.map(([href, label]) => <Link key={href} href={href} className={location === href ? "active" : ""}>{label}</Link>)}</div>
           <div className="nav-actions">
@@ -88,7 +97,7 @@ function Footer() {
       <div className="container footer-grid">
         <div className="footer-brand">
           <Link href="/" className="brand" aria-label="SaveStreet Dogs home">
-            <img className="brand-logo footer-logo" src={SAVE_STREET_DOGS_LOGO} alt="SaveStreet Dogs" />
+            <img className="brand-logo footer-logo" src={SAVE_STREET_DOGS_LOGO} alt="SaveStreet Dogs" width="504" height="336" loading="lazy" decoding="async" />
           </Link>
           <p>Practical care, patient homes, and a community that notices the dog at the edge of the road.</p>
           <p className="eyebrow">Every Paw Deserves a Chance.</p>
@@ -111,21 +120,24 @@ function Shell({ children, cart, setCart }: { children: ReactNode; cart: CartLin
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   const total = cart.reduce((sum, item) => sum + item.quantity * item.priceRupees, 0);
   const change = (id: string, amount: number) => setCart((lines) => lines.map((line) => line.id === id ? { ...line, quantity: Math.max(0, line.quantity + amount) } : line).filter((line) => line.quantity));
-  return <div className="site-shell"><Header cartCount={count} onCart={() => setCartOpen(true)} />{children}<Footer /><div className={`drawer-backdrop ${cartOpen ? "open" : ""}`} onClick={() => setCartOpen(false)} /><aside className={`cart-drawer ${cartOpen ? "open" : ""}`}><div className="drawer-head"><h2>Your cart</h2><button className="icon-btn" onClick={() => setCartOpen(false)}><X size={18} /></button></div>{!cart.length ? <EmptyState title="Your cart is waiting for something kind." text="Browse the shop to support the work." action={<Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)}>Browse the shop</Link>} /> : <><div className="cart-items">{cart.map((item) => { const image = storageImageUrl(item.imageUrls?.[0]); return <div className="cart-row" key={item.id}><div className="cart-thumb">{image ? <img src={image} alt="" /> : <PawPrint size={20} />}</div><div><strong>{item.name}</strong><small>{money(item.priceRupees)} each</small><div className="qty"><button onClick={() => change(item.id, -1)}><Minus size={12} /></button><span>{item.quantity}</span><button onClick={() => change(item.id, 1)}>+</button></div></div></div>; })}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>{money(total)}</strong></div><Link href="/checkout" className="btn btn-dark" style={{ width: "100%" }} onClick={() => setCartOpen(false)}>Continue to checkout <ArrowRight size={15} /></Link><p style={{ color: "#7d8982", fontSize: 11 }}>Payment is collected after your order is reviewed.</p></div></>}</aside></div>;
+  return <div className="site-shell"><Header cartCount={count} onCart={() => setCartOpen(true)} />{children}<Footer /><div className={`drawer-backdrop ${cartOpen ? "open" : ""}`} onClick={() => setCartOpen(false)} /><aside className={`cart-drawer ${cartOpen ? "open" : ""}`}><div className="drawer-head"><h2>Your cart</h2><button className="icon-btn" onClick={() => setCartOpen(false)}><X size={18} /></button></div>{!cart.length ? <EmptyState title="Your cart is waiting for something kind." text="Browse the shop to support the work." action={<Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)}>Browse the shop</Link>} /> : <><div className="cart-items">{cart.map((item) => { const image = storageImageUrl(item.imageUrls?.[0]); return <div className="cart-row" key={item.id}><div className="cart-thumb">{image ? <img src={image} alt="" loading="lazy" decoding="async" /> : <PawPrint size={20} />}</div><div><strong>{item.name}</strong><small>{money(item.priceRupees)} each</small><div className="qty"><button onClick={() => change(item.id, -1)}><Minus size={12} /></button><span>{item.quantity}</span><button onClick={() => change(item.id, 1)}>+</button></div></div></div>; })}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>{money(total)}</strong></div><Link href="/checkout" className="btn btn-dark" style={{ width: "100%" }} onClick={() => setCartOpen(false)}>Continue to checkout <ArrowRight size={15} /></Link><p style={{ color: "#7d8982", fontSize: 11 }}>Payment is collected after your order is reviewed.</p></div></>}</aside></div>;
 }
 function Home() {
-  return <><Meta title="Street by street" description="SaveStreet Dogs helps people turn concern for street dogs into simple, compassionate action." /><main><section className="hero"><div className="reveal"><div className="eyebrow">Community care for street dogs</div><h1>Small actions.<br /><em>Real chances.</em></h1><p className="hero-copy">A dog on the roadside can change the shape of your day. We make the next step clearer — report an injury, open your home, learn what helps.</p><div className="hero-actions"><Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={16} /></Link><Link href="/puppies" className="btn btn-ghost">Meet the puppies</Link></div><div className="hero-note"><ShieldCheck size={15} /> Clear guidance. Respectful care.</div></div><div className="hero-art reveal delay-2"><img className="hero-photo" src={dogImages.hero} alt="A calm tan dog outdoors" /><div className="art-sticker"><PawPrint size={24} /><span>Every paw<br />deserves<br />a chance</span></div></div></section><div className="band"><div className="container band-inner"><strong>Start where you are.</strong><p>One form. One conversation. One bowl of water can be the beginning.</p><Link href="/learn" className="btn btn-dark">What helps most <ArrowRight size={14} /></Link></div></div><section className="section container"><div className="section-head"><div><div className="eyebrow">Choose your next step</div><h2>Care is a practice,<br />not a perfect moment.</h2></div><p className="section-intro">You do not need to know everything to help. Pick the path that fits what you can offer today.</p></div><div className="action-grid"><Link href="/rescue" className="action-card primary"><div><Stethoscope size={25} /><h3>There is a dog who needs help</h3><p>Tell us what you see. A clear report gives the right people a place to begin.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/foster" className="action-card sage"><div><Heart size={24} /><h3>I can open my home</h3><p>Even a temporary landing place makes recovery possible.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/volunteer" className="action-card cream"><div><UserRound size={24} /><h3>I have time to give</h3><p>Good work is built by neighbors who show up steadily.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link></div></section><section className="section container"><div className="split"><img className="split-photo" src={dogImages.calm} alt="A rescued dog resting" /><div><div className="eyebrow">A slower kind of change</div><div className="quote-mark">“</div><p className="quote">Every Paw Deserves a Chance.</p><p className="section-intro">We believe the most trustworthy rescue work is specific and patient: listen first, offer realistic choices, and keep the dog’s dignity at the center.</p><Link href="/about" className="btn btn-ghost">How we work <ArrowRight size={15} /></Link></div></div></section></main></>;
+  return <><Meta title="Street by street" description="SaveStreet Dogs helps people turn concern for street dogs into simple, compassionate action." /><main><section className="hero"><div className="reveal"><div className="eyebrow">Community care for street dogs</div><h1>Small actions.<br /><em>Real chances.</em></h1><p className="hero-copy">A dog on the roadside can change the shape of your day. We make the next step clearer — report an injury, open your home, learn what helps.</p><div className="hero-actions"><Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={16} /></Link><Link href="/puppies" className="btn btn-ghost">Meet the puppies</Link></div><div className="hero-note"><ShieldCheck size={15} /> Clear guidance. Respectful care.</div></div><div className="hero-art reveal delay-2"><img className="hero-photo" src={dogImages.hero(960)} srcSet={`${dogImages.hero(480)} 480w, ${dogImages.hero(960)} 960w`} sizes="(max-width: 760px) 80vw, 40vw" alt="A calm tan dog outdoors" loading="eager" fetchPriority="high" decoding="async" /><div className="art-sticker"><PawPrint size={24} /><span>Every paw<br />deserves<br />a chance</span></div></div></section><div className="band"><div className="container band-inner"><strong>Start where you are.</strong><p>One form. One conversation. One bowl of water can be the beginning.</p><Link href="/learn" className="btn btn-dark">What helps most <ArrowRight size={14} /></Link></div></div><section className="section container"><div className="section-head"><div><div className="eyebrow">Choose your next step</div><h2>Care is a practice,<br />not a perfect moment.</h2></div><p className="section-intro">You do not need to know everything to help. Pick the path that fits what you can offer today.</p></div><div className="action-grid"><Link href="/rescue" className="action-card primary"><div><Stethoscope size={25} /><h3>There is a dog who needs help</h3><p>Tell us what you see. A clear report gives the right people a place to begin.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/foster" className="action-card sage"><div><Heart size={24} /><h3>I can open my home</h3><p>Even a temporary landing place makes recovery possible.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/volunteer" className="action-card cream"><div><UserRound size={24} /><h3>I have time to give</h3><p>Good work is built by neighbors who show up steadily.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link></div></section><section className="section container"><div className="split"><img className="split-photo" src={dogImages.calm(800)} srcSet={`${dogImages.calm(480)} 480w, ${dogImages.calm(800)} 800w`} sizes="(max-width: 760px) 100vw, 50vw" alt="A rescued dog resting" loading="lazy" decoding="async" /><div><div className="eyebrow">A slower kind of change</div><div className="quote-mark">“</div><p className="quote">Every Paw Deserves a Chance.</p><p className="section-intro">We believe the most trustworthy rescue work is specific and patient: listen first, offer realistic choices, and keep the dog’s dignity at the center.</p><Link href="/about" className="btn btn-ghost">How we work <ArrowRight size={15} /></Link></div></div></section></main></>;
 }
 function Puppies() {
   const [search, setSearch] = useState(""); const [size, setSize] = useState("");
-  const query = useListPuppies({ search: search || undefined, size: size || undefined });
-  return <><Meta title="Meet the puppies" description="Browse current SaveStreet Dogs puppy profiles." /><main><PageHeader eyebrow="Adoptable, with care" title={<>Meet your<br /><em>maybe-dog.</em></>} text="Current profiles come from the care team. Availability changes as dogs move through care and adoption." /><section className="content-section container"><div className="toolbar"><div><div className="eyebrow">Current profiles</div><p style={{ color: "#526a64", fontSize: 13 }}>No profile is published until the team adds it in Admin.</p></div><div className="filter-row"><div className="search"><Search size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or temperament" /></div><select className="select" value={size} onChange={(e) => setSize(e.target.value)}><option value="">All sizes</option><option>Small</option><option>Medium</option><option>Large</option></select></div></div>{query.isLoading ? <div className="empty-state">Loading current profiles…</div> : query.error ? <EmptyState title="Profiles are temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /> : query.data?.length ? <div className="puppy-grid">{query.data.map((puppy) => <PuppyCard puppy={puppy} key={puppy.id} />)}</div> : <EmptyState title="No puppies are currently listed." text="The care team has not published an available profile yet. Check back soon or report a dog who needs help." action={<Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={14} /></Link>} />}</section></main></>;
+  const query = useListPuppies(
+    { search: search || undefined, size: size || undefined },
+    { query: { staleTime: 30_000 } },
+  );
+  return <><Meta title="Meet the puppies" description="Browse current SaveStreet Dogs puppy profiles." /><main><PageHeader eyebrow="Adoptable, with care" title={<>Meet your<br /><em>maybe-dog.</em></>} text="Current profiles come from the care team. Availability changes as dogs move through care and adoption." /><section className="content-section container"><div className="toolbar"><div><div className="eyebrow">Current profiles</div><p style={{ color: "#526a64", fontSize: 13 }}>No profile is published until the team adds it in Admin.</p></div><div className="filter-row"><div className="search"><Search size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or temperament" /></div><select className="select" value={size} onChange={(e) => setSize(e.target.value)}><option value="">All sizes</option><option>Small</option><option>Medium</option><option>Large</option></select></div></div>{query.error && <div className="notice error" role="alert">We couldn’t refresh profiles. <button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button></div>}{query.isLoading && !query.data ? <div className="empty-state" role="status">Loading current profiles…</div> : query.data?.length ? <div className="puppy-grid">{query.data.map((puppy) => <PuppyCard puppy={puppy} key={puppy.id} />)}</div> : query.error ? <EmptyState title="Profiles are temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /> : <EmptyState title="No puppies are currently listed." text="The care team has not published an available profile yet. Check back soon or report a dog who needs help." action={<Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={14} /></Link>} />}</section></main></>;
 }
 function PuppyCard({ puppy }: { puppy: Puppy }) {
   const image = storageImageUrl(puppy.imageUrls[0]);
   return (
     <article className="puppy-card">
-      <div className="card-image-fallback">{image ? <img src={image} alt={`${puppy.name}, adoptable dog`} /> : <PawPrint size={44} />}</div>
+      <div className="card-image-fallback">{image ? <img src={image} alt={`${puppy.name}, adoptable dog`} loading="lazy" decoding="async" /> : <PawPrint size={44} />}</div>
       <div className="card-body">
         <div className="card-top"><h2 className="card-title">{puppy.name}</h2><span className="tag">{puppy.temperament || puppy.status}</span></div>
         <p>{puppy.description || "The care team will share more about this dog soon."}</p>
@@ -140,9 +152,10 @@ function PuppyCard({ puppy }: { puppy: Puppy }) {
   );
 }
 function PuppyProfile() {
-  const [, params] = useRoute("/puppies/:id"); const query = useGetPuppy(params?.id ?? "");
-  if (query.isLoading) return <main><div className="content-section container"><div className="empty-state">Loading profile…</div></div></main>;
-  if (!query.data || query.error) return <NotFound />;
+  const [, params] = useRoute("/puppies/:id"); const query = useGetPuppy(params?.id ?? "", { query: { staleTime: 30_000 } });
+  if (query.isLoading && !query.data) return <main><div className="content-section container"><div className="empty-state" role="status">Loading profile…</div></div></main>;
+  if (query.error && !query.data) return <main><div className="content-section container"><EmptyState title="This profile is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
+  if (!query.data) return <NotFound />;
   const puppy = query.data; const image = storageImageUrl(puppy.imageUrls[0]);
   return (
     <>
@@ -151,7 +164,7 @@ function PuppyProfile() {
         <PageHeader eyebrow="A closer look" title={<>{puppy.name}<br /><em>could be your next hello.</em></>} text="The care team keeps this profile current. Adoption decisions always begin with a human conversation." />
         <section className="content-section container">
           <div className="profile-layout">
-            <div className="profile-photo card-image-fallback">{image ? <img src={image} alt={`${puppy.name}, adoptable dog`} /> : <PawPrint size={64} />}</div>
+             <div className="profile-photo card-image-fallback">{image ? <img src={image} alt={`${puppy.name}, adoptable dog`} loading="eager" fetchPriority="high" decoding="async" /> : <PawPrint size={64} />}</div>
             <div className="profile-copy">
               <div className="tag">{puppy.temperament || puppy.status}</div>
               <h2>{puppy.name} is waiting for the right kind of yes.</h2>
@@ -171,7 +184,7 @@ function PuppyProfile() {
   );
 }
 function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
-  const [search, setSearch] = useState(""); const query = useListProducts({ search: search || undefined });
+  const [search, setSearch] = useState(""); const query = useListProducts({ search: search || undefined }, { query: { staleTime: 30_000 } });
   const add = (product: Product) => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { ...product, quantity: 1 }]);
   return (
     <>
@@ -183,14 +196,15 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
             <div className="eyebrow">Live catalog</div>
             <div className="search"><Search size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search the catalog" /></div>
           </div>
-          {query.isLoading ? <div className="empty-state">Loading the live catalog…</div> : query.data?.length ? (
+          {query.error && query.data?.length ? <div className="notice error" role="alert">We couldn’t refresh the catalog. <button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button></div> : null}
+          {query.isLoading && !query.data ? <div className="empty-state" role="status">Loading the live catalog…</div> : query.data?.length ? (
             <div className="product-grid">
               {query.data.map((product) => {
                 const image = storageImageUrl(product.imageUrls[0]);
                 return (
                   <article className="product-card" key={product.id}>
                     <Link href={`/products/${product.id}`} className={`product-art ${image ? "has-image" : ""}`} aria-label={`View ${product.name}`}>
-                      {image ? <img src={image} alt={`${product.name} product`} /> : <PawPrint size={34} />}
+                      {image ? <img src={image} alt={`${product.name} product`} loading="lazy" decoding="async" /> : <PawPrint size={34} />}
                     </Link>
                     <div className="product-body">
                       <div className="eyebrow">{product.category}</div>
@@ -205,6 +219,8 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
                 );
               })}
             </div>
+          ) : query.error ? (
+            <EmptyState title="The shop is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-primary" onClick={() => query.refetch()}>Try again</button>} />
           ) : (
             <EmptyState
               title="The shop is being stocked."
@@ -219,10 +235,11 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
 }
 function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
   const [, params] = useRoute("/products/:id");
-  const query = useGetProduct(params?.id ?? "");
+  const query = useGetProduct(params?.id ?? "", { query: { staleTime: 30_000 } });
   const [, navigate] = useLocation();
-  if (query.isLoading) return <main><div className="content-section container"><div className="empty-state">Loading product…</div></div></main>;
-  if (query.error || !query.data) return <NotFound />;
+  if (query.isLoading && !query.data) return <main><div className="content-section container"><div className="empty-state" role="status">Loading product…</div></div></main>;
+  if (query.error && !query.data) return <main><div className="content-section container"><EmptyState title="This product is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
+  if (!query.data) return <NotFound />;
   const product = query.data;
   const image = storageImageUrl(product.imageUrls[0]);
   const add = () => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { ...product, quantity: 1 }]);
@@ -233,7 +250,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
         <section className="content-section container">
           <button className="btn btn-ghost" onClick={() => navigate("/products")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> Back to shop</button>
           <div className="product-detail" style={{ marginTop: 30 }}>
-            <div className={`product-art ${image ? "has-image" : ""}`}>{image ? <img src={image} alt={`${product.name} product`} /> : <PawPrint size={64} />}</div>
+             <div className={`product-art ${image ? "has-image" : ""}`}>{image ? <img src={image} alt={`${product.name} product`} loading="eager" fetchPriority="high" decoding="async" /> : <PawPrint size={64} />}</div>
             <div className="product-detail-copy">
               <div className="eyebrow">{product.category}</div>
               <h2>{product.name}</h2>
@@ -463,39 +480,22 @@ function FormPage({ kind }: { kind: "rescue" | "adopt" | "foster" | "volunteer" 
     </>
   );
 }
-function Admin() {
-  const { loading, user, signOut } = useFirebaseAuth(); const isSignedIn = Boolean(user); const [tab, setTab] = useState("overview"); const client = useQueryClient();
-  const dashboard = useGetAdminDashboard({ query: { queryKey: ["admin-dashboard"], enabled: isSignedIn && tab === "overview" } }); const puppies = useListAdminPuppies({ query: { queryKey: ["admin-puppies"], enabled: isSignedIn && tab === "puppies" } }); const products = useListAdminProducts({ query: { queryKey: ["admin-products"], enabled: isSignedIn && tab === "products" } }); const adoptions = useListAdoptionRequests({ query: { queryKey: ["admin-adoptions"], enabled: isSignedIn && tab === "adoptions" } }); const orders = useListAdminOrders({ query: { queryKey: ["admin-orders"], enabled: isSignedIn && tab === "orders" } });
-  const [form, setForm] = useState<Record<string, string>>({ name: "", description: "", age: "", size: "", temperament: "", location: "", priceRupees: "60", stock: "0", imageUrls: "" }); const [message, setMessage] = useState("");
-  if (loading) return <main><div className="content-section container"><div className="empty-state">Loading secure admin access…</div></div></main>;
-  if (!isSignedIn) return <main><PageHeader eyebrow="Private workspace" title={<>Care work needs<br /><em>good systems.</em></>} text="Sign in with the authorized Firebase account to manage the live SaveStreet Dogs catalog and requests." /><section className="content-section container"><div className="form-card" style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}><Link href="/admin/login" className="btn btn-primary">Sign in to Admin <ArrowRight size={15} /></Link></div></section></main>;
-  async function save(kind: "puppy" | "product") { setMessage(""); try { const body = kind === "puppy" ? { name: form.name, description: form.description, age: form.age, size: form.size, temperament: form.temperament, location: form.location, imageUrls: form.imageUrls ? form.imageUrls.split(",").map((v) => v.trim()) : [] } : { name: form.name, description: form.description, priceRupees: Number(form.priceRupees), stock: Number(form.stock), imageUrls: form.imageUrls ? form.imageUrls.split(",").map((v) => v.trim()) : [] }; await api(kind === "puppy" ? "/api/admin/puppies" : "/api/admin/products", { method: "POST", body: JSON.stringify(body) }); setMessage("Saved to the live catalog."); setForm({ name: "", description: "", age: "", size: "", temperament: "", location: "", priceRupees: "60", stock: "0", imageUrls: "" }); await client.invalidateQueries(); } catch (error) { setMessage(error instanceof Error ? error.message : "Save failed."); } }
-  const data = dashboard.data;
-  return <main className="admin-page"><div className="container"><div className="admin-head"><div><div className="eyebrow">Private workspace</div><h1>SaveStreet <em>Admin.</em></h1><p>Manage the live source of truth for the public site.</p></div><div className="admin-user"><span>{user?.email}</span><button className="btn btn-ghost" onClick={() => void signOut()}>Sign out</button></div></div><div className="admin-tabs">{[["overview", "Overview"], ["puppies", "Puppies"], ["products", "Products"], ["adoptions", "Adoption requests"], ["orders", "Orders"]].map(([id, label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>)}</div>{dashboard.error && tab === "overview" ? <div className="notice error">This Firebase account is not authorized as a SaveStreet Dogs administrator.</div> : tab === "overview" ? <div className="admin-grid">{Object.entries(data ?? {}).map(([key, value]) => <div className="admin-stat" key={key}><span>{key.replace(/[A-Z]/g, " $&")}</span><strong>{value as number}</strong></div>)}</div> : tab === "puppies" ? <AdminCatalog kind="puppy" items={puppies.data ?? []} form={form} setForm={setForm} onSave={() => save("puppy")} message={message} /> : tab === "products" ? <AdminCatalog kind="product" items={products.data ?? []} form={form} setForm={setForm} onSave={() => save("product")} message={message} /> : tab === "adoptions" ? <AdminList title="Adoption requests" rows={adoptions.data ?? []} empty="No adoption requests yet." /> : <AdminList title="Orders" rows={orders.data ?? []} empty="No orders yet. Payment verification is required before orders are created." />}</div></main>;
-}
-function AdminCatalog({ kind, items, form, setForm, onSave, message }: { kind: "puppy" | "product"; items: Array<Puppy | Product>; form: Record<string, string>; setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>; onSave: () => void; message: string }) {
-  return <div className="admin-layout"><section className="form-card"><h2>Add {kind}</h2>{message && <div className="notice success">{message}</div>}<div className="field"><label>Name *</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div><div className="field"><label>Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>{kind === "puppy" ? <><div className="field"><label>Age</label><input value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} /></div><div className="field"><label>Size</label><input value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} /></div><div className="field"><label>Temperament</label><input value={form.temperament} onChange={(e) => setForm({ ...form, temperament: e.target.value })} /></div><div className="field"><label>Location</label><input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div></> : <><div className="field"><label>Price (₹)</label><input type="number" min="0" step="1" value={form.priceRupees} onChange={(e) => setForm({ ...form, priceRupees: e.target.value })} /><small>Default price: ₹60 per piece.</small></div><div className="field"><label>Stock</label><input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} /></div></>}<div className="field"><label>Image URLs</label><input value={form.imageUrls} onChange={(e) => setForm({ ...form, imageUrls: e.target.value })} placeholder="Paste public image URL(s), comma separated" /></div><button className="btn btn-primary" onClick={onSave} disabled={!form.name.trim()}>Save to database <ArrowRight size={15} /></button></section><section><h2>{kind === "puppy" ? "Live puppy catalog" : "Live product catalog"}</h2>{!items.length ? <EmptyState title={`No ${kind}s yet.`} text="This list is intentionally empty until an admin adds real data." /> : <div className="admin-list">{items.map((item) => <div className="admin-row" key={item.id}><div><strong>{item.name}</strong><span>{kind === "puppy" ? `${(item as Puppy).status} · ${(item as Puppy).location || "Location not set"}` : `${money((item as Product).priceRupees)} · ${(item as Product).stock} in stock`}</span></div></div>)}</div>}</section></div>;
-}
-function AdminList({ title, rows, empty }: { title: string; rows: Array<unknown>; empty: string }) {
-  return <section><h2>{title}</h2>{!rows.length ? <EmptyState title={empty} text="New records will appear here from the public forms." /> : <div className="admin-list">{rows.map((row) => { const record = row as Record<string, unknown>; return <div className="admin-row" key={String(record.id)}><div><strong>{String(record.applicantName ?? record.orderCode ?? "Record")}</strong><span>{String(record.status ?? "")} · {String(record.email ?? "")}</span></div></div>; })}</div>}</section>;
-}
 function AppRoutes() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [location] = useLocation();
   if (location.startsWith("/admin") && location !== "/admin/login") {
-    return <Switch><Route path="/admin" component={AdminApp} /><Route path="/admin/:rest*" component={AdminApp} /><Route><NotFound /></Route></Switch>;
+    return <Switch><Route path="/admin" component={AdminRoute} /><Route path="/admin/:rest*" component={AdminRoute} /><Route><NotFound /></Route></Switch>;
   }
-  return <Shell cart={cart} setCart={setCart}><Switch><Route path="/" component={Home} /><Route path="/login"><AuthPage mode="signin" /></Route><Route path="/signup"><AuthPage mode="signup" /></Route><Route path="/forgot-password"><AuthPage mode="reset" /></Route><Route path="/admin/login"><AuthPage mode="admin" /></Route><Route path="/orders/:orderCode" component={OrderTrackingPage} /><Route path="/puppies/:id" component={PuppyProfile} /><Route path="/puppies" component={Puppies} /><Route path="/products/:id"><ProductDetail cart={cart} setCart={setCart} /></Route><Route path="/products"><Products cart={cart} setCart={setCart} /></Route><Route path="/checkout"><CheckoutPage cart={cart} setCart={setCart} /></Route><Route path="/rescue"><FormPage kind="rescue" /></Route><Route path="/adopt"><FormPage kind="adopt" /></Route><Route path="/foster"><FormPage kind="foster" /></Route><Route path="/volunteer"><FormPage kind="volunteer" /></Route><Route path="/contact"><FormPage kind="contact" /></Route><Route><NotFound /></Route></Switch></Shell>;
+  return <Shell cart={cart} setCart={setCart}><Switch><Route path="/" component={Home} /><Route path="/login"><AuthRoute mode="signin" /></Route><Route path="/signup"><AuthRoute mode="signup" /></Route><Route path="/forgot-password"><AuthRoute mode="reset" /></Route><Route path="/admin/login"><AuthRoute mode="admin" /></Route><Route path="/orders/:orderCode"><Suspense fallback={<RouteLoading label="order details" />}><OrderTrackingPage /></Suspense></Route><Route path="/puppies/:id" component={PuppyProfile} /><Route path="/puppies" component={Puppies} /><Route path="/products/:id"><ProductDetail cart={cart} setCart={setCart} /></Route><Route path="/products"><Products cart={cart} setCart={setCart} /></Route><Route path="/checkout"><CheckoutPage cart={cart} setCart={setCart} /></Route><Route path="/rescue"><FormPage kind="rescue" /></Route><Route path="/adopt"><FormPage kind="adopt" /></Route><Route path="/foster"><FormPage kind="foster" /></Route><Route path="/volunteer"><FormPage kind="volunteer" /></Route><Route path="/contact"><FormPage kind="contact" /></Route><Route><NotFound /></Route></Switch></Shell>;
 }
 
 function StartupReadyGate({ children }: { children: ReactNode }) {
-  const { loading } = useFirebaseAuth();
   const holdStartupPreview =
     import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get("startupPreview") === "1";
 
   useEffect(() => {
-    if (loading || holdStartupPreview) return;
+    if (holdStartupPreview) return;
     const loader = document.getElementById("startup-loader");
     if (!loader || loader.classList.contains("is-done")) return;
 
@@ -509,7 +509,7 @@ function StartupReadyGate({ children }: { children: ReactNode }) {
       window.clearTimeout(dismissTimer);
       if (removeTimer !== undefined) window.clearTimeout(removeTimer);
     };
-  }, [holdStartupPreview, loading]);
+  }, [holdStartupPreview]);
 
   return <>{children}</>;
 }

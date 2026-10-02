@@ -1,11 +1,4 @@
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  type User,
-} from "firebase/auth";
+import type { User } from "firebase/auth";
 import {
   createContext,
   useContext,
@@ -15,7 +8,40 @@ import {
   type ReactNode,
 } from "react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
-import { auth, authPersistence } from "./firebase";
+
+type FirebaseAuthApi = typeof import("firebase/auth");
+type FirebaseAuthModule = typeof import("./firebase-auth");
+type FirebaseRuntime = {
+  api: FirebaseAuthApi;
+  auth: FirebaseAuthModule["auth"];
+  authPersistence: FirebaseAuthModule["authPersistence"];
+};
+
+let firebaseRuntimePromise: Promise<FirebaseRuntime> | null = null;
+let currentTokenGetter: (() => Promise<string | null>) | null = null;
+
+function loadFirebaseRuntime(): Promise<FirebaseRuntime> {
+  if (!firebaseRuntimePromise) {
+    firebaseRuntimePromise = Promise.all([
+      import("firebase/auth"),
+      import("./firebase-auth"),
+    ])
+      .then(([api, firebase]) => ({
+        api,
+        auth: firebase.auth,
+        authPersistence: firebase.authPersistence,
+      }))
+      .catch((error: unknown) => {
+        firebaseRuntimePromise = null;
+        throw error;
+      });
+  }
+  return firebaseRuntimePromise;
+}
+
+export function getFirebaseIdToken(): Promise<string | null> {
+  return currentTokenGetter?.() ?? Promise.resolve(null);
+}
 
 type AuthContextValue = {
   user: User | null;
@@ -96,17 +122,21 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     };
 
-    setAuthTokenGetter(() => auth.currentUser?.getIdToken() ?? null);
     bootstrapTimeout = window.setTimeout(() => {
       finishInitialization(
         "Firebase sign-in is taking longer than expected. You can browse while it reconnects.",
       );
     }, 8000);
 
-    void authPersistence
-      .then(() => {
+    void loadFirebaseRuntime()
+      .then(async ({ api, auth, authPersistence }) => {
         if (!active) return;
-        unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+        const tokenGetter = () => auth.currentUser?.getIdToken() ?? Promise.resolve(null);
+        currentTokenGetter = tokenGetter;
+        setAuthTokenGetter(tokenGetter);
+        await authPersistence;
+        if (!active) return;
+        unsubscribe = api.onAuthStateChanged(auth, async (nextUser) => {
           if (!active) return;
           setLoading(true);
           setUser(nextUser);
@@ -152,6 +182,7 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
         window.clearTimeout(bootstrapTimeout);
       }
       unsubscribe?.();
+      currentTokenGetter = null;
       setAuthTokenGetter(null);
     };
   }, []);
@@ -164,24 +195,28 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       async signIn(email, password) {
         try {
-          await signInWithEmailAndPassword(auth, email.trim(), password);
+          const { api, auth } = await loadFirebaseRuntime();
+          await api.signInWithEmailAndPassword(auth, email.trim(), password);
         } catch (error) {
           throw new Error(authMessage(error));
         }
       },
       async signUp(email, password) {
         try {
-          await createUserWithEmailAndPassword(auth, email.trim(), password);
+          const { api, auth } = await loadFirebaseRuntime();
+          await api.createUserWithEmailAndPassword(auth, email.trim(), password);
         } catch (error) {
           throw new Error(authMessage(error));
         }
       },
       async signOut() {
-        await firebaseSignOut(auth);
+        const { api, auth } = await loadFirebaseRuntime();
+        await api.signOut(auth);
       },
       async resetPassword(email) {
         try {
-          await sendPasswordResetEmail(auth, email.trim());
+          const { api, auth } = await loadFirebaseRuntime();
+          await api.sendPasswordResetEmail(auth, email.trim());
         } catch (error) {
           throw new Error(authMessage(error));
         }

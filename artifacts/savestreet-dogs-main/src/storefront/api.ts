@@ -1,4 +1,5 @@
-import { auth } from "@/lib/firebase";
+import { fetchWithTimeout } from "@workspace/api-client-react";
+import { getFirebaseIdToken } from "@/lib/auth-context";
 
 export type StorefrontApiError = Error & { status?: number };
 
@@ -84,14 +85,14 @@ export async function storefrontJson<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  const token = await getFirebaseIdToken();
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(path, {
+  const response = await fetchWithTimeout(path, {
     ...init,
     credentials: "include",
     headers,

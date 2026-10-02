@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { fetchWithTimeout } from "@workspace/api-client-react";
 
 export const SITE_CONTACT_QUERY_KEY = ["site-contact"] as const;
 
@@ -31,7 +32,7 @@ function normaliseContactSetting(
 }
 
 async function fetchSiteContact(): Promise<SiteContact> {
-  const response = await fetch("/api/settings", { credentials: "include" });
+  const response = await fetchWithTimeout("/api/settings", { credentials: "include" });
   if (!response.ok) {
     throw new Error(`Contact settings could not be loaded (${response.status}).`);
   }
