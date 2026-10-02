@@ -1,0 +1,133 @@
+URGENT — FIX PRODUCT IMAGE UPLOAD + STORAGE + DISPLAY END-TO-END
+
+The product images are STILL NOT WORKING on the public /products page.
+
+I do NOT want another placeholder image or a CSS-only fix.
+
+Trace the complete image flow:
+
+ADMIN UPLOAD
+→ FILE UPLOAD
+→ PERSISTENT STORAGE
+→ DATABASE IMAGE REFERENCE
+→ API RESPONSE
+→ FRONTEND IMAGE URL
+→ PUBLIC /products IMAGE
+
+Find the exact point where the image is being lost or replaced.
+
+IMPORTANT:
+
+1. DO NOT ask me to upload the images again.
+2. The real product images are already attached in the project.
+3. Reuse the existing attached product image files.
+4. Do NOT use a placeholder/orange circle when a real image exists.
+5. Do NOT use the SaveStreet Dogs logo as a product image.
+6. Do NOT use the UPI QR image as a product image.
+
+IMAGE UPLOAD:
+
+Admin → Products → Add/Edit Product
+
+When I select an image:
+- Show the actual image preview immediately.
+- Save/upload the image to persistent storage.
+- Save the resulting persistent URL/path with THAT product record.
+
+Do NOT store only a temporary browser object URL such as blob:... as the permanent image.
+
+DATABASE:
+
+Each product must have its own image reference.
+
+Example:
+
+Product A → imageA
+Product B → imageB
+
+Never use one shared/default image for every product.
+
+API:
+
+Verify the API returns the correct image URL/path for every product.
+
+If the database stores a relative/object path, correctly normalize it into a browser-accessible URL before returning it to the frontend.
+
+Check:
+- Firebase Storage configuration
+- storage bucket
+- upload function
+- saved file path
+- database image field
+- API serializer/response
+- frontend image src
+
+FRONTEND:
+
+On /products:
+- Render the exact image returned for that product.
+- Use the correct image field.
+- Do not overwrite the returned image with a fallback image.
+- Only use a fallback when the product genuinely has no image.
+
+On Product Details:
+- Same exact product image.
+
+On Cart:
+- Same exact product image.
+
+On Admin Products:
+- Same exact product image.
+
+On Orders:
+- Same exact product image where applicable.
+
+IMPORTANT IMAGE DEBUGGING:
+
+Open one existing product record and trace its image field from database to browser.
+
+Verify the final HTML <img> src is a valid, accessible URL.
+
+If the URL returns 404, fix the storage/public-serving path.
+
+If the URL is relative and the frontend is resolving it incorrectly, normalize the URL correctly.
+
+If the backend is returning the wrong field, fix the API mapping.
+
+If the image upload succeeds but the saved URL is wrong, fix the upload/storage path.
+
+If the attached images are currently sitting in attached_assets, correctly connect them to the corresponding product records rather than creating broken paths.
+
+DO NOT simply copy the image into the frontend public folder as a workaround if the Admin Panel is supposed to support future uploads. The permanent storage + database flow must work.
+
+ALSO VERIFY:
+
+Product name = correct
+Product description = correct
+Price = ₹60 per piece
+Stock = In Stock / Low Stock / No Stock
+
+FINAL TEST:
+
+1. Open Admin → Products.
+2. Add or edit a product.
+3. Upload/select the real product image.
+4. Confirm the PREVIEW shows the correct image.
+5. Save.
+6. Refresh Admin.
+7. Confirm the SAME image still appears.
+8. Open public /products.
+9. Confirm the SAME image appears there.
+10. Open Product Details.
+11. Confirm SAME image.
+12. Add to Cart.
+13. Confirm SAME image in cart.
+14. Refresh everything and verify the image still works.
+
+Do not finish by saying "image support added."
+
+Actually test the real image URL in the running application and fix the root cause.
+
+The requirement is:
+
+ONE PRODUCT → ONE CORRECT PERSISTENT IMAGE → CORRECTLY DISPLAYED EVERYWHERE.

@@ -1,0 +1,153 @@
+Prepare this entire project for a clean, reliable deployment on **Render**.
+
+IMPORTANT:
+- The final project must be production-ready.
+- Do not break or remove any existing features, pages, UI, functionality, animations, or styling.
+- Keep the current design and functionality unless a change is required for deployment.
+- Make the project simple and reliable to deploy on Render.
+- Do not add unnecessary dependencies or complicated deployment architecture.
+
+### 1. Identify the project type
+First inspect the entire project and determine whether it is:
+- React + Vite
+- React
+- Next.js
+- Node/Express
+- Static HTML/CSS/JavaScript
+- Another framework
+
+Then configure the deployment according to the actual project structure.
+
+### 2. Make the build production-ready
+Ensure:
+- `package.json` contains all required dependencies.
+- The correct production build script exists.
+- The project builds successfully with the production command.
+- No development-only configuration is required for production.
+- No hardcoded Replit-specific URLs, ports, paths, or services remain.
+- Remove unnecessary Replit-specific deployment configuration if it interferes with Render.
+
+For a Vite/React project, make sure the project can successfully run:
+
+`npm install`
+
+and:
+
+`npm run build`
+
+The production output should normally be generated in:
+
+`dist/`
+
+### 3. Render compatibility
+Configure the project so it works correctly on Render.
+
+For a frontend/static Vite or React project, it should be deployable as a **Render Static Site**.
+
+Expected configuration:
+
+Build Command:
+`npm install && npm run build`
+
+Publish Directory:
+`dist`
+
+If the project uses another package manager or framework, use the correct commands and output directory instead of blindly applying the above.
+
+### 4. SPA routing
+If this is a React/Vite single-page application, make sure direct navigation to routes such as:
+
+`/`
+`/about`
+`/contact`
+`/admin`
+`/login`
+
+does not cause a Render 404.
+
+Add the appropriate Render rewrite configuration so unknown frontend routes are served through `index.html`.
+
+Do NOT use a workaround that breaks static assets.
+
+### 5. Environment variables
+Inspect the project for:
+- API keys
+- Firebase configuration
+- database URLs
+- backend URLs
+- third-party API configuration
+- environment variables
+
+Do not expose private secrets in the source code.
+
+Create/update `.env.example` with the required variable names and safe placeholder values.
+
+Do NOT put real API keys or secrets into `.env.example`.
+
+If the frontend requires environment variables, clearly document which variables need to be added to Render.
+
+### 6. Backend handling
+If this project contains a backend/server:
+
+- Make sure it can run on Render.
+- Use `process.env.PORT` instead of hardcoding a port.
+- Bind the server to `0.0.0.0`.
+- Add the correct production start command.
+- Make sure the backend does not depend on the Replit environment.
+- Make sure frontend API requests use the proper production backend URL through environment variables.
+
+If there is NO backend, do not create one just for deployment.
+
+### 7. Security
+Before finishing:
+- Remove exposed secrets.
+- Remove unnecessary debug endpoints.
+- Do not commit `.env`.
+- Ensure `.gitignore` contains:
+  `.env`
+  `.env.local`
+  `node_modules`
+  `dist`
+
+Do not change authentication or authorization logic unless required for deployment.
+
+### 8. Build verification
+Actually test the production build.
+
+Run the equivalent of:
+
+`npm install`
+
+then:
+
+`npm run build`
+
+Fix every build error, dependency error, TypeScript error, import error, or missing-file error that prevents a successful production build.
+
+Do not simply tell me that the build should work. Verify it.
+
+### 9. Keep the repository clean
+The final repository should contain only the files needed for the project.
+
+Do not add:
+- unnecessary Docker files
+- unnecessary backend servers
+- unnecessary packages
+- unnecessary deployment platforms
+- Replit-specific hacks
+- duplicate configuration files
+
+unless the existing project genuinely requires them.
+
+### 10. Final deployment instructions
+After making the changes, give me a short final report containing:
+
+1. Project type
+2. Build command
+3. Publish directory OR Start command
+4. Required Render environment variables
+5. Whether SPA rewrite configuration was added
+6. Whether the production build was successfully tested
+7. Exact Render service type I should select
+
+Most importantly, **do not redesign the website**. Your job is to make the existing project stable, production-ready, and easy to deploy on Render.

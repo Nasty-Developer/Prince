@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>SaveStreet Dogs</title>
+    <meta name="description" content="SaveStreet Dogs helps people turn concern for street dogs into simple, compassionate action." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="SaveStreet Dogs" />
+    <meta property="og:description" content="Turn compassion into action: report a dog, adopt responsibly, foster, volunteer, or support rescue work." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%BASE_URL%assets/savestreet-dogs-logo.png" />
+    <meta property="og:image:alt" content="SaveStreet Dogs official logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SaveStreet Dogs" />
+    <meta name="twitter:description" content="Turn compassion into action: report a dog, adopt responsibly, foster, volunteer, or support rescue work." />
+    <meta name="twitter:image" content="%BASE_URL%assets/savestreet-dogs-logo.png" />
+    <link rel="preload" as="image" href="%BASE_URL%assets/savestreet-dogs-logo.png" fetchpriority="high" />
+    <link rel="icon" type="image/png" sizes="512x512" href="%BASE_URL%assets/savestreet-dogs-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      html, body { min-height: 100%; margin: 0; background: #f3efe7; }
+      #startup-loader {
+        position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+        box-sizing: border-box; padding: 24px; background: #f3efe7; color: #173833;
+        opacity: 1; visibility: visible; transition: opacity .36s ease, visibility .36s ease;
+      }
+      #startup-loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+      .startup-loader__content { display: grid; justify-items: center; gap: 18px; text-align: center; }
+      .startup-loader__content img { display: block; width: min(252px, 72vw); max-height: 168px; height: auto; object-fit: contain; }
+      .startup-loader__content p { margin: 0; font: 600 12px/1.5 Inter, Arial, sans-serif; letter-spacing: .06em; }
+      .startup-loader__spinner {
+        width: 22px; height: 22px; border: 2px solid #d8d0c1; border-top-color: #c46d51;
+        border-radius: 50%; animation: startup-spin .85s linear infinite;
+      }
+      .startup-loader__fallback { display: grid; justify-items: center; gap: 12px; max-width: 320px; }
+      .startup-loader__retry {
+        min-height: 42px; padding: 0 18px; border: 0; border-radius: 999px;
+        background: #173833; color: #f7f1e6; font: 700 13px Inter, Arial, sans-serif; cursor: pointer;
+      }
+      #startup-loader [hidden] { display: none !important; }
+      @keyframes startup-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .startup-loader__spinner { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="startup-loader" role="status" aria-live="polite" aria-label="Loading SaveStreet Dogs">
+      <div class="startup-loader__content">
+        <img src="%BASE_URL%assets/savestreet-dogs-logo.png" alt="SaveStreet Dogs official logo" width="252" height="168" fetchpriority="high" />
+        <p>Saving lives. One paw at a time.</p>
+        <span class="startup-loader__spinner" aria-hidden="true"></span>
+        <div class="startup-loader__fallback" id="startup-loader-fallback" hidden>
+          <p>Startup is taking longer than expected. Check your connection and try again.</p>
+          <button class="startup-loader__retry" id="startup-loader-retry" type="button" hidden>Reload the site</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        if (new URLSearchParams(window.location.search).get("startupPreview") === "1") return;
+        window.setTimeout(function () {
+          var loader = document.getElementById("startup-loader");
+          if (!loader || loader.classList.contains("is-done")) return;
+          var fallback = document.getElementById("startup-loader-fallback");
+          var retry = document.getElementById("startup-loader-retry");
+          if (fallback) fallback.hidden = false;
+          if (retry) retry.hidden = false;
+        }, 12000);
+        document.getElementById("startup-loader-retry").addEventListener("click", function () {
+          window.location.reload();
+        });
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

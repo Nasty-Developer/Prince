@@ -1,0 +1,347 @@
+IMPORTANT: ADD MY EXACT FIREBASE CONFIGURATION NOW 🔥 
+ 
+Use the EXACT Firebase values I provided. Do not ask me to enter them again and do not replace them with placeholders. 
+ 
+Add this exact configuration to the existing SaveStreet Dogs project: 
+ 
+apiKey: 
+AIzaSyA8G33ypou2t6xDt75Z3rcdIQVOgQr5daI 
+ 
+authDomain: 
+savestreetdogs-7aafe.firebaseapp.com 
+ 
+projectId: 
+savestreetdogs-7aafe 
+ 
+storageBucket: 
+savestreetdogs-7aafe.firebasestorage.app 
+ 
+messagingSenderId: 
+893340598484 
+ 
+appId: 
+1:893340598484:web:5c66c53c1c8f915a56fb41 
+ 
+measurementId: 
+G-70NB86Y3VE 
+ 
+USE THESE EXACT VALUES. 
+ 
+Implementation: 
+ 
+1. Add/configure Firebase in the existing SaveStreet Dogs project. 
+2. Use the existing Firebase project: 
+   savestreetdogs-7aafe 
+3. Do not create another Firebase project. 
+4. Do not use dummy values or placeholders. 
+5. If Firebase is already initialized, update the existing configuration instead of creating a duplicate Firebase setup. 
+6. Use Firebase Authentication for: 
+   - Sign Up 
+   - Sign In 
+   - Sign Out 
+   - Forgot/Reset Password 
+   - Session persistence 
+7. Use Firebase Authentication for Admin Sign In and Sign Out. 
+8. Connect the existing Admin Panel to this Firebase project. 
+9. Connect Firestore/database and Firebase Storage where required by the existing application. 
+10. Use Firebase Storage for real puppy/product image uploads where appropriate. 
+11. Keep the configuration in the correct environment/configuration structure for this project. 
+12. Do not put private server credentials or service-account keys in frontend code. 
+ 
+MOST IMPORTANT: 
+ 
+Actually ADD these values to the project and initialize Firebase with them. 
+ 
+Then verify that Firebase initializes successfully and that there are no Firebase initialization errors. 
+ 
+After that verify: 
+ 
+User: 
+- Sign Up works 
+- Sign In works 
+- Sign Out works 
+- Forgot Password works 
+- Session persists after refresh 
+ 
+Admin: 
+- /admin/login works 
+- Admin authenticates through Firebase 
+- Admin authorization works 
+- /admin opens only for authorized admins 
+- Admin Sign Out works 
+- Unauthorized users cannot access the Admin Panel 
+ 
+Do not just tell me that Firebase is configured. 
+ 
+Actually implement it, run the application, test the Firebase connection, and fix any errors you find. - IMPORTANT QUICK UPDATE — IMPLEMENT THESE CHANGES NOW 
+ 
+Do NOT rebuild the existing website. 
+Do NOT remove working functionality. 
+Do NOT create duplicate systems. 
+ 
+I need the Admin Panel to be fully functional for managing Puppies/Dogs and Products. 
+ 
+================================================== 
+1. PRODUCT MANAGEMENT 🛍️ 
+================================================== 
+ 
+From the Admin Panel, I must be able to create a completely NEW product at any time. 
+ 
+When adding a product, Admin must be able to enter: 
+ 
+- Product name 
+- Product image 
+- Price 
+- Stock 
+- Description 
+- Category 
+- Availability 
+ 
+The product image must be uploaded/selected through the Admin Panel and stored properly so it remains available after refresh/redeployment. 
+ 
+After Admin adds a product, it must automatically appear in the public Shop. 
+ 
+The product card must show: 
+- Real product image 
+- Product name 
+- Price 
+- Stock/availability where appropriate 
+- Add to Cart 
+ 
+Product details must also use the same real database product and image. 
+ 
+IMPORTANT DEFAULT PRICE: 
+ 
+₹60 PER PIECE. 
+ 
+Quantity calculation must work correctly: 
+ 
+1 piece = ₹60 
+2 pieces = ₹120 
+3 pieces = ₹180 
+4 pieces = ₹240 
+etc. 
+ 
+The price must NOT be treated as a fixed total. 
+ 
+================================================== 
+2. PRODUCT STOCK MANAGEMENT 
+================================================== 
+ 
+In the Admin Panel, give every product a simple stock status with EXACTLY these three options: 
+ 
+1. In Stock 
+2. Low Stock 
+3. No Stock 
+ 
+Admin must be able to change this status manually. 
+ 
+The public Shop must immediately reflect the selected status. 
+ 
+Behavior: 
+ 
+IN STOCK: 
+- Product can be purchased 
+- Add to Cart is enabled 
+ 
+LOW STOCK: 
+- Product can still be purchased 
+- Clearly show "Low Stock" 
+ 
+NO STOCK: 
+- Product must NOT be purchasable 
+- Disable Add to Cart 
+- Clearly show "No Stock" 
+ 
+Do NOT automatically invent stock numbers or fake availability. 
+ 
+If numerical stock is also stored, keep it synchronized with the selected stock status where appropriate. 
+ 
+================================================== 
+3. ADD NEW PRODUCT FROM ADMIN 
+================================================== 
+ 
+This is very important. 
+ 
+Admin Panel → Products → Add Product 
+ 
+This must actually create a persistent database record. 
+ 
+Admin should be able to: 
+ 
+- Add image 
+- Enter product name 
+- Enter price 
+- Select stock status 
+- Enter quantity/stock if supported 
+- Enter description 
+- Select category 
+- Set availability 
+- Save product 
+ 
+After clicking Save: 
+ 
+Admin sees the newly created product in Product Management. 
+ 
+Public Shop sees the newly created product. 
+ 
+Cart uses the same product. 
+ 
+Checkout uses the same product. 
+ 
+Orders store the actual product name, price and quantity. 
+ 
+Do NOT use temporary frontend state only. 
+ 
+================================================== 
+4. PUPPY / ADOPTABLE DOG MANAGEMENT 🐶 
+================================================== 
+ 
+Admin must also be able to add REAL dogs/puppies from the Admin Panel. 
+ 
+Admin Panel → Puppies/Dogs → Add Dog/Puppy 
+ 
+Admin must be able to add: 
+ 
+- Dog/Puppy image 
+- Name 
+- Location 
+- Age 
+- Gender 
+- Size 
+- Temperament 
+- Description 
+- Health information 
+- Vaccination information 
+- Adoption status 
+- Additional notes 
+- Rescue story where applicable 
+ 
+The uploaded dog image must be stored properly and remain available after refresh. 
+ 
+After Admin saves a dog: 
+ 
+It must automatically appear on the public Adoption/Puppies section. 
+ 
+Admin must be able to: 
+ 
+- Edit dog 
+- Replace image 
+- Update information 
+- Change adoption status 
+- Archive/remove dog 
+ 
+If the dog is archived or adopted, the public listing must update accordingly. 
+ 
+================================================== 
+5. REAL DATA ONLY 
+================================================== 
+ 
+Remove/avoid fake placeholder puppies and products. 
+ 
+The public Adoption section should initially show an empty state if no real dogs have been added. 
+ 
+Example: 
+ 
+"No puppies available for adoption right now." 
+ 
+Do NOT create fake products, fake dogs, fake stock or fake orders. 
+ 
+================================================== 
+6. IMAGE HANDLING 
+================================================== 
+ 
+Use the real product images I have already attached. 
+ 
+Do not replace them with placeholder images. 
+ 
+For future products and puppies, Admin must be able to upload a new image directly from the Admin Panel. 
+ 
+Images should: 
+ 
+- Upload successfully 
+- Be stored persistently 
+- Display correctly in Admin 
+- Display correctly on the public website 
+- Work after page refresh 
+- Work on mobile 
+- Not stretch or break the layout 
+ 
+================================================== 
+7. DATABASE CONNECTION 
+================================================== 
+ 
+Everything above must use the REAL existing database/backend. 
+ 
+Do NOT make these changes UI-only. 
+ 
+Admin changes must persist. 
+ 
+For example: 
+ 
+Admin adds product 
+→ Database record created 
+→ Product appears in Admin list 
+→ Product appears in Shop 
+→ Product can be added to Cart 
+→ Correct price/quantity appears in Checkout 
+→ Order stores the correct product information. 
+ 
+Admin adds puppy 
+→ Database record created 
+→ Puppy appears in Adoption section. 
+ 
+================================================== 
+8. FIREBASE 
+================================================== 
+ 
+Use the existing SaveStreet Dogs Firebase project and existing Firebase configuration. 
+ 
+Use Firebase Authentication for Admin Sign In/Sign Out. 
+ 
+Use the existing Firebase/Firestore/Storage architecture where already configured. 
+ 
+Do not create another Firebase project or duplicate Firebase setup. 
+ 
+================================================== 
+9. FINAL TEST 
+================================================== 
+ 
+Do not just create the UI. 
+ 
+Actually test: 
+ 
+PRODUCT: 
+Admin Login 
+→ Products 
+→ Add Product 
+→ Upload Image 
+→ Name 
+→ ₹60 price 
+→ Stock Status 
+→ Save 
+→ Refresh 
+→ Product still exists 
+→ Public Shop shows it 
+→ Add to Cart works 
+→ Quantity calculation works 
+ 
+STOCK: 
+In Stock → purchasable 
+Low Stock → purchasable + Low Stock label 
+No Stock → cannot add to cart 
+ 
+DOG: 
+Admin Login 
+→ Puppies/Dogs 
+→ Add Dog 
+→ Upload Image 
+→ Enter details 
+→ Save 
+→ Refresh 
+→ Dog still exists 
+→ Public Adoption section shows it 
+ 
+Fix any errors, broken routes, failed uploads, database issues, authentication issues, or console errors you encounter. 
+ 
+The goal is a REAL working Admin Panel where I can continuously add and manage new products and adoptable dogs myself without editing code manually. 

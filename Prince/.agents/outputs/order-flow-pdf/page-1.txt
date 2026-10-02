@@ -1,0 +1,35 @@
+Replit Website — Cart, Order & Payment Flow
+Prompt
+Copy the following prompt into Replit. The goal is to fix the cart flow and implement the order/payment
+workflow exactly as described.
+IMPORTANT: Fix and implement the complete e-commerce order flow.
+The current Add to Cart functionality is not working correctly. Please inspect the existing code and fix it first.
+Do not create a separate unrelated system. Keep the current website design and existing product/admin
+structure wherever possible.
+1. CUSTOMER — ADD TO CART
+When a customer clicks Add to Cart, the selected product must actually be added to the customer's cart.
+The cart should show the product name, image, quantity, unit price, subtotal, and total product amount.
+Customers must be able to increase/decrease quantity and remove products.
+2. CHECKOUT / PLACE ORDER — NO IMMEDIATE PAYMENT
+The customer should NOT be charged immediately when placing the order. First, the customer submits the
+order/request. At this stage, save the order in the database and make it visible in the Admin Panel.
+The order should have a clear status such as Order Received / Awaiting Admin Confirmation.
+Save at minimum: order ID, customer details, delivery address, products, quantities, product subtotal, order
+date/time, and order status.
+3. ADMIN PANEL — REVIEW ORDER
+The Admin Panel must show all newly submitted customer orders. Admin should be able to open an order
+and see all order details and customer information.
+The admin must be able to set/edit the Delivery Charge for that specific order from the Admin Panel.
+The system should then calculate:
+Product Subtotal + Delivery Charge = Final Amount Payable
+Do not hard-code the delivery charge. It must be controlled by the admin for each order.
+4. ADMIN SENDS PAYMENT REQUEST
+After reviewing the order and setting the delivery charge, the admin can mark the order as Payment
+Requested / Awaiting Customer Payment.
+The customer should then see the final amount, including delivery charge, in their order page. Clearly show
+that the amount has been confirmed by the admin and that payment is now required.
+5. CUSTOMER MAKES PAYMENT
+Only after the admin has confirmed the final amount should the customer proceed with payment.
+After payment, update the order status to something like Payment Received / Order Confirmed. The
+admin must also be able to see the payment status in the Admin Panel.
+If the existing project already has a payment gateway, integrate this flow with it instead of replacing it

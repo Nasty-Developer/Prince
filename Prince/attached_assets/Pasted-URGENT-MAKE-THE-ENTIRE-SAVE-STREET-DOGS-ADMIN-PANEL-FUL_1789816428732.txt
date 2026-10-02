@@ -1,0 +1,834 @@
+URGENT — MAKE THE ENTIRE SAVE STREET DOGS ADMIN PANEL FULLY FUNCTIONAL
+
+The Admin Panel UI and sidebar now exist and Firebase admin authorization is working.
+
+However, many sections are still incomplete, loading forever, showing empty/static content, or do not have real management actions.
+
+I need you to finish the Admin Panel so that EVERYTHING actually works with the real database/backend.
+
+DO NOT rebuild the public website.
+DO NOT create a mock dashboard.
+DO NOT add fake/demo data.
+DO NOT create static buttons.
+DO NOT create placeholder screens.
+
+The Admin Panel must be a REAL operational CMS.
+
+==================================================
+1. CORE REQUIREMENT
+==================================================
+
+EVERY section in the Admin Panel must:
+
+- Load real data from the backend/database
+- Show proper loading state
+- Show proper empty state when there is genuinely no data
+- Show proper error state when something fails
+- Allow the admin to perform the relevant actions
+- Persist every change
+- Refresh correctly
+- Never remain stuck on skeleton/loading forever
+
+If a section currently shows a permanent loading skeleton, FIND THE ROOT CAUSE AND FIX IT.
+
+==================================================
+2. ADMIN DASHBOARD / OVERVIEW
+==================================================
+
+The Overview page must show REAL live data.
+
+Cards:
+- Total Puppies/Dogs
+- Available Puppies
+- Adoption Requests
+- Pending Orders
+- Total Orders
+- Products
+- Low Stock Products
+- No Stock Products
+- Rescue Reports
+- Volunteer Applications
+- Foster Requests
+- Customers
+
+Use actual database counts.
+
+Each card should link to its management page.
+
+Also show:
+
+RECENT ADOPTION REQUESTS
+RECENT RESCUE REPORTS
+RECENT ORDERS
+RECENT VOLUNTEER APPLICATIONS
+RECENT FOSTER REQUESTS
+
+Each row/card must have a View button that actually works.
+
+==================================================
+3. PUPPIES / DOGS
+==================================================
+
+Admin → Puppies
+
+Create a proper management interface.
+
+Admin must be able to:
+
+ADD:
+- Puppy/Dog image
+- Name
+- Location
+- Age
+- Gender
+- Size
+- Temperament
+- Description
+- Health information
+- Vaccination information
+- Adoption status
+- Additional notes
+- Rescue story
+
+IMAGE:
+- Upload from Admin
+- Preview before save
+- Store persistently
+- Edit/replace later
+- Never use temporary browser-only storage
+
+A newly added puppy must immediately appear in the public Adoption/Puppies section.
+
+Admin actions:
+- View
+- Edit
+- Replace image
+- Change status
+- Archive
+- Remove
+
+Statuses:
+- Available
+- Under Care
+- Foster Needed
+- Adoption Pending
+- Adopted
+
+No fake/demo puppies.
+
+==================================================
+4. ADOPTION REQUESTS
+==================================================
+
+THIS IS VERY IMPORTANT.
+
+When a real user submits an adoption application on the public website:
+
+THE REQUEST MUST APPEAR IN ADMIN → ADOPTION REQUESTS.
+
+Admin must see:
+
+- Applicant name
+- Email
+- Phone
+- Puppy/Dog requested
+- Application date
+- Status
+- Notes
+- Full application information
+
+Statuses:
+- New
+- Under Review
+- Contacted
+- Approved
+- Not Approved
+- Completed
+
+Admin must be able to:
+- Open request
+- View complete details
+- Change status
+- Add internal notes
+- Update request
+
+When a NEW application arrives:
+- It must appear in the Admin Panel
+- Do not require manually editing code
+- Do not require seeding data
+- Do not use fake requests
+
+==================================================
+5. RESCUE REPORTS
+==================================================
+
+When a visitor submits "Report a Dog":
+
+THE REAL REPORT MUST APPEAR IN:
+
+Admin → Rescue Reports
+
+Show:
+- Reporter
+- Phone/email
+- Location
+- Dog condition
+- Description
+- Urgency
+- Photo
+- Submitted date/time
+- Status
+
+Statuses:
+- New
+- Reviewing
+- Assigned
+- In Progress
+- Resolved
+- Closed
+
+Admin can:
+- Open report
+- View uploaded photo
+- Update status
+- Add internal notes
+
+NEW REPORTS MUST ACTUALLY APPEAR.
+
+==================================================
+6. VOLUNTEERS
+==================================================
+
+When someone submits the volunteer form:
+
+THE REAL SUBMISSION MUST APPEAR IN:
+
+Admin → Volunteers
+
+Show:
+- Applicant
+- Contact
+- Application date
+- Status
+- Notes
+- Submitted information
+
+Admin can:
+- Open
+- View
+- Update status
+- Add notes
+
+Do not use dummy volunteer records.
+
+==================================================
+7. FOSTER
+==================================================
+
+When someone submits the foster application:
+
+THE REAL REQUEST MUST APPEAR IN:
+
+Admin → Foster
+
+Show:
+- Applicant
+- Contact
+- Application date
+- Status
+- Notes
+- Submitted information
+
+Admin can:
+- Open
+- Update status
+- Add notes
+
+==================================================
+8. PRODUCTS
+==================================================
+
+Admin → Products
+
+Create a complete product management system.
+
+Admin must be able to:
+
+- Add Product
+- Upload Image
+- Preview Image
+- Edit Product
+- Replace Image
+- Change Name
+- Change Description
+- Change Category
+- Change Price
+- Change Availability
+- Change Stock
+- Archive/Delete
+
+Use the real attached product images.
+
+Do NOT replace them with placeholders.
+
+DEFAULT PRICE:
+
+₹60 PER PIECE
+
+Examples:
+1 = ₹60
+2 = ₹120
+3 = ₹180
+4 = ₹240
+5 = ₹300
+
+Formula:
+Unit Price × Quantity
+
+==================================================
+9. PRODUCT STOCK STATUS
+==================================================
+
+Admin must be able to choose exactly:
+
+IN STOCK
+LOW STOCK
+NO STOCK
+
+Behavior:
+
+IN STOCK:
+- Product purchasable
+- Add to Cart enabled
+
+LOW STOCK:
+- Product purchasable
+- Show Low Stock
+
+NO STOCK:
+- Product unavailable
+- Add to Cart disabled
+- Show No Stock
+
+Changes must persist to the database.
+
+==================================================
+10. NEW PRODUCT FLOW
+==================================================
+
+Admin → Products → Add Product
+
+Admin enters:
+- Image
+- Name
+- Price
+- Stock status
+- Stock quantity if supported
+- Category
+- Description
+- Availability
+
+Click Save.
+
+Then verify:
+
+Database record created
+→ Product appears in Admin
+→ Product appears in Shop
+→ Correct image appears
+→ Correct price appears
+→ Correct stock status appears
+→ Product can be added to cart when available
+
+No frontend-only state.
+
+==================================================
+11. ORDERS
+==================================================
+
+When a customer successfully places an order:
+
+THE REAL ORDER MUST APPEAR IN:
+
+Admin → Orders
+
+Show:
+- Order ID
+- Customer name
+- Phone
+- Email
+- Full address
+- City
+- State
+- PIN
+- Products
+- Product image
+- Quantity
+- Unit price
+- Subtotal
+- Delivery charge
+- Total
+- Payment status
+- Order status
+- Order date
+- Expected delivery
+
+Admin must be able to open the full order.
+
+==================================================
+12. ORDER MANAGEMENT
+==================================================
+
+Admin can change status:
+
+- Payment Pending
+- Payment Verified
+- Preparing
+- Ready to Dispatch
+- Dispatched
+- Out for Delivery
+- Delivered
+- Delayed
+- Cancelled
+
+Every status change must be saved to the database.
+
+Do NOT only change the screen.
+
+Customer order tracking must reflect the new status.
+
+==================================================
+13. DELIVERY MANAGEMENT
+==================================================
+
+Inside an order:
+
+Assign Delivery
+
+Fields:
+- Delivery partner/person
+- Phone
+- Tracking ID
+- Notes
+
+Admin must be able to save/edit these values.
+
+If order is Delayed:
+
+Admin can enter:
+- Delay reason
+- Updated expected delivery date
+
+==================================================
+14. STORIES
+==================================================
+
+The current Stories page is stuck on a loading skeleton.
+
+FIX THAT.
+
+Create a real Stories management page.
+
+Admin can:
+
+- Add Story
+- Upload image
+- Enter title
+- Enter content
+- Set date
+- Publish
+- Unpublish
+- Edit
+- Archive
+
+Published stories appear on the public website.
+
+If there are no stories:
+show:
+
+"No stories yet."
+
+Do not leave the page loading forever.
+
+==================================================
+15. CUSTOMERS
+==================================================
+
+Admin → Customers
+
+Show real registered users.
+
+Display appropriate information:
+- Name
+- Email
+- Phone where available
+- Registration date
+- Order count
+- Account status
+
+Admin must be able to open a customer and see appropriate related information.
+
+NEVER expose passwords.
+
+==================================================
+16. WEBSITE CONTENT
+==================================================
+
+Admin → Content
+
+Make appropriate website content manageable from Admin.
+
+For example:
+- Hero content
+- Contact information
+- Social links
+- Support information
+- Selected public sections
+
+Changes must persist and reflect publicly where connected.
+
+==================================================
+17. SEARCH + FILTERS
+==================================================
+
+Add useful search/filtering to major Admin pages.
+
+Products:
+- Search
+- Category
+- Stock status
+
+Puppies:
+- Search
+- Adoption status
+- Location
+
+Orders:
+- Search
+- Payment status
+- Order status
+- Date
+
+Adoption:
+- Search
+- Status
+
+Rescue:
+- Search
+- Urgency
+- Status
+
+Volunteers/Foster:
+- Search
+- Status
+
+==================================================
+18. REAL-TIME / REFRESH BEHAVIOR
+==================================================
+
+When a new submission or order is created:
+
+Admin should see it after refresh at minimum.
+
+Where the existing architecture supports it, update the Admin UI automatically without requiring manual page navigation.
+
+Examples:
+
+New adoption application
+→ Adoption Requests count increases
+→ New request appears
+
+New rescue report
+→ Rescue Reports count increases
+→ Report appears
+
+New order
+→ Orders count increases
+→ Order appears
+
+New volunteer submission
+→ Volunteer count increases
+→ Submission appears
+
+New foster submission
+→ Foster count increases
+→ Submission appears
+
+==================================================
+19. DELETE / ARCHIVE SAFETY
+==================================================
+
+Use proper confirmation dialogs before destructive actions.
+
+Example:
+
+"Are you sure you want to archive this puppy?"
+
+Do not accidentally delete data with a single click.
+
+Prefer Archive for important records where appropriate.
+
+==================================================
+20. SUCCESS / ERROR FEEDBACK
+==================================================
+
+After every action, show clear feedback.
+
+Examples:
+
+"Product added successfully."
+"Puppy updated successfully."
+"Adoption request updated."
+"Order status updated."
+"Story published."
+
+Errors should clearly explain what went wrong.
+
+No silent failures.
+
+==================================================
+21. DATABASE PERSISTENCE
+==================================================
+
+ALL actions must use the real backend/database.
+
+Do NOT use:
+- localStorage-only CRUD
+- temporary frontend arrays
+- mock JSON
+- fake API responses
+- hardcoded demo records
+
+Create:
+Read:
+Update:
+Delete/Archive:
+
+must all persist properly.
+
+==================================================
+22. FIREBASE
+==================================================
+
+Use the existing SaveStreet Dogs Firebase project.
+
+Authentication:
+Firebase Authentication
+
+Admin:
+Existing secure Firebase UID/admin authorization mechanism
+
+Images:
+Existing Firebase Storage architecture
+
+Do NOT use Clerk.
+
+Do NOT create another Firebase project.
+
+Do NOT create duplicate Firebase initialization.
+
+==================================================
+23. SECURITY
+==================================================
+
+Keep Admin Panel protected.
+
+Every admin API must verify:
+- Firebase authentication
+- Admin authorization
+
+Normal users must NOT be able to call admin endpoints.
+
+Do not trust frontend-only admin checks.
+
+Do not expose private customer/application data publicly.
+
+==================================================
+24. RESPONSIVE ADMIN
+==================================================
+
+Desktop:
+- Sidebar
+- Tables
+- Dashboard cards
+- Forms
+- Modals
+
+Mobile:
+- Hamburger sidebar
+- Responsive cards
+- Responsive forms
+- Readable tables/details
+- No broken horizontal layout
+
+==================================================
+25. IMPORTANT BUG FIXING
+==================================================
+
+There are currently sections that appear incomplete or stuck loading.
+
+For EVERY Admin section:
+
+Open page
+→ load real data
+→ render data
+→ perform action
+→ save action
+→ refresh page
+→ verify action remains
+
+If API errors, Firebase errors, database schema errors, React errors or routing errors occur, fix the ROOT CAUSE.
+
+Do not hide the error.
+
+==================================================
+26. FINAL END-TO-END TEST
+==================================================
+
+Actually test the complete system.
+
+TEST 1 — PUPPY:
+
+Admin
+→ Puppies
+→ Add Puppy
+→ Upload Image
+→ Fill Details
+→ Save
+→ Refresh
+→ Puppy still exists
+→ Public Adoption shows puppy
+
+TEST 2 — PRODUCT:
+
+Admin
+→ Products
+→ Add Product
+→ Upload Image
+→ Name
+→ ₹60
+→ In Stock
+→ Save
+→ Refresh
+→ Product still exists
+→ Shop shows product
+→ Add to Cart works
+
+Change to LOW STOCK
+→ Shop shows Low Stock
+
+Change to NO STOCK
+→ Add to Cart disabled
+
+TEST 3 — ADOPTION:
+
+Public website
+→ Submit adoption application
+→ Admin → Adoption Requests
+→ New application appears
+→ Open application
+→ Change status
+→ Save
+→ Refresh
+→ Status remains
+
+TEST 4 — RESCUE:
+
+Public
+→ Report a Dog
+→ Submit
+→ Admin → Rescue Reports
+→ Report appears
+→ Open
+→ Update status
+→ Save
+
+TEST 5 — ORDER:
+
+Public
+→ Product
+→ Cart
+→ Checkout
+→ Successful payment/order flow
+→ Admin → Orders
+→ Order appears
+→ Open order
+→ Change status
+→ Assign delivery
+→ Save
+
+TEST 6 — VOLUNTEER/FOSTER:
+
+Submit public form
+→ Admin list
+→ Open
+→ Update
+→ Refresh
+→ Data remains
+
+TEST 7 — STORIES:
+
+Admin
+→ Stories
+→ Add Story
+→ Upload Image
+→ Save
+→ Publish
+→ Public Stories shows it
+
+TEST 8 — AUTH:
+
+Admin sign in
+→ Admin dashboard
+
+Sign out
+→ Admin access blocked
+
+Normal Firebase user
+→ /admin blocked
+
+==================================================
+FINAL REQUIREMENT
+==================================================
+
+I do NOT want an Admin Panel that only LOOKS good.
+
+I need an Admin Panel that I can actually USE every day.
+
+The Admin Panel must allow me to manage:
+
+Puppies
+Adoption Requests
+Rescue Reports
+Products
+Orders
+Volunteers
+Foster Requests
+Stories
+Customers
+Website Content
+Settings
+
+Every new public submission must reach the correct Admin section.
+
+Every Admin action must actually work and persist.
+
+Every uploaded image must persist.
+
+Every status change must persist.
+
+Every important button must perform a real action.
+
+No stuck loading screens.
+No fake data.
+No dead buttons.
+No placeholder management screens.
+No mock dashboard.
+
+Build and verify the complete operational SaveStreet Dogs Admin CMS end-to-end.
+"""
+
+print("Prompt ready")
+print("Use the full block above in Replit Agent.")
+print("Do not run a Git reset while the Agent is implementing these changes.")
+print("After Agent finishes, test the Admin Panel in Preview before making Git changes.")

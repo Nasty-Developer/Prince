@@ -1,0 +1,1 @@
+export const SAVE_STREET_DOGS_LOGO = `${import.meta.env.BASE_URL}assets/savestreet-dogs-logo.png`;
