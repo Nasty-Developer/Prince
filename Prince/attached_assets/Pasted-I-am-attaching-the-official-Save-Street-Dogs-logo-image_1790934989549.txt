@@ -1,0 +1,266 @@
+I am attaching the **official Save Street Dogs logo image**.
+
+### 🚨 STRICT LOGO REQUIREMENT
+
+The attached image is the **official and ONLY logo for the Save Street Dogs website**.
+
+Use this exact uploaded logo everywhere.
+
+**DO NOT:**
+- Redesign the logo
+- Change the logo
+- Generate a different logo
+- Change its colors
+- Add effects that alter the logo itself
+- Replace it with a text-only logo
+- Create another variation
+
+The uploaded image must remain the main Save Street Dogs brand logo.
+
+---
+
+# 1. WEBSITE HEADER LOGO
+
+Use the attached official logo as the main website logo.
+
+It should appear clearly in the:
+
+- Desktop navbar
+- Mobile navbar
+- Header
+- Footer where appropriate
+- Any major branding area
+- Favicon/site icon if an appropriate version can be generated/cropped without altering the original logo
+
+Make sure the logo looks sharp and properly sized.
+
+Do not stretch or distort it.
+
+Use `object-fit: contain` or an equivalent approach so the original proportions are preserved.
+
+---
+
+# 2. LOADING SCREEN
+
+Create a **beautiful professional loading screen** that appears immediately when the website opens.
+
+The loading screen MUST prominently display the exact uploaded Save Street Dogs logo.
+
+Design requirements:
+
+- Clean
+- Premium
+- Minimal
+- Animal-rescue focused
+- Smooth animation
+- Professional
+- Responsive
+- Fast
+
+Suggested layout:
+
+[Official Save Street Dogs Logo]
+
+Then a subtle loading animation underneath.
+
+For example:
+
+**Saving lives. One paw at a time.**
+
+with a smooth loading indicator.
+
+Do not create an excessive or flashy animation.
+
+The logo itself must remain unchanged.
+
+The loading screen should disappear automatically once the application is ready.
+
+IMPORTANT:
+- Do not make the loading screen unnecessarily slow.
+- Do not show it forever.
+- Do not block the website if Firebase takes longer to initialize.
+- Handle loading/error states properly.
+
+---
+
+# 3. OFFICIAL CONTACT EMAIL
+
+Use this as the official Save Street Dogs email everywhere appropriate:
+
+**savestreetdogs18@gmail.com**
+
+Update existing contact sections, footer, contact buttons, forms, and other appropriate places.
+
+Email buttons should use:
+
+`mailto:savestreetdogs18@gmail.com`
+
+Make sure clicking the email button opens the user's email application.
+
+Do not invent another email address.
+
+---
+
+# 4. OFFICIAL WHATSAPP NUMBER
+
+Use this exact number for WhatsApp:
+
+**+91 7413 073 410**
+
+For WhatsApp links, use the international format without spaces:
+
+`917413073410`
+
+WhatsApp links should use:
+
+`https://wa.me/917413073410`
+
+---
+
+# 5. WHATSAPP REDIRECTION
+
+Wherever the website currently has a WhatsApp/contact action, redirect it to the official WhatsApp number above.
+
+This includes appropriate buttons such as:
+
+- Contact Us
+- WhatsApp Us
+- Adopt
+- Adoption enquiry
+- Find a Puppy enquiry
+- Volunteer enquiry
+- Foster enquiry
+- Rescue enquiry
+- Product/shop enquiry
+- Order-related WhatsApp contact
+- General help/contact
+- Any existing WhatsApp CTA
+
+Use the appropriate pre-filled WhatsApp message for each action.
+
+For example:
+
+Adoption:
+
+`https://wa.me/917413073410?text=Hello%20Save%20Street%20Dogs%2C%20I%20am%20interested%20in%20adopting%20a%20puppy.`
+
+Volunteer:
+
+`https://wa.me/917413073410?text=Hello%20Save%20Street%20Dogs%2C%20I%20am%20interested%20in%20volunteering.`
+
+Rescue:
+
+`https://wa.me/917413073410?text=Hello%20Save%20Street%20Dogs%2C%20I%20need%20help%20with%20a%20street%20dog.`
+
+Shop:
+
+`https://wa.me/917413073410?text=Hello%20Save%20Street%20Dogs%2C%20I%20have%20a%20question%20about%20a%20shop%20product.`
+
+Do not hardcode different WhatsApp numbers anywhere else in the project.
+
+---
+
+# 6. PHONE NUMBER
+
+Where a phone/contact option is appropriate, use:
+
+**+91 7413 073 410**
+
+The phone button should use:
+
+`tel:+917413073410`
+
+Do not use a different phone number.
+
+---
+
+# 7. CENTRALIZE CONTACT INFORMATION
+
+Do not scatter the email and phone number throughout dozens of components.
+
+Create/use a central configuration/contact constant so the website consistently uses:
+
+```text
+Email:
+savestreetdogs18@gmail.com
+
+WhatsApp:
++91 7413 073 410
+
+WhatsApp link:
+https://wa.me/917413073410
+
+Phone link:
+tel:+917413073410
+```
+
+Then update all relevant components to use the centralized values.
+
+This will allow the admin/developer to change contact information easily later.
+
+---
+
+# 8. CHECK THE ENTIRE WEBSITE
+
+After implementing this, search the entire project for:
+
+- Old logos
+- Old email addresses
+- Old phone numbers
+- Old WhatsApp links
+- Placeholder contact information
+- Incorrect social/contact links
+
+Replace incorrect information where appropriate.
+
+Do not accidentally replace Firebase configuration, API keys, or unrelated numbers.
+
+---
+
+# 9. ADMIN PANEL
+
+Keep the existing admin architecture intact.
+
+The logo/contact setup should NOT break the admin panel.
+
+If the website content system already allows editable contact information, connect these values appropriately so an admin can manage them later.
+
+However, the official initial values must be:
+
+**Email:**  
+savestreetdogs18@gmail.com
+
+**WhatsApp/Phone:**  
++91 7413 073 410
+
+---
+
+# 10. FINAL TEST
+
+After making these changes:
+
+- Open the homepage
+- Confirm the loading screen appears
+- Confirm the exact uploaded logo appears
+- Confirm the loading screen disappears correctly
+- Check desktop navbar
+- Check mobile navbar
+- Check footer
+- Test email button
+- Test phone button
+- Test every WhatsApp button
+- Check adoption enquiry
+- Check volunteer enquiry
+- Check foster enquiry
+- Check rescue enquiry
+- Check shop enquiry
+- Check contact section
+- Check all pages
+- Check Firebase initialization
+- Check admin panel
+- Check mobile responsiveness
+- Check browser console for errors
+
+Make sure there are **no broken links or console errors** introduced by these changes.
+
+The attached image is the official Save Street Dogs logo. **Use that exact image and do not redesign it.**

@@ -1,0 +1,4 @@
+entire flow and fix any errors you find.
+Note: The key idea is that payment happens only after the admin reviews the order and sets the delivery
+charge. The order is created first, then the admin confirms the final payable amount, and only then does
+the customer pay.

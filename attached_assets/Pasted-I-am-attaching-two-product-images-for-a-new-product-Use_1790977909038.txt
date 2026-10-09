@@ -1,0 +1,204 @@
+I am attaching **two product images** for a new product.
+
+Use these images as the reference/product images for the product below.
+
+# NEW PRODUCT
+
+**Product Name:** Reflective Collars
+
+Add **Reflective Collars** to the website Shop.
+
+Use the two attached images as the product images.
+
+Do not generate replacement images.
+
+---
+
+# 1. ADD TO SHOP
+
+Create a proper product entry for:
+
+**Reflective Collars**
+
+Use the attached images for the product gallery.
+
+The product should work with the existing Shop architecture and support the existing product functionality.
+
+Include the existing product fields used by the Shop, such as:
+
+- Product name
+- Product images
+- Description
+- Price
+- Stock status
+- Category
+- Product details
+- Add to Cart
+- Product details page, if the Shop already has one
+
+Do NOT invent a price if the admin/product system requires a specific price.
+
+If the existing admin panel allows the admin to set the price, leave it editable there.
+
+---
+
+# 2. USE BOTH IMAGES
+
+Use both attached images as product images.
+
+The first image shows multiple colorful reflective collar/leash-style products.
+
+The second image shows red and yellow reflective collars.
+
+Use them as a product gallery rather than treating them as two separate products.
+
+There should be **ONE product: Reflective Collars**.
+
+Do not create two separate products.
+
+---
+
+# 3. HOMEPAGE FEATURED PRODUCTS
+
+This is especially important.
+
+Add **Reflective Collars** to the **Featured Products section on the homepage**.
+
+Visitors should be able to discover this product directly from the homepage without having to navigate to the Shop first.
+
+The homepage product card should include:
+
+- Product image
+- Reflective Collars
+- Existing price display if available
+- Stock status if the existing design displays it
+- View Product / Shop Now button
+- Add to Cart if the existing Featured Products cards support it
+
+Make the product card visually consistent with the existing homepage design.
+
+---
+
+# 4. ADMIN PANEL
+
+Do NOT hardcode the product in a way that bypasses the admin panel.
+
+The product should be stored using the existing Shop/product data architecture.
+
+The admin must later be able to:
+
+- Edit product name
+- Replace images
+- Change price
+- Change description
+- Change stock status
+- Change category
+- Feature/unfeature the product
+- Delete the product
+
+Most importantly, the admin should be able to control whether **Reflective Collars** appears in the homepage Featured Products section.
+
+If the existing product model already has something like:
+
+`featured: true`
+
+use that system.
+
+If it uses another field, follow the existing architecture instead of creating a duplicate system.
+
+---
+
+# 5. IMAGE HANDLING
+
+Use the attached images properly.
+
+Do not distort them.
+
+Do not stretch them.
+
+Do not crop important parts of the products.
+
+Use:
+
+`object-fit: contain`
+
+or the existing equivalent product-image treatment.
+
+The images should look clean against the Shop and homepage backgrounds.
+
+If the existing admin system uses Firebase Storage, keep the product images compatible with that system.
+
+---
+
+# 6. PRODUCT DESCRIPTION
+
+Add a short professional description rather than placeholder text.
+
+Suggested description:
+
+**Reflective Collars**
+
+“Bright, durable collars designed to improve visibility during walks and help keep street dogs and companion dogs more visible in low-light conditions.”
+
+Do not make unsupported claims about safety or performance beyond what can reasonably be inferred from the product.
+
+---
+
+# 7. HOMEPAGE PRIORITY
+
+The homepage Featured Products section should clearly show the Reflective Collars product.
+
+Make sure it is not hidden because of:
+
+- Missing product data
+- Missing image
+- Incorrect featured flag
+- Firebase query issues
+- Empty-state logic
+- Incorrect collection name
+
+If the Featured Products section currently exists, integrate the product into that existing system.
+
+Do NOT create a second Featured Products section.
+
+---
+
+# 8. TEST EVERYTHING
+
+After adding the product:
+
+1. Check the homepage.
+2. Confirm Reflective Collars appears in Featured Products.
+3. Open the Shop.
+4. Confirm Reflective Collars appears there.
+5. Open the product.
+6. Confirm both images work.
+7. Test Add to Cart.
+8. Check cart behavior.
+9. Check mobile layout.
+10. Check desktop layout.
+11. Check Firebase/Firestore data.
+12. Open the admin panel.
+13. Confirm the product can be edited from the admin panel.
+14. Confirm changing the product in admin updates the public Shop/homepage.
+15. Check browser console for errors.
+
+Do not break any existing products or Shop functionality.
+
+---
+
+## IMPORTANT
+
+The two attached images represent **ONE product**:
+
+**Reflective Collars**
+
+Add it to:
+
+**Shop → Reflective Collars**
+
+and also:
+
+**Homepage → Featured Products → Reflective Collars**
+
+Keep it fully connected to the existing dynamic admin-panel/Firebase architecture so the administrator can manage it later without editing source code.

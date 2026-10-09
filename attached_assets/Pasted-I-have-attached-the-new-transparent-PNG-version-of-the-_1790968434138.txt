@@ -1,0 +1,287 @@
+I have attached the new **transparent PNG version of the official Save Street Dogs logo**.
+
+Use this exact file for the website branding.
+
+## IMPORTANT: FIX THE CURRENT LOGO PROBLEM
+
+I checked the current website preview and the logo currently appears inside a very obvious square/rectangular dark background.
+
+This looks incorrect and makes the website look unfinished.
+
+### The current problem
+
+The logo currently looks like:
+
+- A small square image
+- With a dark background around it
+- Sitting inside the navbar
+- With the square edges clearly visible
+
+I DO NOT want that.
+
+The new transparent PNG should appear as an actual standalone logo.
+
+---
+
+# 1. USE THE NEW TRANSPARENT PNG
+
+Replace the current logo asset with the attached transparent PNG.
+
+Do NOT recreate the logo.
+
+Do NOT generate another logo.
+
+Do NOT put the logo inside a colored box.
+
+Do NOT add a background behind the image.
+
+Do NOT add a border.
+
+Do NOT add a card/container around it.
+
+The website background should be visible around the transparent portions of the logo.
+
+---
+
+# 2. NAVBAR LOGO
+
+Fix the navbar so the logo looks like a proper professional website logo.
+
+Requirements:
+
+- Transparent background
+- No square edges
+- No rectangular image box
+- Correct aspect ratio
+- No stretching
+- Vertically centered
+- Slightly larger than the current logo
+- Responsive
+- Looks good on desktop
+- Looks good on mobile
+
+Use something equivalent to:
+
+`object-fit: contain`
+
+and preserve the original aspect ratio.
+
+Do not force the image into a square using:
+
+`aspect-ratio: 1 / 1`
+
+Do not use `object-fit: cover`.
+
+The logo should NOT be cropped.
+
+---
+
+# 3. REMOVE THE CURRENT DARK SQUARE
+
+Inspect the navbar HTML/CSS and find whatever is creating the dark square around the logo.
+
+Remove/fix:
+
+- Background color
+- Fixed square dimensions
+- Overflow clipping
+- Border
+- Box shadow
+- Incorrect aspect-ratio
+- Image cropping
+- Any CSS that makes the logo appear inside a square
+
+The logo should visually float naturally inside the navbar.
+
+---
+
+# 4. LOGO SIZE
+
+Make the logo large enough to be recognizable.
+
+Desktop:
+
+Approximately 110–150px wide depending on the logo's natural aspect ratio.
+
+Mobile:
+
+Approximately 85–110px wide.
+
+Do not blindly use these exact numbers if the actual logo proportions require a slightly different size.
+
+The important thing is:
+
+**Professional size + natural proportions + no cropping.**
+
+---
+
+# 5. LOADING SCREEN
+
+Create/fix the website loading screen.
+
+When the website initially opens, show a clean premium loading screen.
+
+The exact transparent Save Street Dogs logo should appear prominently in the center.
+
+Design:
+
+- Clean
+- Premium
+- Minimal
+- Animal-rescue feeling
+- Smooth
+- Fast
+- Responsive
+
+Example structure:
+
+Official logo
+
+↓ 
+
+`Saving lives. One paw at a time.`
+
+↓
+
+Subtle animated loading indicator
+
+Do NOT put the logo inside a square.
+
+Do NOT put the logo inside a card.
+
+Do NOT give the logo a rectangular background.
+
+The transparent logo should sit naturally on the loading-screen background.
+
+Use a subtle fade/scale animation if appropriate.
+
+Do not make the loading screen unnecessarily long.
+
+It should disappear automatically once the application is ready.
+
+---
+
+# 6. LOADING SCREEN MUST HANDLE FIREBASE
+
+The loading screen should also correctly handle Firebase initialization.
+
+Do not hide the application forever if Firebase takes time to initialize.
+
+Handle:
+
+- Firebase initialization
+- Authentication state initialization
+- Initial Firestore loading
+- Loading errors
+
+Once the required application state is ready, transition smoothly into the website.
+
+---
+
+# 7. HEADER SPACING
+
+While fixing the logo, slightly improve the navbar proportions.
+
+The current header has a lot of vertical empty space.
+
+Keep the premium spacious style, but make it more balanced.
+
+The logo, navigation links, Sign in button, Give Support button, and cart icon should feel like one unified header.
+
+Everything should be vertically aligned.
+
+Do NOT completely redesign the navbar.
+
+---
+
+# 8. DO NOT CHANGE THE WEBSITE BRANDING
+
+Keep the existing Save Street Dogs visual identity.
+
+Do not randomly introduce:
+
+- Purple
+- Neon colors
+- Unrelated gradients
+- Different logos
+- Different typography
+- Random icons
+
+The existing cream / dark green / warm orange visual direction should remain.
+
+---
+
+# 9. CHECK EVERY PLACE THE LOGO IS USED
+
+Search the entire project for the existing logo.
+
+Update all appropriate uses:
+
+- Navbar
+- Mobile navbar
+- Footer
+- Loading screen
+- Login screen if applicable
+- Admin login if appropriate
+- Favicon/site icon where technically appropriate
+- Any other major branding area
+
+Do not leave an old logo version somewhere else.
+
+---
+
+# 10. IMPORTANT: DO NOT DAMAGE ADMIN PANEL
+
+This is only a branding/UI correction.
+
+Do not break:
+
+- Firebase Authentication
+- Admin authentication
+- Firestore
+- Firebase Storage
+- Puppy management
+- Rescue management
+- Stories
+- Shop
+- Orders
+- Adoption requests
+- Volunteer applications
+- Foster applications
+
+Keep all existing functionality intact.
+
+---
+
+# 11. TEST IT VISUALLY
+
+After making the changes, actually inspect the running website.
+
+Check:
+
+### Desktop
+- Logo is not square
+- No dark image background
+- No cropping
+- Correct proportions
+- Proper navbar alignment
+
+### Mobile
+- Logo remains visible
+- No overflow
+- No distortion
+- Navigation still works
+
+### Loading
+- Logo appears immediately
+- Logo has no square background
+- Loading animation is smooth
+- Loading screen disappears correctly
+
+### Final check
+
+There should be **ZERO visible square/rectangular background around the logo**.
+
+The attached transparent PNG itself should be the visible logo.
+
+Do not simply tell me that this is fixed. Run the website and visually verify it.
