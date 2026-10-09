@@ -72,6 +72,10 @@ function browserImageUrl(path: string): string {
   return path;
 }
 
+function storyResponse(story: typeof cmsStoriesTable.$inferSelect) {
+  return { ...story, imageUrl: browserImageUrl(story.imageUrl) };
+}
+
 function puppyResponse(puppy: typeof puppiesTable.$inferSelect) {
   return GetPuppyResponse.parse({ ...puppy, imageUrls: puppy.imageUrls.map(browserImageUrl) });
 }
@@ -729,12 +733,13 @@ adminRouter.put("/settings/:key", async (req, res): Promise<void> => {
 router.use("/admin", adminRouter);
 
 router.get("/stories", async (_req, res): Promise<void> => {
-  res.json(await db.select().from(cmsStoriesTable).where(eq(cmsStoriesTable.published, true)).orderBy(desc(cmsStoriesTable.createdAt)));
+  const stories = await db.select().from(cmsStoriesTable).where(eq(cmsStoriesTable.published, true)).orderBy(desc(cmsStoriesTable.createdAt));
+  res.json(stories.map(storyResponse));
 });
 router.get("/stories/:slug", async (req, res): Promise<void> => {
   const [story] = await db.select().from(cmsStoriesTable).where(and(eq(cmsStoriesTable.slug, req.params.slug), eq(cmsStoriesTable.published, true)));
   if (!story) { res.status(404).json({ error: "Story not found" }); return; }
-  res.json(story);
+  res.json(storyResponse(story));
 });
 router.get("/settings", async (_req, res): Promise<void> => {
   res.json(await db.select({ key: websiteSettingsTable.key, value: websiteSettingsTable.value }).from(websiteSettingsTable));

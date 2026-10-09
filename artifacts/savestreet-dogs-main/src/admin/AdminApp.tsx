@@ -214,6 +214,21 @@ type GenericRecord = Record<string, unknown> & { id?: string };
 function useAdminRecords(path: string) {
   return useQuery({ queryKey: [path], queryFn: () => adminJson<GenericRecord[]>(path) });
 }
+function storySlugFromTitle(title: string) {
+  return title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+function AdminStoryThumbnail({ imageUrl, title }: { imageUrl: string; title: string }) {
+  const source = imageUrl ? objectUrl(imageUrl) : "";
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [source]);
+  return (
+    <div className="admin-table-thumb">
+      {source && !failed
+        ? <img src={source} alt={`${title} story`} onError={() => setFailed(true)} />
+        : <BookOpen size={16} aria-label="No story image" />}
+    </div>
+  );
+}
 type WebsiteSetting = { key: string; value: string; updatedAt?: string };
 const ADMIN_SETTINGS_QUERY_KEY = ["/api/admin/settings"] as const;
 
@@ -315,16 +330,189 @@ function WebsiteSettingsPage() {
 
 function GenericPage({ title, eyebrow, text, path, actionLabel }: { title: string; eyebrow: string; text: string; path: string; actionLabel?: string }) {
   const query = useAdminRecords(path); const queryClient = useQueryClient(); const [selected, setSelected] = useState<GenericRecord | null>(null); const [creating, setCreating] = useState(false); const [message, setMessage] = useState("");
-  async function update(record: GenericRecord, patch: Record<string, unknown>) { if (!record.id) return; try { const requestPatch = title === "Stories" ? { published: patch.status === "Published" } : patch; await adminJson(`${path}/${record.id}`, { method: "PATCH", body: JSON.stringify(requestPatch) }); await queryClient.invalidateQueries({ queryKey: [path] }); setMessage("Record updated."); setSelected(null); } catch (error) { setMessage(apiErrorMessage(error)); } }
+  async function update(record: GenericRecord, patch: Record<string, unknown>) { if (!record.id) return; try { await adminJson(`${path}/${record.id}`, { method: "PATCH", body: JSON.stringify(patch) }); await queryClient.invalidateQueries({ queryKey: [path] }); setMessage("Record updated."); setSelected(null); } catch (error) { setMessage(apiErrorMessage(error)); } }
   async function create(payload: Record<string, unknown>) { try { await adminJson(path, { method: "POST", body: JSON.stringify(payload) }); await queryClient.invalidateQueries({ queryKey: [path] }); setMessage("Record created."); setCreating(false); } catch (error) { setMessage(apiErrorMessage(error)); } }
   const records = query.data ?? [];
   const canCreate = title === "Stories";
-  return <><PageTitle eyebrow={eyebrow} title={title} text={text} action={actionLabel ? <button className="admin-button secondary" disabled={!canCreate} onClick={() => setCreating(true)} data-testid={`button-${title.toLowerCase().replace(/\s+/g, "-")}-add`}>{canCreate ? actionLabel : `${actionLabel} unavailable`}</button> : undefined} />{message && <Notice kind={message.includes("created") || message.includes("updated") ? "success" : "error"}>{message}</Notice>}{creating && <GenericCreateForm title={title} onClose={() => setCreating(false)} onSave={create} />}<section className="admin-panel">{query.isLoading ? <LoadingState /> : query.error ? <div className="admin-error" data-testid="admin-unavailable"><strong>This backend surface is unavailable.</strong><span>{apiErrorMessage(query.error)} The admin UI will not invent records until the route is enabled.</span></div> : !records.length ? <EmptyState title={`No ${title.toLowerCase()} yet.`} text="The live API returned no records." /> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Record</th><th>Contact</th><th>Status</th><th>Created</th><th /></tr></thead><tbody>{records.map((record, index) => { const id = String(record.id ?? index); return <tr key={id} data-testid={`row-record-${id}`}><td><div className="admin-record-name">{String(record.name ?? record.title ?? record.subject ?? record.customerName ?? "Record")}</div><div className="admin-record-sub">{String(record.message ?? record.details ?? record.email ?? "")}</div></td><td>{String(record.email ?? record.phone ?? record.city ?? "—")}</td><td><Badge value={String(record.status ?? "Unreviewed")} /></td><td>{niceDate(String(record.createdAt ?? ""))}</td><td>{record.id && <button className="admin-button secondary small" onClick={() => setSelected(record)} data-testid={`button-edit-record-${id}`}><PenLine size={12} /> Update</button>}</td></tr>; })}</tbody></table></div>}</section>{selected && <GenericEditor record={selected} onClose={() => setSelected(null)} onSave={(patch) => update(selected, patch)} title={title} />}</>;
+  const isStories = title === "Stories";
+  return (
+    <>
+      <PageTitle
+        eyebrow={eyebrow}
+        title={title}
+        text={text}
+        action={actionLabel ? <button className="admin-button secondary" disabled={!canCreate} onClick={() => setCreating(true)} data-testid={`button-${title.toLowerCase().replace(/\s+/g, "-")}-add`}>{canCreate ? actionLabel : `${actionLabel} unavailable`}</button> : undefined}
+      />
+      {message && <Notice kind={message.includes("created") || message.includes("updated") ? "success" : "error"}>{message}</Notice>}
+      {creating && <GenericCreateForm title={title} onClose={() => setCreating(false)} onSave={create} />}
+      <section className="admin-panel">
+        {query.isLoading ? <LoadingState /> : query.error ? (
+          <div className="admin-error" data-testid="admin-unavailable">
+            <strong>This backend surface is unavailable.</strong>
+            <span>{apiErrorMessage(query.error)} The admin UI will not invent records until the route is enabled.</span>
+          </div>
+        ) : !records.length ? <EmptyState title={`No ${title.toLowerCase()} yet.`} text="The live API returned no records." /> : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  {isStories && <th>Image</th>}
+                  <th>{isStories ? "Story" : "Record"}</th>
+                  {!isStories && <th>Contact</th>}
+                  <th>Status</th><th>Created</th><th />
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((record, index) => {
+                  const id = String(record.id ?? index);
+                  const name = String(record.name ?? record.title ?? record.subject ?? record.customerName ?? "Record");
+                  const summary = String(isStories
+                    ? record.excerpt ?? record.body ?? ""
+                    : record.message ?? record.details ?? record.email ?? "");
+                  const status = String(record.status ?? (isStories ? (record.published ? "Published" : "Unpublished") : "Unreviewed"));
+                  return (
+                    <tr key={id} data-testid={`row-record-${id}`}>
+                      {isStories && <td><AdminStoryThumbnail imageUrl={String(record.imageUrl ?? record.image_url ?? "")} title={name} /></td>}
+                      <td><div className="admin-record-name">{name}</div><div className="admin-record-sub">{summary}</div></td>
+                      {!isStories && <td>{String(record.email ?? record.phone ?? record.city ?? "—")}</td>}
+                      <td><Badge value={status} /></td>
+                      <td>{niceDate(String(record.createdAt ?? ""))}</td>
+                      <td>{record.id && <button className="admin-button secondary small" onClick={() => setSelected(record)} data-testid={`button-edit-record-${id}`}><PenLine size={12} /> Update</button>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      {selected && (isStories
+        ? <StoryEditor key={String(selected.id ?? "")} record={selected} onClose={() => setSelected(null)} onSave={(patch) => update(selected, patch)} />
+        : <GenericEditor record={selected} onClose={() => setSelected(null)} onSave={(patch) => update(selected, patch)} title={title} />)}
+    </>
+  );
 }
 
 function GenericCreateForm({ title, onClose, onSave }: { title: string; onClose: () => void; onSave: (payload: Record<string, unknown>) => Promise<void> }) {
-  const [name, setName] = useState(""); const [description, setDescription] = useState(""); const [status, setStatus] = useState(title === "Stories" ? "Unpublished" : "Draft");
-  return <form className="admin-panel admin-form" style={{ marginBottom: 15 }} onSubmit={(event) => { event.preventDefault(); void onSave({ slug: name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""), title: name, excerpt: description, body: description, imageUrl: "", published: status === "Published" }); }} data-testid={`form-create-${title.toLowerCase()}`}><div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><div><div className="admin-eyebrow">New {title.toLowerCase().slice(0, -1)}</div><h2>Create record</h2></div><button type="button" className="admin-button secondary small" onClick={onClose} data-testid="button-cancel-create"><X size={13} /> Cancel</button></div><div className="admin-form-grid"><Field label="Title or name" full><input value={name} onChange={(e) => setName(e.target.value)} required data-testid="input-generic-name" /></Field><Field label="Copy or description" full><textarea value={description} onChange={(e) => setDescription(e.target.value)} data-testid="textarea-generic-description" /></Field><Field label="Status"><select value={status} onChange={(e) => setStatus(e.target.value)} data-testid="select-generic-status"><option>Unpublished</option><option>Published</option></select></Field></div><div className="admin-form-actions"><button className="admin-button" data-testid="button-save-generic">Create {title.toLowerCase().slice(0, -1)} <Check size={14} /></button></div></form>;
+  const [storyTitle, setStoryTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [excerpt, setExcerpt] = useState("");
+  const [body, setBody] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [published, setPublished] = useState(false);
+  return (
+    <form
+      className="admin-panel admin-form"
+      style={{ marginBottom: 15 }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void onSave({ slug: slug.trim(), title: storyTitle.trim(), excerpt, body, imageUrl: imageUrl.trim(), published });
+      }}
+      data-testid={`form-create-${title.toLowerCase()}`}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <div><div className="admin-eyebrow">New story</div><h2>Create story</h2></div>
+        <button type="button" className="admin-button secondary small" onClick={onClose} data-testid="button-cancel-create"><X size={13} /> Cancel</button>
+      </div>
+      <div className="admin-form-grid">
+        <Field label="Story title *" full>
+          <input
+            value={storyTitle}
+            onChange={(event) => {
+              const value = event.target.value;
+              setStoryTitle(value);
+              if (!slugEdited) setSlug(storySlugFromTitle(value));
+            }}
+            required
+            data-testid="input-generic-name"
+          />
+        </Field>
+        <Field label="Story URL slug *" full>
+          <input value={slug} onChange={(event) => { setSlugEdited(true); setSlug(event.target.value); }} required data-testid="input-story-slug" />
+        </Field>
+        <Field label="Short description" full><textarea value={excerpt} onChange={(event) => setExcerpt(event.target.value)} data-testid="textarea-generic-description" /></Field>
+        <Field label="Full story" full><textarea value={body} onChange={(event) => setBody(event.target.value)} rows={8} data-testid="textarea-story-body" /></Field>
+        <Field label="Story image URL or storage path" full>
+          <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://… or /api/storage/…" data-testid="input-story-image-url" />
+        </Field>
+        <Field label="Upload story image" full>
+          <UploadField images={imageUrl ? [imageUrl] : []} onUpload={async (file) => setImageUrl(await uploadAdminImage(file))} />
+        </Field>
+        <Field label="Publication status">
+          <select value={published ? "Published" : "Unpublished"} onChange={(event) => setPublished(event.target.value === "Published")} data-testid="select-generic-status">
+            <option value="Unpublished">Unpublished</option><option value="Published">Published</option>
+          </select>
+        </Field>
+      </div>
+      <div className="admin-form-actions">
+        <button className="admin-button" disabled={!storyTitle.trim() || !slug.trim()} data-testid="button-save-generic">Create story <Check size={14} /></button>
+      </div>
+    </form>
+  );
+}
+
+function StoryEditor({ record, onClose, onSave }: { record: GenericRecord; onClose: () => void; onSave: (patch: Record<string, unknown>) => Promise<void> }) {
+  const [storyTitle, setStoryTitle] = useState(String(record.title ?? ""));
+  const [slug, setSlug] = useState(String(record.slug ?? ""));
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [excerpt, setExcerpt] = useState(String(record.excerpt ?? ""));
+  const [body, setBody] = useState(String(record.body ?? ""));
+  const [imageUrl, setImageUrl] = useState(String(record.imageUrl ?? record.image_url ?? ""));
+  const [published, setPublished] = useState(Boolean(record.published));
+  const [saving, setSaving] = useState(false);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      await onSave({ slug: slug.trim(), title: storyTitle.trim(), excerpt, body, imageUrl: imageUrl.trim(), published });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="admin-panel admin-detail admin-form" style={{ marginTop: 15 }} onSubmit={(event) => void submit(event)} data-testid="form-edit-story">
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <div><div className="admin-eyebrow">Story detail</div><h3>{storyTitle || "Edit story"}</h3></div>
+        <button type="button" className="admin-button secondary small" onClick={onClose} data-testid="button-close-record"><X size={13} /> Close</button>
+      </div>
+      <div className="admin-form-grid">
+        <Field label="Story title *" full>
+          <input
+            value={storyTitle}
+            onChange={(event) => {
+              const value = event.target.value;
+              setStoryTitle(value);
+              if (!slugEdited) setSlug(storySlugFromTitle(value));
+            }}
+            required
+            data-testid="input-story-title"
+          />
+        </Field>
+        <Field label="Story URL slug *" full>
+          <input value={slug} onChange={(event) => { setSlugEdited(true); setSlug(event.target.value); }} required data-testid="input-story-slug" />
+        </Field>
+        <Field label="Short description" full><textarea value={excerpt} onChange={(event) => setExcerpt(event.target.value)} data-testid="textarea-story-excerpt" /></Field>
+        <Field label="Full story" full><textarea value={body} onChange={(event) => setBody(event.target.value)} rows={8} data-testid="textarea-story-body" /></Field>
+        <Field label="Story image URL or storage path" full>
+          <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://… or /api/storage/…" data-testid="input-story-image-url" />
+        </Field>
+        <Field label="Upload story image" full>
+          <UploadField images={imageUrl ? [imageUrl] : []} onUpload={async (file) => setImageUrl(await uploadAdminImage(file))} />
+        </Field>
+        <Field label="Publication status">
+          <select value={published ? "Published" : "Unpublished"} onChange={(event) => setPublished(event.target.value === "Published")} data-testid="select-record-status">
+            <option value="Unpublished">Unpublished</option><option value="Published">Published</option>
+          </select>
+        </Field>
+      </div>
+      <div className="admin-form-actions">
+        <button className="admin-button" disabled={!storyTitle.trim() || !slug.trim() || saving} data-testid="button-save-record">{saving ? "Saving…" : "Save story"} <Check size={14} /></button>
+      </div>
+    </form>
+  );
 }
 
 function GenericEditor({ record, title, onClose, onSave }: { record: GenericRecord; title: string; onClose: () => void; onSave: (patch: Record<string, unknown>) => Promise<void> }) {

@@ -2,7 +2,16 @@ import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type Reac
 import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, UserRound, X } from "lucide-react";
 import { Link, Route, Switch, useLocation, useRoute } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useGetProduct, useGetPuppy, useListProducts, useListPuppies } from "@workspace/api-client-react";
+import {
+  getGetProductQueryKey,
+  getGetPuppyQueryKey,
+  getListProductsQueryKey,
+  getListPuppiesQueryKey,
+  useGetProduct,
+  useGetPuppy,
+  useListProducts,
+  useListPuppies,
+} from "@workspace/api-client-react";
 import type { Product, Puppy } from "@workspace/api-client-react";
 import NotFound from "@/pages/not-found";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -35,6 +44,9 @@ const queryClient = new QueryClient({
 const AuthPage = lazy(() => import("@/components/auth-page"));
 const AdminApp = lazy(() => import("@/admin"));
 const OrderTrackingPage = lazy(() => import("@/storefront/OrderTrackingPage"));
+const LearnPage = lazy(() => import("@/learn/Stories").then((pages) => ({ default: pages.LearnPage })));
+const StoriesPage = lazy(() => import("@/learn/Stories").then((pages) => ({ default: pages.StoriesPage })));
+const StoryDetailPage = lazy(() => import("@/learn/Stories").then((pages) => ({ default: pages.StoryDetailPage })));
 const dogImages = {
   hero: (width: number) => `https://images.pexels.com/photos/1254140/pexels-photo-1254140.jpeg?auto=compress&cs=tinysrgb&w=${width}&q=78`,
   calm: (width: number) => `https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=${width}&q=78`,
@@ -127,9 +139,10 @@ function Home() {
 }
 function Puppies() {
   const [search, setSearch] = useState(""); const [size, setSize] = useState("");
+  const params = { search: search || undefined, size: size || undefined };
   const query = useListPuppies(
-    { search: search || undefined, size: size || undefined },
-    { query: { staleTime: 30_000 } },
+    params,
+    { query: { queryKey: getListPuppiesQueryKey(params), staleTime: 30_000 } },
   );
   return <><Meta title="Meet the puppies" description="Browse current SaveStreet Dogs puppy profiles." /><main><PageHeader eyebrow="Adoptable, with care" title={<>Meet your<br /><em>maybe-dog.</em></>} text="Current profiles come from the care team. Availability changes as dogs move through care and adoption." /><section className="content-section container"><div className="toolbar"><div><div className="eyebrow">Current profiles</div><p style={{ color: "#526a64", fontSize: 13 }}>No profile is published until the team adds it in Admin.</p></div><div className="filter-row"><div className="search"><Search size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or temperament" /></div><select className="select" value={size} onChange={(e) => setSize(e.target.value)}><option value="">All sizes</option><option>Small</option><option>Medium</option><option>Large</option></select></div></div>{query.error && <div className="notice error" role="alert">We couldn’t refresh profiles. <button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button></div>}{query.isLoading && !query.data ? <div className="empty-state" role="status">Loading current profiles…</div> : query.data?.length ? <div className="puppy-grid">{query.data.map((puppy) => <PuppyCard puppy={puppy} key={puppy.id} />)}</div> : query.error ? <EmptyState title="Profiles are temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /> : <EmptyState title="No puppies are currently listed." text="The care team has not published an available profile yet. Check back soon or report a dog who needs help." action={<Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={14} /></Link>} />}</section></main></>;
 }
@@ -152,7 +165,9 @@ function PuppyCard({ puppy }: { puppy: Puppy }) {
   );
 }
 function PuppyProfile() {
-  const [, params] = useRoute("/puppies/:id"); const query = useGetPuppy(params?.id ?? "", { query: { staleTime: 30_000 } });
+  const [, params] = useRoute("/puppies/:id");
+  const puppyId = params?.id ?? "";
+  const query = useGetPuppy(puppyId, { query: { queryKey: getGetPuppyQueryKey(puppyId), staleTime: 30_000 } });
   if (query.isLoading && !query.data) return <main><div className="content-section container"><div className="empty-state" role="status">Loading profile…</div></div></main>;
   if (query.error && !query.data) return <main><div className="content-section container"><EmptyState title="This profile is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
   if (!query.data) return <NotFound />;
@@ -184,7 +199,9 @@ function PuppyProfile() {
   );
 }
 function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
-  const [search, setSearch] = useState(""); const query = useListProducts({ search: search || undefined }, { query: { staleTime: 30_000 } });
+  const [search, setSearch] = useState("");
+  const params = { search: search || undefined };
+  const query = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params), staleTime: 30_000 } });
   const add = (product: Product) => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { ...product, quantity: 1 }]);
   return (
     <>
@@ -235,7 +252,8 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
 }
 function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
   const [, params] = useRoute("/products/:id");
-  const query = useGetProduct(params?.id ?? "", { query: { staleTime: 30_000 } });
+  const productId = params?.id ?? "";
+  const query = useGetProduct(productId, { query: { queryKey: getGetProductQueryKey(productId), staleTime: 30_000 } });
   const [, navigate] = useLocation();
   if (query.isLoading && !query.data) return <main><div className="content-section container"><div className="empty-state" role="status">Loading product…</div></div></main>;
   if (query.error && !query.data) return <main><div className="content-section container"><EmptyState title="This product is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
@@ -486,7 +504,32 @@ function AppRoutes() {
   if (location.startsWith("/admin") && location !== "/admin/login") {
     return <Switch><Route path="/admin" component={AdminRoute} /><Route path="/admin/:rest*" component={AdminRoute} /><Route><NotFound /></Route></Switch>;
   }
-  return <Shell cart={cart} setCart={setCart}><Switch><Route path="/" component={Home} /><Route path="/login"><AuthRoute mode="signin" /></Route><Route path="/signup"><AuthRoute mode="signup" /></Route><Route path="/forgot-password"><AuthRoute mode="reset" /></Route><Route path="/admin/login"><AuthRoute mode="admin" /></Route><Route path="/orders/:orderCode"><Suspense fallback={<RouteLoading label="order details" />}><OrderTrackingPage /></Suspense></Route><Route path="/puppies/:id" component={PuppyProfile} /><Route path="/puppies" component={Puppies} /><Route path="/products/:id"><ProductDetail cart={cart} setCart={setCart} /></Route><Route path="/products"><Products cart={cart} setCart={setCart} /></Route><Route path="/checkout"><CheckoutPage cart={cart} setCart={setCart} /></Route><Route path="/rescue"><FormPage kind="rescue" /></Route><Route path="/adopt"><FormPage kind="adopt" /></Route><Route path="/foster"><FormPage kind="foster" /></Route><Route path="/volunteer"><FormPage kind="volunteer" /></Route><Route path="/contact"><FormPage kind="contact" /></Route><Route><NotFound /></Route></Switch></Shell>;
+  return (
+    <Shell cart={cart} setCart={setCart}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/learn"><Suspense fallback={<RouteLoading label="learning page" />}><LearnPage /></Suspense></Route>
+        <Route path="/stories/:slug"><Suspense fallback={<RouteLoading label="story" />}><StoryDetailPage /></Suspense></Route>
+        <Route path="/stories"><Suspense fallback={<RouteLoading label="stories" />}><StoriesPage /></Suspense></Route>
+        <Route path="/login"><AuthRoute mode="signin" /></Route>
+        <Route path="/signup"><AuthRoute mode="signup" /></Route>
+        <Route path="/forgot-password"><AuthRoute mode="reset" /></Route>
+        <Route path="/admin/login"><AuthRoute mode="admin" /></Route>
+        <Route path="/orders/:orderCode"><Suspense fallback={<RouteLoading label="order details" />}><OrderTrackingPage /></Suspense></Route>
+        <Route path="/puppies/:id" component={PuppyProfile} />
+        <Route path="/puppies" component={Puppies} />
+        <Route path="/products/:id"><ProductDetail cart={cart} setCart={setCart} /></Route>
+        <Route path="/products"><Products cart={cart} setCart={setCart} /></Route>
+        <Route path="/checkout"><CheckoutPage cart={cart} setCart={setCart} /></Route>
+        <Route path="/rescue"><FormPage kind="rescue" /></Route>
+        <Route path="/adopt"><FormPage kind="adopt" /></Route>
+        <Route path="/foster"><FormPage kind="foster" /></Route>
+        <Route path="/volunteer"><FormPage kind="volunteer" /></Route>
+        <Route path="/contact"><FormPage kind="contact" /></Route>
+        <Route><NotFound /></Route>
+      </Switch>
+    </Shell>
+  );
 }
 
 function StartupReadyGate({ children }: { children: ReactNode }) {
