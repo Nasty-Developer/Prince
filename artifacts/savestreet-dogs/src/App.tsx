@@ -54,6 +54,27 @@ const dogImages = {
 const collarImages = [`${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`, `${import.meta.env.BASE_URL}assets/reflective-collars-red-yellow.jpg`];
 const productImages = (product: Product) => product.name.toLowerCase().includes("reflective collar") ? collarImages : product.imageUrls.map((image) => storageImageUrl(image)).filter((image): image is string => Boolean(image));
 type CartLine = Product & { quantity: number };
+const CART_STORAGE_KEY = "savestreet-dogs.cart.v1";
+
+function restoreCart(): CartLine[] {
+  try {
+    const stored = window.sessionStorage.getItem(CART_STORAGE_KEY);
+    if (!stored) return [];
+    const parsed: unknown = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((value): value is CartLine => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+      const item = value as Partial<CartLine>;
+      return typeof item.id === "string" && item.id.length > 0
+        && typeof item.name === "string"
+        && typeof item.priceRupees === "number" && Number.isFinite(item.priceRupees) && item.priceRupees >= 0
+        && Array.isArray(item.imageUrls)
+        && typeof item.quantity === "number" && Number.isInteger(item.quantity) && item.quantity > 0;
+    });
+  } catch {
+    return [];
+  }
+}
 const money = (rupees: number) => `₹${rupees.toFixed(0)}`;
 const api = <T,>(path: string, init?: RequestInit) => storefrontJson<T>(path, init);
 
@@ -285,7 +306,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
         <section className="content-section container">
           <button className="btn btn-ghost" onClick={() => navigate("/products")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> Back to shop</button>
           <div className="product-detail" style={{ marginTop: 30 }}>
-             <div><div className={`product-art ${image ? "has-image" : ""}`}>{image ? <img src={image} alt={`${product.name} product`} loading="eager" fetchPriority="high" decoding="async" /> : <PawPrint size={64} />}</div>{images.length > 1 && <div className="product-gallery-thumbs" aria-label="Product photos">{images.map((src, index) => <button type="button" key={src} aria-label={`Show product photo ${index + 1}`} aria-pressed={selectedImage === index} onClick={() => setSelectedImage(index)}><img src={src} alt="" /></button>)}</div>}</div>
+              <div><div className={`product-art ${image ? "has-image" : ""}`}>{image ? <img src={image} alt={`${product.name} product`} loading="eager" fetchPriority="high" decoding="async" /> : <PawPrint size={64} />}</div>{images.length > 1 && <div className="product-gallery-thumbs" role="group" aria-label="Product photos">{images.map((src, index) => <button type="button" key={src} aria-label={`Show product photo ${index + 1}`} aria-pressed={selectedImage === index} onClick={() => setSelectedImage(index)}><img src={src} alt="" /></button>)}</div>}</div>
             <div className="product-detail-copy">
               <div className="eyebrow">{product.category}</div>
               <h2>{product.name}</h2>
@@ -347,7 +368,7 @@ function CheckoutPage({ cart, setCart }: { cart: CartLine[]; setCart: React.Disp
   if (!cart.length && !orderCode) {
     return <><Meta title="Checkout" description="Review your SaveStreet Dogs order." /><main><section className="content-section container"><EmptyState title="Your cart is empty." text="Add a product before starting checkout." action={<Link href="/products" className="btn btn-primary">Browse the shop <ArrowRight size={14} /></Link>} /></section></main></>;
   }
-  if (!user && !orderCode) return <><Meta title="Sign in to checkout" description="Sign in before placing an order." /><main><section className="content-section container"><div className="form-card checkout-auth"><div className="eyebrow">Your cart stays here</div><h2>Sign in before checkout.</h2><p>Checkout is available to signed-in customers. Your cart remains saved while you sign in on this page.</p><Link href="/login" className="btn btn-primary">Sign in to continue <ArrowRight size={14} /></Link><Link href="/products" className="btn btn-ghost">Return to shop</Link></div></section></main></>;
+  if (!user && !orderCode) return <><Meta title="Sign in to checkout" description="Sign in before placing an order." /><main><section className="content-section container"><div className="form-card checkout-auth"><div className="eyebrow">Your cart stays here</div><h2>Sign in before checkout.</h2><p>Checkout is available to signed-in customers. Your cart remains saved while you sign in on this page.</p><Link href={`/login?redirect=${encodeURIComponent("/checkout")}`} className="btn btn-primary">Sign in to continue <ArrowRight size={14} /></Link><Link href="/products" className="btn btn-ghost">Return to shop</Link></div></section></main></>;
   if (orderCode) {
     return (
       <>
@@ -562,9 +583,29 @@ function FloatingHelper() {
     </div>
   </div>;
 }
-function AppRoutes() {
-  const [cart, setCart] = useState<CartLine[]>([]);
+
+function MobileQuickActions() {
   const [location] = useLocation();
+  if (location.startsWith("/admin")) return null;
+  return (
+    <nav className="mobile-quick-actions" aria-label="Quick actions">
+      <Link href="/rescue"><Stethoscope size={16} aria-hidden="true" /><span>Report</span></Link>
+      <Link href="/products"><ShoppingBag size={16} aria-hidden="true" /><span>Shop</span></Link>
+      <Link href="/learn"><BookOpen size={16} aria-hidden="true" /><span>Learn</span></Link>
+    </nav>
+  );
+}
+
+function AppRoutes() {
+  const [cart, setCart] = useState<CartLine[]>(restoreCart);
+  const [location] = useLocation();
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch {
+      // Keep shopping usable if this browser disables session storage.
+    }
+  }, [cart]);
   if (location.startsWith("/admin") && location !== "/admin/login") {
     return <Switch><Route path="/admin" component={AdminRoute} /><Route path="/admin/:rest*" component={AdminRoute} /><Route><NotFound /></Route></Switch>;
   }
@@ -572,6 +613,7 @@ function AppRoutes() {
     <Shell cart={cart} setCart={setCart}>
       <Switch>
         <Route path="/"><Home setCart={setCart} /></Route>
+        <Route path="/learn/:slug"><Suspense fallback={<RouteLoading label="guide" />}><StoryDetailPage /></Suspense></Route>
         <Route path="/learn"><Suspense fallback={<RouteLoading label="learning page" />}><LearnPage /></Suspense></Route>
         <Route path="/stories/:slug"><Suspense fallback={<RouteLoading label="story" />}><StoryDetailPage /></Suspense></Route>
         <Route path="/stories"><Suspense fallback={<RouteLoading label="stories" />}><StoriesPage /></Suspense></Route>
@@ -631,6 +673,7 @@ export default function App() {
           <StartupReadyGate>
             <TooltipProvider>
               <AppRoutes />
+              <MobileQuickActions />
               <FloatingHelper />
               <Toaster />
             </TooltipProvider>

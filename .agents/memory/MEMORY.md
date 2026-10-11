@@ -1,0 +1,1 @@
+- [SaveStreet Dogs content guardrails](savestreet-content-guardrails.md) — keep unconfirmed contact details disabled and never present fictional rescue cases as real.

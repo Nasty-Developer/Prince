@@ -70,6 +70,10 @@ export function objectUrl(path?: string): string {
   ) {
     return `/api/storage${path}`;
   }
+  const assetPath = path.replace(/^\/+/, "");
+  if (assetPath.startsWith("assets/")) {
+    return `${import.meta.env.BASE_URL}${assetPath}`;
+  }
   return path;
 }
 

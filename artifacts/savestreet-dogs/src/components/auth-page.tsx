@@ -9,6 +9,20 @@ import {
 
 type AuthMode = "signin" | "signup" | "reset" | "admin";
 
+function getSafeReturnPath() {
+  const requested = new URLSearchParams(window.location.search).get("redirect");
+  if (!requested || !requested.startsWith("/") || requested.startsWith("//") || requested.includes("\\")) return "/";
+  try {
+    const destination = new URL(requested, window.location.origin);
+    if (destination.origin !== window.location.origin
+      || destination.pathname.startsWith("/admin")
+      || ["/login", "/signup", "/forgot-password", "/admin/login"].includes(destination.pathname)) return "/";
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return "/";
+  }
+}
+
 const copy: Record<AuthMode, { eyebrow: string; title: string; text: string }> = {
   signin: {
     eyebrow: "Welcome back",
@@ -40,12 +54,14 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const returnTo = mode === "admin" ? "/admin" : getSafeReturnPath();
+  const redirectSuffix = returnTo === "/" ? "" : `?redirect=${encodeURIComponent(returnTo)}`;
 
   useEffect(() => {
     if (!loading && user && mode !== "reset") {
-      navigate(mode === "admin" ? "/admin" : "/");
+      navigate(returnTo);
     }
-  }, [loading, mode, navigate, user]);
+  }, [loading, mode, navigate, returnTo, user]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,10 +77,10 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
           throw new Error("Passwords do not match.");
         }
         await signUp(email, password);
-        navigate("/");
+        navigate(returnTo);
       } else {
         await signIn(email, password);
-        navigate(mode === "admin" ? "/admin" : "/");
+        navigate(returnTo);
       }
     } catch (error) {
       setStatus(
@@ -152,12 +168,12 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
             </form>
             <div className="auth-links">
               {mode !== "signin" && mode !== "admin" && (
-                <Link href="/login">Already have an account? Sign in</Link>
+                <Link href={`/login${redirectSuffix}`}>Already have an account? Sign in</Link>
               )}
               {mode === "signin" && (
                 <>
-                  <Link href="/signup">Create an account</Link>
-                  <Link href="/forgot-password">Forgot your password?</Link>
+                  <Link href={`/signup${redirectSuffix}`}>Create an account</Link>
+                  <Link href={`/forgot-password${redirectSuffix}`}>Forgot your password?</Link>
                 </>
               )}
               {mode === "admin" && (
@@ -166,7 +182,7 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
                   <Link href="/login">Public account sign in</Link>
                 </>
               )}
-              {mode === "reset" && <Link href="/login">Back to sign in</Link>}
+              {mode === "reset" && <Link href={`/login${redirectSuffix}`}>Back to sign in</Link>}
             </div>
           </div>
         </div>
