@@ -135,7 +135,11 @@ router.post("/adoption-requests", async (req, res): Promise<void> => {
 router.get("/products", async (req, res): Promise<void> => {
   const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
-  const filters = [eq(productsTable.available, true), gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK")];
+  const inventoryAvailable = or(
+    eq(productsTable.stockTracked, false),
+    and(gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK")),
+  )!;
+  const filters = [eq(productsTable.available, true), inventoryAvailable];
   if (category) filters.push(eq(productsTable.category, category));
   if (search) filters.push(or(ilike(productsTable.name, `%${search}%`), ilike(productsTable.description, `%${search}%`))!);
   const products = await db.select().from(productsTable).where(and(...filters)).orderBy(desc(productsTable.createdAt));
@@ -146,7 +150,15 @@ router.get("/products", async (req, res): Promise<void> => {
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
-  const product = (await db.select().from(productsTable).where(and(eq(productsTable.id, req.params.id), eq(productsTable.available, true), gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK"))))[0];
+  const inventoryAvailable = or(
+    eq(productsTable.stockTracked, false),
+    and(gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK")),
+  )!;
+  const product = (await db.select().from(productsTable).where(and(
+    eq(productsTable.id, req.params.id),
+    eq(productsTable.available, true),
+    inventoryAvailable,
+  )))[0];
   if (!product) {
     res.status(404).json({ error: "Product not found" });
     return;
@@ -180,7 +192,7 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
       res.status(400).json({ error: "One of the selected products is no longer available." });
       return;
     }
-    if (product.stockStatus === "NO STOCK" || product.stock < quantity) {
+    if (product.stockTracked && (product.stockStatus === "NO STOCK" || product.stock < quantity)) {
       res.status(400).json({ error: `${product.name} does not have enough stock.` });
       return;
     }
@@ -228,6 +240,7 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
 
     for (const [productId, quantity] of requested) {
       const product = productById.get(productId)!;
+      if (!product.stockTracked) continue;
       const remaining = product.stock - quantity;
       const stockStatus = remaining === 0 ? "NO STOCK" : remaining < 5 ? "LOW STOCK" : "IN STOCK";
       await tx.update(productsTable)
@@ -418,11 +431,13 @@ adminRouter.post("/products", async (req, res): Promise<void> => {
     return;
   }
   const stock = parsed.data.stock ?? 0;
+  const stockTracked = parsed.data.stockTracked ?? true;
   const [product] = await db.insert(productsTable).values({
     ...parsed.data,
     stock,
+    stockTracked,
     stockStatus: stockStatusFor(stock),
-    available: stock > 0 && parsed.data.available !== false,
+    available: (!stockTracked || stock > 0) && parsed.data.available !== false,
   }).returning();
   res.status(201).json(productResponse(product));
 });
@@ -433,14 +448,20 @@ adminRouter.patch("/products/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const nextStock = parsed.data.stock;
+  const [existing] = await db.select().from(productsTable).where(eq(productsTable.id, req.params.id));
+  if (!existing) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+  const nextStock = parsed.data.stock ?? existing.stock;
+  const nextStockTracked = parsed.data.stockTracked ?? existing.stockTracked;
+  const nextAvailable = parsed.data.available ?? existing.available;
   const [product] = await db.update(productsTable).set({
     ...parsed.data,
-    ...(nextStock === undefined ? {} : {
-      stock: nextStock,
-      stockStatus: stockStatusFor(nextStock),
-      available: nextStock > 0 && parsed.data.available !== false,
-    }),
+    stock: nextStock,
+    stockTracked: nextStockTracked,
+    stockStatus: stockStatusFor(nextStock),
+    available: (!nextStockTracked || nextStock > 0) && nextAvailable,
     updatedAt: new Date(),
   }).where(eq(productsTable.id, req.params.id)).returning();
   if (!product) {

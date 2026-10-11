@@ -666,13 +666,14 @@ components:
         internalNotes: { type: string }
     Product:
       type: object
-      required: [id, name, description, priceRupees, stock, available, stockStatus, category, imageUrls, createdAt, updatedAt]
+      required: [id, name, description, priceRupees, stock, stockTracked, available, stockStatus, category, imageUrls, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         description: { type: string }
         priceRupees: { type: integer, minimum: 0 }
         stock: { type: integer, minimum: 0 }
+        stockTracked: { type: boolean }
         available: { type: boolean }
         stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK] }
         category: { type: string }
@@ -689,6 +690,7 @@ components:
         description: { type: string }
         priceRupees: { type: integer, minimum: 0, default: 60 }
         stock: { type: integer, minimum: 0, default: 0 }
+        stockTracked: { type: boolean, default: true }
         available: { type: boolean, default: true }
         stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK], default: IN STOCK }
         category: { type: string }

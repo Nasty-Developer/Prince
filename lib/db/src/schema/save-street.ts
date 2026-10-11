@@ -60,6 +60,7 @@ export const productsTable = pgTable("products", {
   description: text("description").notNull().default(""),
   priceRupees: integer("price_rupees").notNull().default(60),
   stock: integer("stock").notNull().default(0),
+  stockTracked: boolean("stock_tracked").notNull().default(true),
   available: boolean("available").notNull().default(true),
   stockStatus: text("stock_status").notNull().default("IN STOCK"),
   category: text("category").notNull().default("Mission goods"),
