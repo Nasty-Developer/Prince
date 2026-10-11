@@ -1,1 +1,1 @@
-- [SaveStreet Dogs content guardrails](savestreet-content-guardrails.md) — keep unconfirmed contact details disabled and never present fictional rescue cases as real.
+- [Nested artifact preview routing](artifact-proxy-paths.md) — registered artifacts inside imported subfolders may not receive a shared-proxy route; top-level artifacts did.

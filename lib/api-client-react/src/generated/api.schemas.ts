@@ -105,7 +105,6 @@ export const ProductStockStatus = {
   IN_STOCK: 'IN STOCK',
   LOW_STOCK: 'LOW STOCK',
   NO_STOCK: 'NO STOCK',
-  NOT_TRACKED: 'NOT TRACKED',
 } as const;
 
 export interface Product {
@@ -114,11 +113,8 @@ export interface Product {
   description: string;
   /** @minimum 0 */
   priceRupees: number;
-  /**
-     * @minimum 0
-     * @nullable
-     */
-  stock: number | null;
+  /** @minimum 0 */
+  stock: number;
   available: boolean;
   stockStatus: ProductStockStatus;
   category: string;
@@ -134,7 +130,6 @@ export const ProductInputStockStatus = {
   IN_STOCK: 'IN STOCK',
   LOW_STOCK: 'LOW STOCK',
   NO_STOCK: 'NO STOCK',
-  NOT_TRACKED: 'NOT TRACKED',
 } as const;
 
 export interface ProductInput {
@@ -143,11 +138,8 @@ export interface ProductInput {
   description?: string;
   /** @minimum 0 */
   priceRupees?: number;
-  /**
-     * @minimum 0
-     * @nullable
-     */
-  stock?: number | null;
+  /** @minimum 0 */
+  stock?: number;
   available?: boolean;
   stockStatus?: ProductInputStockStatus;
   category?: string;

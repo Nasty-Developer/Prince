@@ -13,11 +13,8 @@ export interface Product {
   description: string;
   /** @minimum 0 */
   priceRupees: number;
-  /**
-     * @minimum 0
-     * @nullable
-     */
-  stock: number | null;
+  /** @minimum 0 */
+  stock: number;
   available: boolean;
   stockStatus: ProductStockStatus;
   category: string;

@@ -13,5 +13,4 @@ export const ProductStockStatus = {
   IN_STOCK: 'IN STOCK',
   LOW_STOCK: 'LOW STOCK',
   NO_STOCK: 'NO STOCK',
-  NOT_TRACKED: 'NOT TRACKED',
 } as const;

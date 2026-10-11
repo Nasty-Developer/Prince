@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SaveStreet Dogs"
+description = "A community animal-welfare site for reporting dogs in need, finding adoptable dogs, supporting rescue work, and shopping to fund care."
+version = "1.0.0"
+id = "artifacts/savestreet-dogs-main"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18204
+
+[services.development]
+run = "pnpm --filter @workspace/savestreet-dogs-main run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/savestreet-dogs-main", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/savestreet-dogs-main/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18204"
+BASE_PATH = "/"

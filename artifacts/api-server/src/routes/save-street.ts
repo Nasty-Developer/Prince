@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gt, ilike, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, ilike, inArray, ne, or } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { db } from "@workspace/db";
@@ -56,8 +56,7 @@ import { requireAdmin, requireUser } from "../middlewares/auth";
 const router: IRouter = Router();
 const ACTIVE_PUPPY_STATUSES = ["Available", "Under Care", "Foster Needed", "Adoption Pending"];
 
-function stockStatusFor(stock: number | null | undefined) {
-  if (stock == null) return productStockStatusSchema.parse("NOT TRACKED");
+function stockStatusFor(stock: number) {
   return productStockStatusSchema.parse(stock <= 0 ? "NO STOCK" : stock < 5 ? "LOW STOCK" : "IN STOCK");
 }
 
@@ -136,7 +135,7 @@ router.post("/adoption-requests", async (req, res): Promise<void> => {
 router.get("/products", async (req, res): Promise<void> => {
   const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
-  const filters = [eq(productsTable.available, true), or(isNull(productsTable.stock), gt(productsTable.stock, 0))!, ne(productsTable.stockStatus, "NO STOCK")];
+  const filters = [eq(productsTable.available, true), gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK")];
   if (category) filters.push(eq(productsTable.category, category));
   if (search) filters.push(or(ilike(productsTable.name, `%${search}%`), ilike(productsTable.description, `%${search}%`))!);
   const products = await db.select().from(productsTable).where(and(...filters)).orderBy(desc(productsTable.createdAt));
@@ -147,7 +146,7 @@ router.get("/products", async (req, res): Promise<void> => {
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
-  const product = (await db.select().from(productsTable).where(and(eq(productsTable.id, req.params.id), eq(productsTable.available, true), or(isNull(productsTable.stock), gt(productsTable.stock, 0))!, ne(productsTable.stockStatus, "NO STOCK"))))[0];
+  const product = (await db.select().from(productsTable).where(and(eq(productsTable.id, req.params.id), eq(productsTable.available, true), gt(productsTable.stock, 0), ne(productsTable.stockStatus, "NO STOCK"))))[0];
   if (!product) {
     res.status(404).json({ error: "Product not found" });
     return;
@@ -181,7 +180,7 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
       res.status(400).json({ error: "One of the selected products is no longer available." });
       return;
     }
-    if (product.stockStatus === "NO STOCK" || (product.stock !== null && product.stock < quantity)) {
+    if (product.stockStatus === "NO STOCK" || product.stock < quantity) {
       res.status(400).json({ error: `${product.name} does not have enough stock.` });
       return;
     }
@@ -229,9 +228,8 @@ router.post("/orders", requireUser, async (req, res): Promise<void> => {
 
     for (const [productId, quantity] of requested) {
       const product = productById.get(productId)!;
-      if (product.stock === null) continue;
       const remaining = product.stock - quantity;
-      const stockStatus = stockStatusFor(remaining);
+      const stockStatus = remaining === 0 ? "NO STOCK" : remaining < 5 ? "LOW STOCK" : "IN STOCK";
       await tx.update(productsTable)
         .set({ stock: remaining, stockStatus, available: remaining > 0, updatedAt: new Date() })
         .where(eq(productsTable.id, productId));
@@ -419,12 +417,12 @@ adminRouter.post("/products", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const stock = parsed.data.stock === undefined ? 0 : parsed.data.stock;
+  const stock = parsed.data.stock ?? 0;
   const [product] = await db.insert(productsTable).values({
     ...parsed.data,
     stock,
     stockStatus: stockStatusFor(stock),
-    available: stock === null ? parsed.data.available !== false : stock > 0 && parsed.data.available !== false,
+    available: stock > 0 && parsed.data.available !== false,
   }).returning();
   res.status(201).json(productResponse(product));
 });
@@ -441,7 +439,7 @@ adminRouter.patch("/products/:id", async (req, res): Promise<void> => {
     ...(nextStock === undefined ? {} : {
       stock: nextStock,
       stockStatus: stockStatusFor(nextStock),
-      ...(nextStock === null ? {} : { available: nextStock > 0 && parsed.data.available !== false }),
+      available: nextStock > 0 && parsed.data.available !== false,
     }),
     updatedAt: new Date(),
   }).where(eq(productsTable.id, req.params.id)).returning();

@@ -672,9 +672,9 @@ components:
         name: { type: string }
         description: { type: string }
         priceRupees: { type: integer, minimum: 0 }
-        stock: { type: [integer, "null"], minimum: 0 }
+        stock: { type: integer, minimum: 0 }
         available: { type: boolean }
-        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK, NOT TRACKED] }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK] }
         category: { type: string }
         imageUrls:
           type: array
@@ -688,9 +688,9 @@ components:
         name: { type: string, minLength: 1 }
         description: { type: string }
         priceRupees: { type: integer, minimum: 0, default: 60 }
-        stock: { type: [integer, "null"], minimum: 0, default: 0 }
+        stock: { type: integer, minimum: 0, default: 0 }
         available: { type: boolean, default: true }
-        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK, NOT TRACKED], default: IN STOCK }
+        stockStatus: { type: string, enum: [IN STOCK, LOW STOCK, NO STOCK], default: IN STOCK }
         category: { type: string }
         imageUrls:
           type: array

@@ -59,7 +59,7 @@ export const productsTable = pgTable("products", {
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
   priceRupees: integer("price_rupees").notNull().default(60),
-  stock: integer("stock").default(0),
+  stock: integer("stock").notNull().default(0),
   available: boolean("available").notNull().default(true),
   stockStatus: text("stock_status").notNull().default("IN STOCK"),
   category: text("category").notNull().default("Mission goods"),
@@ -188,7 +188,7 @@ export const puppyStatusSchema = z.enum(["Available", "Under Care", "Foster Need
 export const adoptionRequestStatusSchema = z.enum(["New", "Under Review", "Contacted", "Approved", "Not Approved", "Completed", "Cancelled"]);
 export const orderStatusSchema = z.enum(["Order Received", "Awaiting Admin Confirmation", "Payment Requested", "Payment Received", "Payment Pending", "Payment Verified", "Preparing", "Ready to Dispatch", "Dispatched", "Out for Delivery", "Delivered", "Delayed", "Cancelled"]);
 export const paymentStatusSchema = z.enum(["Payment Pending", "Payment Verified", "Payment Failed", "Payment Refunded"]);
-export const productStockStatusSchema = z.enum(["IN STOCK", "LOW STOCK", "NO STOCK", "NOT TRACKED"]);
+export const productStockStatusSchema = z.enum(["IN STOCK", "LOW STOCK", "NO STOCK"]);
 
 export type Puppy = typeof puppiesTable.$inferSelect;
 export type InsertPuppy = z.infer<typeof insertPuppySchema>;
