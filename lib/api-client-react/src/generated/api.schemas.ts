@@ -115,7 +115,6 @@ export interface Product {
   priceRupees: number;
   /** @minimum 0 */
   stock: number;
-  stockTracked: boolean;
   available: boolean;
   stockStatus: ProductStockStatus;
   category: string;
@@ -141,7 +140,6 @@ export interface ProductInput {
   priceRupees?: number;
   /** @minimum 0 */
   stock?: number;
-  stockTracked?: boolean;
   available?: boolean;
   stockStatus?: ProductInputStockStatus;
   category?: string;

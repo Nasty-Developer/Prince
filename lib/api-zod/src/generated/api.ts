@@ -140,7 +140,6 @@ export const ListProductsResponseItem = zod.object({
   "description": zod.string(),
   "priceRupees": zod.number().int().min(listProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listProductsResponseStockMin),
-  "stockTracked": zod.boolean(),
   "available": zod.boolean(),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
@@ -170,7 +169,6 @@ export const GetProductResponse = zod.object({
   "description": zod.string(),
   "priceRupees": zod.number().int().min(getProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(getProductResponseStockMin),
-  "stockTracked": zod.boolean(),
   "available": zod.boolean(),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
@@ -590,7 +588,6 @@ export const ListAdminProductsResponseItem = zod.object({
   "description": zod.string(),
   "priceRupees": zod.number().int().min(listAdminProductsResponsePriceRupeesMin),
   "stock": zod.number().int().min(listAdminProductsResponseStockMin),
-  "stockTracked": zod.boolean(),
   "available": zod.boolean(),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
@@ -611,7 +608,6 @@ export const createProductBodyPriceRupeesMin = 0;
 export const createProductBodyStockDefault = 0;
 export const createProductBodyStockMin = 0;
 
-export const createProductBodyStockTrackedDefault = true;
 export const createProductBodyAvailableDefault = true;
 export const createProductBodyStockStatusDefault = `IN STOCK`;
 
@@ -620,7 +616,6 @@ export const CreateProductBody = zod.object({
   "description": zod.string().optional(),
   "priceRupees": zod.number().int().min(createProductBodyPriceRupeesMin).default(createProductBodyPriceRupeesDefault),
   "stock": zod.number().int().min(createProductBodyStockMin).default(createProductBodyStockDefault),
-  "stockTracked": zod.boolean().default(createProductBodyStockTrackedDefault),
   "available": zod.boolean().default(createProductBodyAvailableDefault),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']).default(createProductBodyStockStatusDefault),
   "category": zod.string().optional(),
@@ -639,7 +634,6 @@ export const CreateProductResponse = zod.object({
   "description": zod.string(),
   "priceRupees": zod.number().int().min(createProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(createProductResponseStockMin),
-  "stockTracked": zod.boolean(),
   "available": zod.boolean(),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
@@ -663,7 +657,6 @@ export const updateProductBodyOnePriceRupeesMin = 0;
 export const updateProductBodyOneStockDefault = 0;
 export const updateProductBodyOneStockMin = 0;
 
-export const updateProductBodyOneStockTrackedDefault = true;
 export const updateProductBodyOneAvailableDefault = true;
 export const updateProductBodyOneStockStatusDefault = `IN STOCK`;
 
@@ -672,7 +665,6 @@ export const UpdateProductBody = zod.object({
   "description": zod.string().optional(),
   "priceRupees": zod.number().int().min(updateProductBodyOnePriceRupeesMin).default(updateProductBodyOnePriceRupeesDefault),
   "stock": zod.number().int().min(updateProductBodyOneStockMin).default(updateProductBodyOneStockDefault),
-  "stockTracked": zod.boolean().default(updateProductBodyOneStockTrackedDefault),
   "available": zod.boolean().default(updateProductBodyOneAvailableDefault),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']).default(updateProductBodyOneStockStatusDefault),
   "category": zod.string().optional(),
@@ -691,7 +683,6 @@ export const UpdateProductResponse = zod.object({
   "description": zod.string(),
   "priceRupees": zod.number().int().min(updateProductResponsePriceRupeesMin),
   "stock": zod.number().int().min(updateProductResponseStockMin),
-  "stockTracked": zod.boolean(),
   "available": zod.boolean(),
   "stockStatus": zod.enum(['IN STOCK', 'LOW STOCK', 'NO STOCK']),
   "category": zod.string(),
