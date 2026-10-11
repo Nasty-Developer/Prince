@@ -1,0 +1,672 @@
+IMPORTANT SAVE STREET DOGS UPDATE — REAL PRODUCT PAYMENT, ORDER TRACKING, IMAGE HANDLING & BUSINESS DETAILS
+
+Do NOT rebuild the public website.
+Do NOT create fake/mock payment systems.
+Do NOT use placeholder images.
+Do NOT add Razorpay or any other future payment gateway right now.
+
+Use the existing Admin Panel, Firebase Authentication, backend/database and existing architecture.
+
+==================================================
+1. UPI PAYMENT DURING PRODUCT ORDERING 💳
+==================================================
+
+For the current product ordering flow, use the UPI payment method shown in the attached payment scanner image:
+
+ATTACHED FILE:
+- scanner.jpg
+
+Use the exact UPI QR scanner image provided by me.
+
+Display the QR/payment option clearly during checkout/order payment.
+
+The customer should be able to:
+
+1. Add product to cart
+2. Go to checkout
+3. Enter customer and delivery details
+4. See the order total
+5. See the UPI payment option
+6. Scan/pay using the provided UPI QR
+7. After completing the payment, select/tick:
+
+"Payment Done"
+
+This is a CUSTOMER confirmation only.
+
+IMPORTANT:
+"Payment Done" must NOT automatically mean the payment is verified.
+
+After the customer marks Payment Done:
+
+Order should be created with payment status such as:
+
+PAYMENT PENDING / PAYMENT TO VERIFY
+
+Then the order appears in:
+
+ADMIN → ORDERS
+
+Admin can open the order and verify the payment manually.
+
+==================================================
+2. ADMIN PAYMENT VERIFICATION
+==================================================
+
+Admin must be able to open an order and see:
+
+- Order ID
+- Customer name
+- Phone
+- Email
+- Product
+- Quantity
+- Unit price
+- Total amount
+- Payment status
+- Order date
+- Delivery information
+
+Admin should have a clear action:
+
+"Verify Payment"
+
+Before verification:
+Payment Status = Payment Pending
+
+After admin verifies:
+Payment Status = Payment Verified
+
+IMPORTANT:
+
+Customer clicking "Payment Done" does NOT verify payment.
+
+ONLY ADMIN VERIFICATION should change the order to:
+
+Payment Verified
+
+Use the real database for this status.
+
+Do not fake the payment verification.
+
+==================================================
+3. CUSTOMER ORDER TRACKING 📦
+==================================================
+
+After placing an order, the customer must be able to see their order tracking screen.
+
+Create/use:
+
+/orders/:orderId
+
+Only the customer who owns the order and authorized admin can access it.
+
+Customer should see:
+
+- Order ID
+- Product image
+- Product name
+- Quantity
+- Unit price
+- Total
+- Payment status
+- Order status
+- Expected delivery date
+- Delivery information when available
+- Delay information when applicable
+
+==================================================
+4. ORDER TRACKING STATUS
+==================================================
+
+Admin must be able to update the order through these statuses:
+
+1. Payment Pending
+2. Payment Verified
+3. Preparing
+4. Ready to Dispatch
+5. Dispatched
+6. Out for Delivery
+7. Delivered
+8. Delayed
+9. Cancelled
+
+These must be REAL database values.
+
+Do NOT only change them in the frontend.
+
+When Admin changes the status:
+
+Admin:
+Preparing
+
+→ customer tracking must show:
+
+"Preparing"
+
+Then:
+
+Ready to Dispatch
+
+→ customer sees "Ready to Dispatch"
+
+Then:
+
+Dispatched
+
+→ customer sees "Dispatched"
+
+Then:
+
+Out for Delivery
+
+→ customer sees "Out for Delivery"
+
+Then:
+
+Delivered
+
+→ customer sees "Delivered"
+
+==================================================
+5. EXPECTED DELIVERY DATE
+==================================================
+
+Default expected delivery should be within approximately 1–2 days after the order/payment process is successfully completed.
+
+For example:
+
+Order placed on 10th
+→ expected delivery can be 11th or 12th.
+
+The exact expected date must be calculated/stored properly and displayed to the customer.
+
+IMPORTANT:
+
+Admin must be able to manually change the expected delivery date.
+
+If an order is delayed:
+
+Admin selects:
+
+"Delayed"
+
+Then Admin can enter:
+
+- Delay reason
+- New expected delivery date
+
+Customer should then see:
+
+"Order Delayed"
+
+and the updated expected delivery information.
+
+==================================================
+6. CUSTOMER TRACKING TIMELINE
+==================================================
+
+Create a clean visual timeline:
+
+Payment
+↓
+Payment Verified
+↓
+Preparing
+↓
+Ready to Dispatch
+↓
+Dispatched
+↓
+Out for Delivery
+↓
+Delivered
+
+The current step must be clearly highlighted.
+
+If status is Delayed:
+show the delay status clearly and display the updated expected delivery date/reason.
+
+==================================================
+7. ADMIN ORDER MANAGEMENT
+==================================================
+
+Admin → Orders must be a real management interface.
+
+Admin should be able to:
+
+- Search orders
+- Filter by payment status
+- Filter by order status
+- Open order
+- Verify payment
+- Change order status
+- Change expected delivery date
+- Mark delayed
+- Add delay reason
+- Assign delivery information
+- View customer information
+- View product information
+
+All changes must persist in the database.
+
+==================================================
+8. DELIVERY INFORMATION
+==================================================
+
+For now, delivery is MANUAL.
+
+Do NOT integrate a delivery partner API.
+
+Admin can enter:
+
+- Delivery person/partner name
+- Phone number
+- Tracking ID
+- Notes
+
+Customer can see delivery information once Admin has assigned it.
+
+==================================================
+9. PRODUCT IMAGE BUG — VERY IMPORTANT 🖼️
+==================================================
+
+There is an image handling problem:
+
+When I upload a product image through the Admin Panel, the wrong image or another image may appear.
+
+FIX THIS COMPLETELY.
+
+When Admin uploads:
+
+Product A image
+→ Product A must display EXACTLY Product A image.
+
+Product B image
+→ Product B must display EXACTLY Product B image.
+
+Never substitute images.
+
+Do not use a shared/static image accidentally.
+
+Each product must have its own persistent image reference/URL stored with its database record.
+
+Image flow must be:
+
+Admin Upload
+→ Preview correct image
+→ Save product
+→ Store persistent image
+→ Product record stores correct image
+→ Admin list shows correct image
+→ Public Shop shows correct image
+→ Product Details shows correct image
+→ Cart shows correct image
+→ Order details show correct image
+
+After page refresh, logout/login, or deployment, the SAME correct image must still appear.
+
+Use the existing persistent Firebase Storage architecture where appropriate.
+
+Do not use temporary browser-only object URLs as the permanent image source.
+
+==================================================
+10. ATTACHED PRODUCT IMAGES
+==================================================
+
+I have attached real product images:
+
+- pto fduct save street dogs two.jpg
+- rpdouct save street dogs one.jpg
+
+Use the actual attached product images as product images.
+
+DO NOT use these images as generic decorative assets.
+
+Do NOT swap them between products.
+
+Do NOT replace them with placeholders.
+
+If these images represent two separate products, create the corresponding product records using the correct image for each product.
+
+==================================================
+11. LOGO IMAGE — VERY IMPORTANT
+==================================================
+
+The attached file:
+
+savedogs logo.jpg
+
+is the REAL SAVE STREET DOGS LOGO.
+
+Use this as the SaveStreet Dogs logo/brand image where appropriate.
+
+It is NOT a product image.
+
+Do NOT accidentally use the logo as a product image.
+
+Do NOT replace the existing logo with another random image.
+
+Make sure the same correct logo is used consistently in:
+- Website branding
+- Admin Panel branding
+- Header where appropriate
+- Footer where appropriate
+
+==================================================
+12. PRODUCT PRICE
+==================================================
+
+Default price for products:
+
+₹60 PER PIECE
+
+Examples:
+
+1 piece = ₹60
+2 pieces = ₹120
+3 pieces = ₹180
+4 pieces = ₹240
+5 pieces = ₹300
+6 pieces = ₹360
+
+Formula:
+
+Unit Price × Quantity
+
+Admin must enter/edit the product price in INDIAN RUPEES.
+
+Do NOT display paise values to the customer.
+
+If any backend/payment integration internally needs another unit, keep that conversion internal only.
+
+==================================================
+13. STOCK MANAGEMENT
+==================================================
+
+Admin must be able to set exactly:
+
+IN STOCK
+LOW STOCK
+NO STOCK
+
+IN STOCK:
+- Product purchasable
+- Add to Cart enabled
+
+LOW STOCK:
+- Product purchasable
+- Show Low Stock
+
+NO STOCK:
+- Product cannot be purchased
+- Add to Cart disabled
+- Show No Stock
+
+Stock status must persist to the database.
+
+==================================================
+14. ADD NEW PRODUCT FROM ADMIN
+==================================================
+
+Admin → Products → Add Product
+
+Admin must be able to add:
+
+- Product image
+- Product name
+- Price
+- Stock status
+- Stock quantity if supported
+- Category
+- Description
+- Availability
+
+Save must create a real persistent database record.
+
+After saving:
+
+Admin Product List
++
+Public Shop
++
+Product Details
++
+Cart
++
+Checkout
++
+Order
+
+must all use the SAME product record.
+
+==================================================
+15. NEW DOG / PUPPY FROM ADMIN
+==================================================
+
+Admin → Puppies/Dogs → Add New
+
+Admin must be able to add:
+
+- Dog/Puppy image
+- Name
+- Location
+- Age
+- Gender
+- Size
+- Temperament
+- Description
+- Health information
+- Vaccination information
+- Adoption status
+- Additional notes
+- Rescue story
+
+Image upload must work correctly and persist.
+
+Admin adds dog
+→ database record created
+→ correct image stored
+→ public Adoption/Puppies page shows the dog.
+
+Admin can:
+- Edit
+- Replace image
+- Change status
+- Archive
+- Remove
+
+==================================================
+16. BUSINESS / ORGANIZATION LOCATION
+==================================================
+
+SaveStreet Dogs / the organization information should identify the organization/business location as:
+
+Kota, Rajasthan, India
+
+Use this where appropriate in the public website's organization/contact/location information.
+
+Do NOT expose private warehouse, supplier, or internal operational details.
+
+Do not invent a detailed street address unless one is provided separately.
+
+==================================================
+17. NO FAKE DATA
+==================================================
+
+Do not create:
+- Fake products
+- Fake dogs
+- Fake orders
+- Fake payment confirmations
+- Fake adoption requests
+- Fake rescue reports
+- Fake statistics
+
+If there is no real data, show a proper empty state.
+
+==================================================
+18. ADMIN PANEL MUST ACTUALLY WORK
+==================================================
+
+Every Admin section must be functional.
+
+Admin must be able to actually manage:
+
+- Dashboard
+- Puppies/Dogs
+- Adoption Requests
+- Rescue Reports
+- Products
+- Orders
+- Volunteers
+- Foster
+- Stories
+- Customers
+- Website Content
+- Settings
+
+No static text-only pages.
+
+No dead buttons.
+
+No endless loading states.
+
+No UI-only changes.
+
+All CRUD operations must persist.
+
+==================================================
+19. FIREBASE
+==================================================
+
+Use the existing SaveStreet Dogs Firebase project.
+
+Use Firebase Authentication for:
+- Admin Sign In
+- Admin Sign Out
+- Customer Sign In
+- Customer Sign Out
+
+Use existing Firebase Storage/database architecture for images/data.
+
+Do NOT use Clerk.
+
+Do NOT create another Firebase project.
+
+==================================================
+20. FINAL TEST — MUST ACTUALLY VERIFY
+==================================================
+
+TEST PRODUCT:
+
+Admin
+→ Add Product
+→ Upload Product Image
+→ Preview
+→ Correct image appears
+→ Enter ₹60
+→ Select In Stock
+→ Save
+→ Refresh
+→ Image still correct
+→ Shop shows same correct image
+→ Cart shows same image
+→ Checkout shows ₹60
+
+TEST QUANTITY:
+
+1 = ₹60
+2 = ₹120
+3 = ₹180
+
+TEST STOCK:
+
+In Stock
+→ can purchase
+
+Low Stock
+→ can purchase + Low Stock label
+
+No Stock
+→ cannot purchase
+
+TEST PAYMENT:
+
+Customer
+→ Checkout
+→ UPI QR
+→ Pays
+→ taps "Payment Done"
+→ Order created as Payment Pending
+
+Admin
+→ Orders
+→ Open order
+→ Verify Payment
+→ Payment becomes Payment Verified
+
+TEST TRACKING:
+
+Admin
+→ Preparing
+→ customer sees Preparing
+
+Admin
+→ Ready to Dispatch
+→ customer sees Ready to Dispatch
+
+Admin
+→ Dispatched
+→ customer sees Dispatched
+
+Admin
+→ Out for Delivery
+→ customer sees Out for Delivery
+
+Admin
+→ Delivered
+→ customer sees Delivered
+
+TEST DELAY:
+
+Admin
+→ Delayed
+→ Enter delay reason
+→ Enter updated expected date
+→ Save
+
+Customer
+→ sees Delayed
+→ sees updated delivery information
+
+TEST PUPPY:
+
+Admin
+→ Add Puppy
+→ Upload correct image
+→ Save
+→ Refresh
+→ Image still correct
+→ Public Adoption page shows exact image
+
+FINAL REQUIREMENT:
+
+I need a REAL working SaveStreet Dogs platform where:
+
+Customer can place a product order
+→ pay using the provided UPI option
+→ mark Payment Done
+→ order enters Payment Pending
+→ Admin verifies payment
+→ Admin controls preparation/dispatch/delivery status
+→ Customer can track the order
+→ Admin can update expected delivery
+→ Admin can mark delayed and explain why
+→ Customer sees the updated tracking information.
+
+I must also be able to add NEW products and NEW dogs myself from the Admin Panel with the correct images, names, prices, stock and details.
+
+Fix the image mapping issue completely and make sure the exact uploaded image always belongs to the correct product.
+
+Do NOT add Razorpay or any other future payment gateway right now.

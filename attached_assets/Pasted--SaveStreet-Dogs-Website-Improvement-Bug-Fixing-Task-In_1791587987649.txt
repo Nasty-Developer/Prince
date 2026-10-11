@@ -1,0 +1,166 @@
+# SaveStreet Dogs: Website Improvement & Bug-Fixing Task
+
+Inspect and improve the existing SaveStreet Dogs website. Do not rebuild it from scratch. Fix broken functionality, improve the design, and preserve all existing working features.
+
+## 1. Fix Broken Pages and Routing
+
+- Fix the Stories page, which currently returns a 404 Not Found error.
+- Inspect all routes, navigation links, buttons, and internal page links.
+- Create a Stories page featuring **9 meaningful, original animal rescue stories**, each with a title, image, summary, and readable detail view.
+- Use existing project assets or reliable local images.
+- Fix all other broken routes and ensure nested URLs work when opened directly or refreshed.
+- Test browser navigation and mobile navigation.
+
+## 2. Add a Floating WhatsApp Button
+
+- Add a floating WhatsApp button to appropriate public-facing pages.
+- Position it in the bottom-right corner and make it responsive.
+- Include an accessible label and a prefilled welcome message.
+- Use a centrally configurable phone number.
+- I will provide the real WhatsApp number later. Use a clearly marked placeholder without inventing a real number.
+- Prevent the button from overlapping the chatbot, forms, or other important controls.
+
+## 3. Implement a Chatbot Without API Keys
+
+I do not currently have API keys for OpenAI, Gemini, or another AI provider.
+
+Create a functional, local knowledge-based chatbot that works without external AI credentials.
+
+It should:
+- Have a floating launcher, chat window, welcome message, and suggested questions.
+- Answer common questions about adoption, rescue reports, volunteering, fostering, donations, products, and contact information.
+- Use actual website content and keyword-based intent matching.
+- Provide relevant website links and sensible fallback responses.
+- Work on mobile and desktop.
+- Avoid fabricating information or claiming to use a live generative AI model.
+
+Structure the implementation so a genuine AI provider can be integrated later through a secure backend. Do not introduce paid services or credentials that I do not have.
+
+Ensure the chatbot and WhatsApp button do not overlap.
+
+## 4. Fix Firebase Authentication
+
+The website already has Sign In and Sign Out options. Inspect the existing Firebase integration and make it work correctly.
+
+- Reuse existing Firebase configuration and environment variables.
+- Do not replace valid values with dummy credentials or create a new Firebase project unnecessarily.
+- Fix sign-in, sign-out, session persistence, loading states, error handling, and redirects.
+- Ensure the navigation reflects the actual authentication state.
+- Protect admin routes and verify administrator permissions using trusted authorization checks and Firebase security rules.
+- Review Firestore and Storage rules for unauthorized access.
+- Never expose private service-account credentials or server secrets in frontend code.
+
+If any Firebase configuration is missing or invalid, identify the exact issue instead of inventing replacement values.
+
+## 5. Create a Learn Section
+
+Implement a working educational Learn section with original articles covering:
+
+1. How to Help a Stray Dog Safely.
+2. What to Do When You Find an Injured Street Dog.
+3. Responsible Street Dog Feeding.
+4. Understanding Street Dog Body Language.
+5. Why Vaccination and Sterilization Matter.
+6. How to Adopt a Rescue Dog.
+7. Preparing Your Home for an Adopted Dog.
+8. How to Become a Dog Foster Volunteer.
+9. Helping Puppies Stay Safe on the Streets.
+
+Each article should have a title, summary, readable content, relevant imagery, and a working article detail page or reading experience.
+
+Connect articles to relevant adoption, volunteering, fostering, and rescue pages. Keep animal welfare advice responsible and direct medical emergencies to qualified veterinarians.
+
+## 6. Add the Confirmed Instagram and Facebook Links
+
+Use these actual SaveStreet Dogs social media profiles. They are confirmed links, so **remove the temporary social media placeholders and use these URLs instead**.
+
+**Instagram:** https://www.instagram.com/savestreetdogs18/
+
+**Facebook:** https://www.facebook.com/profile.php?id=61591879406906
+
+Requirements:
+
+1. Add both links to the website footer using recognizable Instagram and Facebook icons.
+2. Add social media links to the contact section if appropriate.
+3. Open external profiles in a new tab using safe link attributes.
+4. Ensure icons are responsive, accessible, and visually consistent with the existing website design.
+5. Store the URLs in a central configuration or existing website settings so they are easy to maintain.
+6. Replace temporary Instagram and Facebook placeholders throughout the relevant components with these confirmed URLs.
+7. Do not embed an Instagram feed or require API credentials. Simple working profile links are sufficient.
+8. Test both links on desktop and mobile.
+
+Do not invent additional social media accounts or usernames. Keep the WhatsApp contact number configurable until I provide it.
+
+## 7. Improve Visual Design and Animations
+
+The website currently feels too static. Improve it while preserving the existing SaveStreet Dogs identity and branding.
+
+Implement:
+- Smooth page transitions where compatible with the current routing setup.
+- Subtle scroll-triggered reveal animations.
+- Attractive hover effects for buttons, cards, navigation links, and product cards.
+- Smooth transitions for menus, dialogs, and the chatbot.
+- Improved spacing, typography, visual hierarchy, and section composition.
+- Polished puppy cards and adoption calls to action.
+- Consistent loading, empty, and error states.
+- A clean, modern, professional animal-welfare aesthetic.
+
+Avoid excessive animations, unnecessary dependencies, and performance problems. Respect reduced-motion preferences.
+
+## 8. Improve Responsiveness Across the Website
+
+Test and improve the website on mobile, tablet, laptop, and desktop screens.
+
+Pay particular attention to:
+- Navigation and mobile menus.
+- Hero sections and calls to action.
+- Puppy listings and product grids.
+- Stories and Learn articles.
+- Adoption and volunteer forms.
+- Sign-in and sign-up pages.
+- Admin dashboard tables and forms.
+- WhatsApp and chatbot controls.
+- Footer and social media links.
+
+Prevent horizontal overflow, clipped text, distorted images, overlapping elements, and unusable forms on small screens.
+
+## 9. Preserve Existing Features
+
+Do not break the existing:
+- Puppy listings and adoption requests.
+- Admin dashboard and role permissions.
+- Product management and Shop.
+- Shopping cart and checkout.
+- Rescue reports.
+- Volunteer and foster applications.
+- Firebase integration.
+- Existing database records.
+- Deployment configuration.
+
+Reuse existing data models, routing, shared components, and workspace packages wherever possible.
+
+Do not add fake puppies, fabricated rescue claims, fake testimonials, or invented adoption statistics.
+
+## 10. Test and Verify Before Finishing
+
+1. Inspect the repository structure and identify the correct frontend and backend packages.
+2. Review build scripts, dependencies, environment variables, and deployment configuration.
+3. Fix build errors and TypeScript errors introduced by changes.
+4. Test all routes, especially Stories and Learn.
+5. Test Firebase authentication using the existing configuration.
+6. Test forms, links, chatbot navigation, and social media links.
+7. Verify responsive behavior at multiple screen widths.
+8. Ensure floating controls do not overlap.
+9. Confirm the website builds successfully without removing required backend services.
+10. Provide a report of completed features, confirmed fixes, tests performed, and remaining configuration requirements.
+
+### Implementation priority
+
+1. Inspect the codebase and fix broken routes and authentication.
+2. Implement the Stories and Learn sections.
+3. Add the WhatsApp button and local knowledge-based chatbot.
+4. Integrate the confirmed Instagram and Facebook links.
+5. Improve animations, visual design, and responsiveness.
+6. Test the build and deployment configuration.
+
+Work directly within the existing codebase. Verify changes rather than claiming success without testing. Preserve everything that already works.

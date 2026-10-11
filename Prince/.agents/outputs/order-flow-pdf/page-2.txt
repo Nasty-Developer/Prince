@@ -1,0 +1,39 @@
+unnecessarily. If payment integration is not currently available, structure the order system so the payment
+step can be connected cleanly without breaking the order workflow.
+6. DELIVERY ESTIMATE
+Once the order is confirmed/paid, show the customer an estimated delivery time of 1–2 days.
+Display this clearly on the order tracking/status page, for example: Estimated Delivery: 1–2 Days.
+7. ORDER STATUS / TRACKING
+The customer should be able to open their order and see its current status. Use a simple status flow such
+as:
+Order Received → Awaiting Admin Confirmation → Payment Requested → Payment Received / Order
+Confirmed → Preparing Order → Out for Delivery → Delivered
+The Admin Panel should allow the admin to update the order status. When the admin changes the status,
+the customer should see the updated status on their order page.
+For example, when the admin changes the order to Out for Delivery, the customer should clearly see Out
+for Delivery. When the admin changes it to Delivered, the customer should see Delivered.
+8. IMPORTANT DATA/SECURITY REQUIREMENTS
+Make sure each order belongs to the correct customer and customers can only see their own orders.
+Admin-only controls such as changing delivery charges, payment-request status, and order status must not
+be accessible to normal customers.
+Do not expose sensitive payment information. Do not mark an order as paid merely because the customer
+opened the payment page. Payment status must only become successful after the payment flow/gateway
+confirms it, or through the project's intended verified payment mechanism.
+9. UI REQUIREMENTS
+Keep the website's existing design, colors, typography, and layout unless a change is necessary for this
+workflow. Make the customer experience simple and clear. Add clear buttons and status labels such as Add
+to Cart, Place Order, Pay Now, Awaiting Payment, Out for Delivery, and Delivered.
+10. IMPLEMENTATION REQUIREMENT
+Before changing the code, inspect the current cart, product, authentication, database, admin panel, and
+payment-related code. Find why Add to Cart is currently failing and fix the root cause instead of applying a
+temporary UI-only fix.
+Then implement the complete flow end-to-end and test it using a sample customer account and admin
+account.
+EXPECTED FINAL FLOW:
+Customer selects product → Add to Cart → Cart works → Customer places order → Order is saved in
+database → Order appears in Admin Panel → Admin reviews order → Admin sets delivery charge → Admin
+sends payment request → Customer sees final amount → Customer pays → Payment is verified → Order
+becomes confirmed → Customer sees estimated delivery of 1–2 days → Admin updates status → Customer
+can track status until Out for Delivery → Delivered.
+Please implement this carefully across frontend, backend, database, authentication/authorization, and
+payment flow. Make sure existing functionality is not unnecessarily broken. After implementation, test the

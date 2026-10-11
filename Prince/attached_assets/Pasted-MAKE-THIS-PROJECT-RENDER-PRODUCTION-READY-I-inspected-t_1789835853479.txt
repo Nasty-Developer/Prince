@@ -1,0 +1,401 @@
+MAKE THIS PROJECT RENDER-PRODUCTION-READY
+
+I inspected the current GitHub repository and I want the EXISTING SaveStreet Dogs application deployed as a single Render Web Service.
+
+Do NOT rebuild the website.
+Do NOT change the public design.
+Do NOT create a second application.
+
+CURRENT ARCHITECTURE:
+- pnpm monorepo
+- React + Vite frontend: artifacts/savestreet-dogs
+- Express API: artifacts/api-server
+- PostgreSQL + Drizzle
+- Firebase Authentication
+- Firebase Storage for new admin image uploads
+
+GOAL:
+
+One Render Web Service must serve:
+
+/
+→ SaveStreet Dogs frontend
+
+/admin
+→ Admin Panel
+
+/api/*
+→ Express API
+
+Make the existing frontend and backend work on the SAME ORIGIN so existing relative /api requests continue working.
+
+==================================================
+1. EXPRESS MUST SERVE THE BUILT FRONTEND
+==================================================
+
+Update the Express application so production can serve:
+
+artifacts/savestreet-dogs/dist/public
+
+as the frontend static directory.
+
+Keep all existing /api routes working.
+
+IMPORTANT:
+Register API routes before the SPA fallback.
+
+Required routing behavior:
+
+/api/*
+→ Express API
+
+/assets/*
+→ frontend static assets
+
+/*
+→ frontend index.html for SPA routes
+
+This must allow direct browser refreshes on:
+
+/
+/products
+/admin
+/admin/login
+/admin/products
+/admin/orders
+/orders/:orderCode
+/stories
+etc.
+
+Do NOT route /api/* to index.html.
+
+==================================================
+2. PRODUCTION PORT
+==================================================
+
+Make the API server listen on:
+
+0.0.0.0
+
+and:
+
+process.env.PORT
+
+Render Web Service uses the PORT environment variable.
+
+Do not hardcode a production port.
+
+==================================================
+3. BUILD
+==================================================
+
+The Render build must:
+
+- Install pnpm dependencies
+- Typecheck the workspace
+- Build the frontend
+- Build the API server
+
+The frontend output must remain:
+
+artifacts/savestreet-dogs/dist/public
+
+The backend output must remain compatible with:
+
+node artifacts/api-server/dist/index.mjs
+
+==================================================
+4. ROOT PRODUCTION COMMANDS
+==================================================
+
+Make sure the root project has reliable production commands for Render.
+
+The final commands should be equivalent to:
+
+Build:
+pnpm install --frozen-lockfile && pnpm run build
+
+Start:
+node artifacts/api-server/dist/index.mjs
+
+Do not invent a different package structure.
+
+==================================================
+5. BASE_PATH
+==================================================
+
+Vite currently requires BASE_PATH.
+
+Make the production build work with:
+
+BASE_PATH=/
+
+Do not require a Replit-only BASE_PATH in production.
+
+==================================================
+6. FIREBASE
+==================================================
+
+Keep the existing SaveStreet Dogs Firebase project.
+
+Firebase frontend configuration should come from the existing VITE_* environment variables.
+
+Required frontend variables:
+
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+
+Admin authorization must continue using:
+
+ADMIN_FIREBASE_UIDS
+
+server-side.
+
+Do not use Clerk.
+
+==================================================
+7. DATABASE
+==================================================
+
+Render production must use:
+
+DATABASE_URL
+
+for PostgreSQL.
+
+Keep the existing Drizzle schema.
+
+Do not create fake/sample production data.
+
+Make sure the deployment process can apply the required current database schema safely.
+
+Do not use destructive schema commands automatically in production.
+
+==================================================
+8. FIREBASE STORAGE / IMAGES
+==================================================
+
+IMPORTANT:
+
+The current Admin image uploader uses Firebase Storage.
+
+Keep that.
+
+New product images and puppy images must continue to upload to Firebase Storage and save persistent download URLs.
+
+However, the repository also contains old Replit Object Storage code using:
+
+127.0.0.1:1106
+
+That is Replit-specific and must NOT be required for Render production.
+
+Find every code path that depends on Replit Object Storage.
+
+Replace/migrate those paths so Render production does not require the Replit sidecar.
+
+Existing image references using /objects/... must be handled safely.
+
+Do NOT silently break existing product/puppy images.
+
+Preferred production image source:
+Firebase Storage persistent download URL.
+
+==================================================
+9. PRODUCT IMAGE REQUIREMENT
+==================================================
+
+Verify:
+
+Admin upload
+→ Firebase Storage
+→ persistent download URL
+→ database imageUrls
+→ API
+→ public Shop
+
+The exact same image must appear in:
+
+- Admin Product list
+- Product Details
+- Shop
+- Cart
+- Checkout
+- Orders
+
+Do not use Replit-only object URLs in production.
+
+==================================================
+10. ADMIN
+==================================================
+
+Keep:
+
+/admin/login
+/admin
+/admin/puppies
+/admin/adoptions
+/admin/rescue-reports
+/admin/volunteers
+/admin/foster
+/admin/products
+/admin/orders
+/admin/stories
+/admin/customers
+/admin/content
+/admin/settings
+
+Firebase Authentication must continue working.
+
+Admin UID authorization must continue working server-side.
+
+Normal users must remain blocked from admin APIs.
+
+==================================================
+11. PUBLIC API + FRONTEND
+==================================================
+
+Because frontend and API will share the same Render domain:
+
+/api/...
+
+must continue working without requiring a separate VITE_API_URL.
+
+Do not break the generated API client.
+
+Do not change existing API paths unnecessarily.
+
+==================================================
+12. SPA ROUTING
+==================================================
+
+Direct navigation must work.
+
+For example:
+
+https://YOUR-RENDER-DOMAIN/admin
+
+must load the React Admin application after refresh.
+
+https://YOUR-RENDER-DOMAIN/products
+
+must load the Products page after refresh.
+
+API paths must never receive the SPA fallback.
+
+==================================================
+13. CORS
+==================================================
+
+Keep API requests working from the same origin.
+
+Do not introduce an overly restrictive CORS configuration that breaks the application.
+
+==================================================
+14. HEALTH CHECK
+==================================================
+
+Make sure:
+
+GET /api/healthz
+
+returns a successful health response when the server is ready.
+
+Use this as the Render health check path.
+
+==================================================
+15. RENDER CONFIG
+==================================================
+
+Create a production-ready render.yaml ONLY if it fits the existing repository.
+
+The configuration should represent one Render Web Service.
+
+Do NOT put secrets directly into render.yaml.
+
+Required secret/runtime configuration should be set in Render Environment Variables.
+
+==================================================
+16. RENDER ENVIRONMENT VARIABLES
+==================================================
+
+Document the required Render variables:
+
+DATABASE_URL
+ADMIN_FIREBASE_UIDS
+BASE_PATH
+
+and the existing Firebase VITE_* variables required by the frontend build.
+
+Do NOT commit secret credentials.
+
+==================================================
+17. FINAL TEST
+==================================================
+
+Before declaring this Render-ready, test locally in production mode.
+
+Build the complete application.
+
+Start the production API.
+
+Verify:
+
+/
+ /products
+ /admin/login
+ /admin
+ /admin/products
+ /admin/puppies
+ /admin/orders
+ /api/healthz
+
+Verify:
+
+Firebase login
+Admin authorization
+Public API
+Admin API
+Database connection
+Product creation
+Puppy creation
+Firebase image upload
+Image rendering
+Order creation
+Order tracking
+
+MOST IMPORTANT:
+
+Do not only make the build pass.
+
+Make sure the production server actually serves BOTH:
+
+React frontend
++
+Express API
+
+from the same origin.
+
+The final architecture must be:
+
+Render Web Service
+→ Express
+→ /api/*
+→ existing backend
+
+and
+
+Render Web Service
+→ built React frontend
+→ SPA fallback
+
+No Replit-specific runtime dependency should be required in Render production.
+
+Do not remove working functionality.
+Do not create fake data.
+Do not create a second authentication system.
+Do not use Clerk.

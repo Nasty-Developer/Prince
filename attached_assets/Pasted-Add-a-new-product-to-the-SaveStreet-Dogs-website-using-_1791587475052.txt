@@ -1,0 +1,44 @@
+Add a new product to the **SaveStreet Dogs** website using the two product images I am attaching.
+
+### Product details
+- **Product name:** Reflective Collars
+- **Price:** ₹60 per piece
+- **Images:** Both attached images show the same product. Use them as two images of one product, NOT as separate products.
+- **Category:** Dog Accessories / Collars
+- **Currency:** INR (₹)
+
+### 1. Add the product to the Shop page
+- Create one product listing for Reflective Collars.
+- Use the attached images in the product card and product details.
+- Display the product name and price clearly.
+- Include a working product details link and integrate it with the existing shopping/cart system if available.
+- Make the product manageable from the existing admin panel if product management is already implemented.
+- Ensure the product is saved using the website's existing data system so it does not disappear after a refresh or redeployment.
+
+### 2. Display products on the homepage
+Immediately **below the hero section**, add a visually appealing, responsive product section titled "Shop for Dogs" or "Support Street Dogs".
+
+For now, display Reflective Collars with:
+- A high-quality product image.
+- Product name: Reflective Collars.
+- Price: ₹60 / piece.
+- A "View Product" button linking directly to the product details or relevant Shop listing.
+- A clear "Shop Now" link to the full Shop page.
+
+The homepage section must use the same product data as the Shop page. Do not create duplicate product records.
+
+### 3. Design requirements
+- Follow the existing SaveStreet Dogs website design and color palette.
+- Keep the layout clean, professional, modern, and mobile-responsive.
+- Optimize the attached images for fast loading without making them blurry.
+- Ensure product images display correctly on desktop and mobile.
+- Keep the existing hero section and all other working sections intact.
+
+### 4. Important implementation rules
+- Inspect the existing project structure and reuse the current product model, routes, database, and cart functionality wherever possible.
+- Do not create two products from the two images.
+- Do not add fake products, dummy prices, or placeholder listings.
+- Do not break the existing admin panel, adoption system, or other website features.
+- Test the Shop page, homepage product links, and mobile layout after implementation.
+
+**Expected result:** One Reflective Collars product priced at ₹60 per piece, visible both on the homepage directly below the hero section and in the Shop page, with both attached images associated with the same product.
