@@ -5,7 +5,7 @@ import {
   Archive, ArrowRight, BarChart3, BookOpen, Boxes, Check, ChevronRight, ClipboardList,
   FileText, HeartHandshake, ImagePlus, LayoutDashboard, LogOut, Menu, Package, PawPrint,
   PenLine, RefreshCw, Search, Settings, ShieldAlert, ShoppingBag, SlidersHorizontal,
-  UserRound, Users, X,
+  Trash2, UserRound, Users, X,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -358,11 +358,12 @@ function WebsiteSettingsPage() {
 
 function GenericPage({ title, eyebrow, text, path, actionLabel }: { title: string; eyebrow: string; text: string; path: string; actionLabel?: string }) {
   const query = useAdminRecords(path); const queryClient = useQueryClient(); const [selected, setSelected] = useState<GenericRecord | null>(null); const [creating, setCreating] = useState(false); const [message, setMessage] = useState("");
-  async function update(record: GenericRecord, patch: Record<string, unknown>) { if (!record.id) return; try { await adminJson(`${path}/${record.id}`, { method: "PATCH", body: JSON.stringify(patch) }); await queryClient.invalidateQueries({ queryKey: [path] }); setMessage("Record updated."); setSelected(null); } catch (error) { setMessage(apiErrorMessage(error)); } }
-  async function create(payload: Record<string, unknown>) { try { await adminJson(path, { method: "POST", body: JSON.stringify(payload) }); await queryClient.invalidateQueries({ queryKey: [path] }); setMessage("Record created."); setCreating(false); } catch (error) { setMessage(apiErrorMessage(error)); } }
-  const records = query.data ?? [];
   const canCreate = title === "Stories";
   const isStories = title === "Stories";
+  async function update(record: GenericRecord, patch: Record<string, unknown>) { if (!record.id) return; try { await adminJson(`${path}/${record.id}`, { method: "PATCH", body: JSON.stringify(patch) }); await queryClient.invalidateQueries({ queryKey: [path] }); if (isStories) await queryClient.invalidateQueries({ queryKey: ["/api/stories"] }); setMessage("Record updated."); setSelected(null); } catch (error) { setMessage(apiErrorMessage(error)); } }
+  async function create(payload: Record<string, unknown>) { try { await adminJson(path, { method: "POST", body: JSON.stringify(payload) }); await queryClient.invalidateQueries({ queryKey: [path] }); if (isStories) await queryClient.invalidateQueries({ queryKey: ["/api/stories"] }); setMessage("Record created."); setCreating(false); } catch (error) { setMessage(apiErrorMessage(error)); } }
+  async function deleteStory(record: GenericRecord) { if (!record.id || !window.confirm(`Delete “${String(record.title ?? "this story")}” permanently?`)) return; try { await adminJson(`${path}/${record.id}`, { method: "DELETE" }); await queryClient.invalidateQueries({ queryKey: [path] }); await queryClient.invalidateQueries({ queryKey: ["/api/stories"] }); setMessage("Story deleted."); setSelected(null); } catch (error) { setMessage(apiErrorMessage(error)); } }
+  const records = query.data ?? [];
   return (
     <>
       <PageTitle
@@ -371,7 +372,7 @@ function GenericPage({ title, eyebrow, text, path, actionLabel }: { title: strin
         text={text}
         action={actionLabel ? <button className="admin-button secondary" disabled={!canCreate} onClick={() => setCreating(true)} data-testid={`button-${title.toLowerCase().replace(/\s+/g, "-")}-add`}>{canCreate ? actionLabel : `${actionLabel} unavailable`}</button> : undefined}
       />
-      {message && <Notice kind={message.includes("created") || message.includes("updated") ? "success" : "error"}>{message}</Notice>}
+      {message && <Notice kind={message.includes("created") || message.includes("updated") || message.includes("deleted") ? "success" : "error"}>{message}</Notice>}
       {creating && <GenericCreateForm title={title} onClose={() => setCreating(false)} onSave={create} />}
       <section className="admin-panel">
         {query.isLoading ? <LoadingState /> : query.error ? (
@@ -405,7 +406,7 @@ function GenericPage({ title, eyebrow, text, path, actionLabel }: { title: strin
                       {!isStories && <td>{String(record.email ?? record.phone ?? record.city ?? "—")}</td>}
                       <td><Badge value={status} /></td>
                       <td>{niceDate(String(record.createdAt ?? ""))}</td>
-                      <td>{record.id && <button className="admin-button secondary small" onClick={() => setSelected(record)} data-testid={`button-edit-record-${id}`}><PenLine size={12} /> Update</button>}</td>
+                      <td><div className="admin-actions">{record.id && <button className="admin-button secondary small" onClick={() => setSelected(record)} data-testid={`button-edit-record-${id}`}><PenLine size={12} /> Update</button>}{isStories && record.id && <button type="button" className="admin-button danger small" onClick={() => void deleteStory(record)} data-testid={`button-delete-story-${id}`}><Trash2 size={12} /> Delete</button>}</div></td>
                     </tr>
                   );
                 })}
@@ -549,10 +550,10 @@ function GenericEditor({ record, title, onClose, onSave }: { record: GenericReco
 }
 
 function AdminApp() {
-  const { loading, user, isAdmin } = useFirebaseAuth();
+  const { loading, user, isAdmin, initializationError } = useFirebaseAuth();
   const [location] = useLocation();
   if (loading) return <div className="admin-root"><LoadingState /></div>;
-  if (!user || !isAdmin) return <div className="admin-root"><div className="admin-content"><div className="admin-error" style={{ margin: "15vh auto", maxWidth: 520 }} data-testid="admin-access-denied"><strong>Admin access required.</strong><span>Sign in with an authorized SaveStreet Dogs Firebase account to open this workspace.</span><div style={{ marginTop: 16 }}><Link href="/admin/login" className="admin-button" data-testid="link-admin-login">Go to admin sign in <ArrowRight size={14} /></Link></div></div></div></div>;
+  if (!user || !isAdmin) return <div className="admin-root"><div className="admin-content"><div className="admin-error" style={{ margin: "15vh auto", maxWidth: 520 }} data-testid="admin-access-denied"><strong>Admin access required.</strong><span>{initializationError ?? "Sign in with an authorized SaveStreet Dogs Firebase account to open this workspace."}</span><div style={{ marginTop: 16 }}><Link href="/admin/login" className="admin-button" data-testid="link-admin-login">Go to admin sign in <ArrowRight size={14} /></Link></div></div></div></div>;
   const page = location.split("?")[0];
   let content: ReactNode;
   if (page === "/admin" || page === "/admin/") content = <Overview />;

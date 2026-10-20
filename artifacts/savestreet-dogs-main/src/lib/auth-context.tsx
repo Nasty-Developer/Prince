@@ -101,6 +101,30 @@ export function getFirebaseAuthMessage(error: unknown): string {
   return authMessage(error);
 }
 
+function initializationMessage(error: unknown): string {
+  const rawMessage = error instanceof Error ? error.message : "";
+  const missingConfig = rawMessage.match(
+    /^Firebase configuration is incomplete\.\s*Missing:\s*(.+)$/i,
+  );
+  if (missingConfig) {
+    const envNames: Record<string, string> = {
+      apiKey: "VITE_FIREBASE_API_KEY",
+      authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
+      projectId: "VITE_FIREBASE_PROJECT_ID",
+      storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
+      messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
+      appId: "VITE_FIREBASE_APP_ID",
+      measurementId: "VITE_FIREBASE_MEASUREMENT_ID",
+    };
+    const variables = missingConfig[1]
+      .split(",")
+      .map((key) => envNames[key.trim()] ?? key.trim())
+      .join(", ");
+    return `Firebase sign-in and image uploads are unavailable. Add these settings to this Replit project: ${variables}.`;
+  }
+  return "We couldn't restore your Firebase sign-in state. You can still browse and try signing in again.";
+}
+
 export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,10 +194,8 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
           );
         });
       })
-      .catch(() => {
-        finishInitialization(
-          "We couldn't restore your Firebase sign-in state. You can still browse and try signing in again.",
-        );
+      .catch((error: unknown) => {
+        finishInitialization(initializationMessage(error));
       });
 
     return () => {

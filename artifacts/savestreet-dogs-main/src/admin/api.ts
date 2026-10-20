@@ -1,11 +1,10 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { fetchWithTimeout } from "@workspace/api-client-react";
-import { auth } from "@/lib/firebase-auth";
-import { storage } from "@/lib/firebase-storage";
 
 export type AdminApiError = Error & { status?: number };
 
 export async function adminJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const { auth } = await import("@/lib/firebase-auth");
   const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
@@ -50,6 +49,7 @@ export async function uploadAdminImage(file: File): Promise<string> {
     bitmap.close();
   }
   const safeName = uploadFile.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+  const { storage } = await import("@/lib/firebase-storage");
   const imageRef = ref(storage, `savestreet/images/${crypto.randomUUID()}-${safeName}`);
   const uploaded = await uploadBytes(imageRef, uploadFile, {
     contentType: uploadFile.type,

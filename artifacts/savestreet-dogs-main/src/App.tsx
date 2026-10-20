@@ -58,6 +58,50 @@ type PawPalMessage = { id: string; role: "assistant" | "user"; text: string; tim
 const money = (rupees: number) => `₹${rupees.toFixed(0)}`;
 const api = <T,>(path: string, init?: RequestInit) => storefrontJson<T>(path, init);
 
+function productImageUrls(product: Pick<Product, "name" | "imageUrls">): string[] {
+  const savedImages = (product.imageUrls ?? [])
+    .map((path) => storageImageUrl(path))
+    .filter((path): path is string => Boolean(path));
+  if (savedImages.length > 0) return savedImages;
+
+  if (product.name.trim().toLowerCase() === "reflective collars") {
+    return [
+      `${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`,
+      `${import.meta.env.BASE_URL}assets/reflective-collars-red-yellow.jpg`,
+    ];
+  }
+  return [];
+}
+
+function ProductImage({
+  src,
+  alt,
+  size = 34,
+  loading = "lazy",
+  fetchPriority,
+}: {
+  src?: string;
+  alt: string;
+  size?: number;
+  loading?: "eager" | "lazy";
+  fetchPriority?: "high" | "low" | "auto";
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return <PawPrint className="product-icon" size={size} aria-hidden="true" />;
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={loading}
+      decoding="async"
+      fetchPriority={fetchPriority}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function Meta({ title, description }: { title: string; description: string }) {
   useEffect(() => {
     document.title = `${title} · SaveStreet Dogs`;
@@ -244,13 +288,11 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
           {query.isLoading && !query.data ? <div className="empty-state" role="status">Loading the live catalog…</div> : query.data?.length ? (
             <div className="product-grid">
               {query.data.map((product) => {
-                const image = product.name.toLowerCase() === "reflective collars"
-                  ? `${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`
-                  : storageImageUrl(product.imageUrls[0]);
+                const image = productImageUrls(product)[0];
                 return (
                   <article className="product-card" key={product.id}>
                     <Link href={`/products/${product.id}`} className={`product-art ${image ? "has-image" : ""}`} aria-label={`View ${product.name}`}>
-                      {image ? <img src={image} alt={`${product.name} product`} loading="lazy" decoding="async" /> : <PawPrint size={34} />}
+                      <ProductImage key={`${product.id}-${image ?? "no-image"}`} src={image} alt={`${product.name} product`} />
                     </Link>
                     <div className="product-body">
                       <div className="eyebrow">{product.category}</div>
@@ -291,9 +333,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
   if (!query.data) return <NotFound />;
   const product = query.data;
   const isCollar = product.name.toLowerCase() === "reflective collars";
-  const images = isCollar
-    ? [`${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`, `${import.meta.env.BASE_URL}assets/reflective-collars-red-yellow.jpg`]
-    : (product.imageUrls ?? []).map((path) => storageImageUrl(path)).filter((path): path is string => Boolean(path));
+  const images = productImageUrls(product);
   const image = images[activeImage] ?? images[0];
   const currentCartQuantity = cart.find((line) => line.id === product.id)?.quantity ?? 0;
   const maxQuantity = product.stockTracked ? Math.max(0, Math.min(product.stock - currentCartQuantity, 99)) : 99;
@@ -306,7 +346,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
         <section className="content-section container">
           <button className="btn btn-ghost" onClick={() => navigate("/products")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> Back to shop</button>
           <div className="product-detail" style={{ marginTop: 30 }}>
-              <div className="product-gallery"><div className={`product-art ${image ? "has-image" : ""}`}>{image ? <img src={image} alt={`${product.name}${images.length > 1 ? `, view ${activeImage + 1} of ${images.length}` : ""}`} loading="eager" fetchPriority="high" decoding="async" /> : <PawPrint size={64} />}</div>{images.length > 1 && <div className="gallery-thumbs" aria-label="Product photos">{images.map((src, index) => <button key={src} className={activeImage === index ? "selected" : ""} onClick={() => setActiveImage(index)} aria-label={`Show product photo ${index + 1}`} aria-pressed={activeImage === index}><img src={src} alt="" loading="lazy" decoding="async" /></button>)}</div>}</div>
+              <div className="product-gallery"><div className={`product-art ${image ? "has-image" : ""}`}><ProductImage key={image ?? product.id} src={image} alt={`${product.name}${images.length > 1 ? `, view ${activeImage + 1} of ${images.length}` : ""}`} size={64} loading="eager" fetchPriority="high" /></div>{images.length > 1 && <div className="gallery-thumbs" aria-label="Product photos">{images.map((src, index) => <button key={`${src}-${index}`} className={activeImage === index ? "selected" : ""} onClick={() => setActiveImage(index)} aria-label={`Show product photo ${index + 1}`} aria-pressed={activeImage === index}><ProductImage src={src} alt="" size={18} /></button>)}</div>}</div>
             <div className="product-detail-copy">
               <div className="eyebrow">{product.category}</div>
               <h2>{product.name}</h2>
