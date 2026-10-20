@@ -22,7 +22,7 @@ export type IllustrativeStory = {
   relatedLinks: RelatedLink[];
 };
 
-export const illustrativeStories: IllustrativeStory[] = [
+const allIllustrativeStories: IllustrativeStory[] = [
   {
     id: "illustrative-a-clear-sighting",
     slug: "a-clear-sighting",
@@ -151,6 +151,9 @@ export const illustrativeStories: IllustrativeStory[] = [
   },
 ];
 
+const featuredStorySlugs = new Set(["a-shared-water-point", "a-foster-bridge"]);
+export const illustrativeStories = allIllustrativeStories.filter((story) => featuredStorySlugs.has(story.slug));
+
 export type LearnSection = {
   heading: string;
   paragraphs: string[];
@@ -166,7 +169,7 @@ export type LearnArticle = {
   relatedLinks: RelatedLink[];
 };
 
-export const learnArticles: LearnArticle[] = [
+const allLearnArticles: LearnArticle[] = [
   {
     slug: "how-to-help-a-stray-dog-safely",
     title: "How to Help a Stray Dog Safely",
@@ -474,3 +477,9 @@ export const learnArticles: LearnArticle[] = [
     ],
   },
 ];
+
+const featuredGuideSlugs = new Set([
+  "how-to-help-a-stray-dog-safely",
+  "what-to-do-when-you-find-an-injured-street-dog",
+]);
+export const learnArticles = allLearnArticles.filter((article) => featuredGuideSlugs.has(article.slug));

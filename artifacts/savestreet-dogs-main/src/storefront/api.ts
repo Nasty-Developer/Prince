@@ -113,6 +113,7 @@ export async function storefrontJson<T>(
 export function storageImageUrl(path?: string): string | undefined {
   if (!path) return undefined;
   if (path.startsWith("/api/storage/")) return path;
+  if (/^https?:\/\//i.test(path) || /^data:image\//i.test(path)) return path;
   if (
     path.startsWith("/objects/") &&
     typeof window !== "undefined" &&
@@ -120,6 +121,12 @@ export function storageImageUrl(path?: string): string | undefined {
       window.location.hostname === "127.0.0.1")
   ) {
     return `/api/storage${path}`;
+  }
+  if (/^\/?assets\//.test(path)) {
+    const base = import.meta.env.BASE_URL.endsWith("/")
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+    return `${base}${path.replace(/^\/+/, "")}`;
   }
   return path;
 }

@@ -103,8 +103,15 @@ function StoriesFeed({
     staleTime: 60_000,
   });
   const publishedStories = query.data ?? [];
-  const stories = publishedStories.length ? publishedStories : illustrativeStories;
-  const showingIllustrativeStories = !query.isPending && publishedStories.length === 0;
+  const stories = [...publishedStories, ...illustrativeStories].filter((story, index, all) => {
+    const slug = story.slug.trim().toLowerCase();
+    const title = story.title.trim().toLowerCase();
+    return all.findIndex((candidate) =>
+      candidate.slug.trim().toLowerCase() === slug ||
+      candidate.title.trim().toLowerCase() === title,
+    ) === index;
+  }).slice(0, 2);
+  const showingIllustrativeStories = !query.isPending && stories.some((story) => story.illustrative);
 
   return (
     <section className="story-strip" id={id}>
@@ -124,8 +131,8 @@ function StoriesFeed({
             {showingIllustrativeStories && (
               <div className="story-illustrative-notice" role={query.isError ? "status" : undefined}>
                 {query.isError
-                  ? "Published stories could not be reached. These clearly labelled educational examples are not records of real rescues."
-                  : "No case stories have been published yet. These clearly labelled educational examples are not records of real rescues."}
+                  ? "Published stories could not be reached. Any illustrative examples are clearly labelled and are not records of real rescues."
+                  : "Illustrative educational examples are clearly labelled and are not records of real rescues."}
                 {query.isError && (
                   <button className="story-retry" type="button" onClick={() => void query.refetch()} disabled={query.isFetching}>
                     <RefreshCw size={15} aria-hidden="true" />
@@ -175,7 +182,7 @@ export function LearnPage() {
           <div className="container">
             <div className="section-head">
               <div>
-                <span className="eyebrow">Nine practical guides</span>
+                <span className="eyebrow">{learnArticles.length} practical guides</span>
                 <h2>Care starts with clear information.</h2>
               </div>
               <p className="section-intro">These educational articles are general guidance, not a substitute for veterinary advice or local rules.</p>

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, UserRound, X, MessageCircle, Instagram, Facebook } from "lucide-react";
+import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, RotateCcw, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, UserRound, X, MessageCircle, Instagram, Facebook } from "lucide-react";
 import { Link, Route, Switch, useLocation, useRoute } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -54,6 +54,7 @@ const dogImages = {
   calm: (width: number) => `https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=${width}&q=78`,
 };
 type CartLine = Product & { quantity: number };
+type PawPalMessage = { id: string; role: "assistant" | "user"; text: string; time: string };
 const money = (rupees: number) => `₹${rupees.toFixed(0)}`;
 const api = <T,>(path: string, init?: RequestInit) => storefrontJson<T>(path, init);
 
@@ -149,9 +150,11 @@ function Home() {
 function CollarFeature() {
   const query = useListProducts(undefined, { query: { queryKey: getListProductsQueryKey(), staleTime: 30_000 } });
   const item = query.data?.find((product) => product.name.toLowerCase() === "reflective collars");
-  const collarImg = `${import.meta.env.BASE_URL}assets/reflective-collars-red-yellow.jpg`;
   return <section className="collar-feature"><div className="container collar-feature-inner">
-    <div className="collar-feature-image"><img src={collarImg} alt="Red and yellow reflective dog collars" loading="lazy" decoding="async" /></div>
+    <div className="collar-feature-image" aria-label="Reflective collar photos">
+      <img src={`${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`} alt="Reflective dog collars in several colors" loading="lazy" decoding="async" />
+      <img src={`${import.meta.env.BASE_URL}assets/reflective-collars-red-yellow.jpg`} alt="Red and yellow reflective dog collars" loading="lazy" decoding="async" />
+    </div>
     <div className="collar-feature-copy"><div className="eyebrow">A useful little thing</div><h2>Reflective<br /><em>Collars</em></h2><p>Reflective collars help make a dog easier to see when light is low. Choose one piece or a few for your neighborhood.</p><div className="collar-feature-bottom"><span className="price">₹60 <small>per piece</small></span>{item?.available ? <Link href={`/products/${item.id}`} className="btn btn-primary">See the collars <ArrowRight size={15} /></Link> : <Link href="/products" className="btn btn-primary">Visit the shop <ArrowRight size={15} /></Link>}</div><small className="stock-honesty">Availability is not tracked as a live stock count. Please confirm details with the team.</small></div>
   </div></section>;
 }
@@ -241,7 +244,9 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
           {query.isLoading && !query.data ? <div className="empty-state" role="status">Loading the live catalog…</div> : query.data?.length ? (
             <div className="product-grid">
               {query.data.map((product) => {
-                const image = storageImageUrl(product.imageUrls[0]);
+                const image = product.name.toLowerCase() === "reflective collars"
+                  ? `${import.meta.env.BASE_URL}assets/reflective-collar-color-options.jpg`
+                  : storageImageUrl(product.imageUrls[0]);
                 return (
                   <article className="product-card" key={product.id}>
                     <Link href={`/products/${product.id}`} className={`product-art ${image ? "has-image" : ""}`} aria-label={`View ${product.name}`}>
@@ -343,25 +348,77 @@ function DonatePage() {
 function PawPal() {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [messages, setMessages] = useState<PawPalMessage[]>([{
+    id: "welcome",
+    role: "assistant" as const,
+    text: "Hi, I’m PawPal. I can help you find adoption profiles, report a concern, or explore ways to support street dogs.",
+    time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+  }]);
+  const replyTimer = useMemo(() => ({ current: undefined as ReturnType<typeof setTimeout> | undefined }), []);
+  useEffect(() => () => {
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+  }, [replyTimer]);
+
+  const replyFor = (rawQuestion: string) => {
+    const q = rawQuestion.toLowerCase();
+    if (/puppy|available|adopt/.test(q)) return "Puppy availability comes only from profiles the team has published. Check the current profiles, or visit the adoption page to learn what happens next.";
+    if (/injur|hurt|rescue|found|danger|emergency/.test(q)) return "Keep yourself and the dog safe. Share the location and what you can safely observe in a rescue report. For urgent care, contact a local veterinarian or emergency animal-care service directly.";
+    if (/foster/.test(q)) return "Fostering can offer a temporary safe place. The foster page explains how to share your capacity and discuss a realistic plan with the team.";
+    if (/volunteer|help|time/.test(q)) return "There are different ways to help, including volunteering, fostering, and learning what a dog may need. Choose a path that fits your capacity.";
+    if (/shop|collar|order|product/.test(q)) return "The shop shows currently listed items. You can open a product for details or ask the team to confirm availability.";
+    if (/story/.test(q)) return "The Stories page has two distinct community-care examples, clearly labelled when they are illustrative.";
+    if (/learn|guide|care/.test(q)) return "The Learning page has two practical guides, including safe first steps and what to do when you find an injured dog.";
+    if (/contact|team|whatsapp/.test(q)) return "You can message the team using the WhatsApp button on the page, or use the contact page for other options.";
+    return "I’m a local site guide, not a live AI or emergency service. Try one of the suggestions below, or message the team directly.";
+  };
+  const sendQuestion = (value: string) => {
+    const text = value.trim();
+    if (!text || typing) return;
+    const timestamp = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((current) => [...current, { id: `${Date.now()}-user`, role: "user", text, time: timestamp }]);
+    setQuestion("");
+    setTyping(true);
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+    replyTimer.current = setTimeout(() => {
+      setMessages((current) => [...current, {
+        id: `${Date.now()}-assistant`,
+        role: "assistant",
+        text: replyFor(text),
+        time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+      }]);
+      setTyping(false);
+    }, 450);
+  };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const q = question.trim().toLowerCase();
-    if (!q) return;
-    if (/puppy|available|adopt/.test(q)) setAnswer("Puppy availability comes only from profiles the team has published. Check the current profiles, or ask about adoption.");
-    else if (/injur|hurt|rescue|found|danger/.test(q)) setAnswer("If a dog may be in danger, share the location and what you can safely observe in a rescue report. Keep yourself and the dog safe.");
-    else if (/foster/.test(q)) setAnswer("Fostering is a practical way to offer a temporary safe place. Share your city and what could work for your home.");
-    else if (/volunteer|help|time/.test(q)) setAnswer("There are different ways to help, including volunteering, fostering, and learning what a dog may need. Choose a path that fits your capacity.");
-    else if (/shop|collar|order|product/.test(q)) setAnswer("Visit the shop to see currently listed items. Product availability and order details can be confirmed with the team.");
-    else if (/story|learn/.test(q)) setAnswer("Stories and learning resources are available on the site; they offer context and practical guidance.");
-    else setAnswer("I’m a simple site guide, not a live AI or emergency service. You can reach the team directly for a question I cannot answer.");
+    sendQuestion(question);
+  };
+  const reset = () => {
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+    setTyping(false);
     setQuestion("");
+    setMessages([{
+      id: `${Date.now()}-welcome`,
+      role: "assistant",
+      text: "Hi, I’m PawPal. I can help you find adoption profiles, report a concern, or explore ways to support street dogs.",
+      time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    }]);
   };
   return <div className={`pawpal ${open ? "is-open" : ""}`}>
-    {open && <section className="pawpal-panel" aria-label="PawPal site guide"><div className="pawpal-heading"><div><span className="eyebrow">Local site guide</span><h2>PawPal</h2></div><button className="icon-btn" aria-label="Close PawPal" onClick={() => setOpen(false)}><X size={17} /></button></div><p className="pawpal-intro">I can point you around the site. I use simple on-page rules, not a live AI service.</p>
-      <form className="pawpal-form" onSubmit={submit}><label className="sr-only" htmlFor="pawpal-question">Ask a question</label><input id="pawpal-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What would you like to do?" /><button className="btn btn-primary" type="submit" aria-label="Ask PawPal"><Send size={15} /></button></form>
-      {answer && <p className="pawpal-answer" role="status">{answer}</p>}
+    {open && <section className="pawpal-panel" aria-label="PawPal site guide"><div className="pawpal-heading"><div><span className="eyebrow">Private, local site guide</span><h2>PawPal</h2></div><div className="pawpal-tools"><button className="icon-btn" aria-label="Reset conversation" title="Reset conversation" onClick={reset}><RotateCcw size={16} /></button><button className="icon-btn" aria-label="Close PawPal" onClick={() => setOpen(false)}><X size={17} /></button></div></div><p className="pawpal-intro">I use simple on-page rules, not a live AI service. Messages stay in this browser session.</p>
+      <div className="pawpal-messages" aria-live="polite" aria-relevant="additions text">
+        {messages.map((message) => <div className={`pawpal-message ${message.role}`} key={message.id}>
+          <p>{message.text}</p><time>{message.time}</time>
+        </div>)}
+        {typing && <div className="pawpal-message assistant pawpal-typing" role="status">PawPal is typing…</div>}
+      </div>
+      <div className="pawpal-suggestions" aria-label="Suggested questions">
+        {["I found an injured dog", "How can I adopt?", "Show me the shop"].map((suggestion) =>
+          <button key={suggestion} type="button" onClick={() => sendQuestion(suggestion)} disabled={typing}>{suggestion}</button>)}
+      </div>
       <div className="pawpal-links"><Link href="/rescue" onClick={() => setOpen(false)}>Report a dog</Link><Link href="/adopt" onClick={() => setOpen(false)}>Adoption</Link><Link href="/foster" onClick={() => setOpen(false)}>Foster</Link><Link href="/volunteer" onClick={() => setOpen(false)}>Volunteer</Link><Link href="/products" onClick={() => setOpen(false)}>Shop</Link><Link href="/stories" onClick={() => setOpen(false)}>Stories</Link><Link href="/learn" onClick={() => setOpen(false)}>Learning</Link></div>
+      <form className="pawpal-form" onSubmit={submit}><label className="sr-only" htmlFor="pawpal-question">Ask a question</label><input id="pawpal-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What would you like to do?" disabled={typing} /><button className="btn btn-primary" type="submit" aria-label="Send message to PawPal" disabled={typing || !question.trim()}><Send size={15} /></button></form>
     </section>}
     <button type="button" className="pawpal-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? "Close PawPal site guide" : "Open PawPal site guide"}><PawPrint size={19} /><span>{open ? "Close guide" : "PawPal"}</span></button>
   </div>;

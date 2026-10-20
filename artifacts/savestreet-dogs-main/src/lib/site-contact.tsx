@@ -12,7 +12,7 @@ export const CONTACT_SETTING_KEYS = {
 
 export const DEFAULT_SITE_CONTACT = {
   email: "vexaxam466@caps7.com",
-  phone: "+91 7413 073 410",
+  phone: "",
   whatsapp: "918955438209",
 };
 
@@ -88,7 +88,7 @@ export function makeWhatsAppHref(contact: SiteContact, message: string) {
 
 export function makePhoneHref(contact: SiteContact) {
   const number = contact.phone.replace(/[^\d+]/g, "");
-  return `tel:${number || "+917413073410"}`;
+  return number ? `tel:${number}` : undefined;
 }
 
 export function makeEmailHref(contact: SiteContact) {

@@ -325,13 +325,13 @@ function WebsiteSettingsPage() {
       {message && <Notice kind={message.kind}>{message.text}</Notice>}
       <form className="admin-panel admin-form" onSubmit={save} data-testid="form-site-contact-settings">
         <h2>Public contact details</h2>
-        <p className="admin-form-intro">Changes apply to the public site. Use an international phone number and WhatsApp number with its country code.</p>
+        <p className="admin-form-intro">Changes apply to the public site. Phone is optional; use an international number for phone and WhatsApp with its country code.</p>
         <div className="admin-form-grid">
           <Field label="Official email">
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} data-testid="input-contact-email" />
           </Field>
-          <Field label="Phone number">
-            <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} required minLength={8} maxLength={32} pattern="[+]?[0-9][0-9 ()-]{5,30}" data-testid="input-contact-phone" />
+          <Field label="Phone number (optional)">
+            <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={32} pattern="[+]?[0-9][0-9 ()-]{5,30}" data-testid="input-contact-phone" />
           </Field>
           <Field label="WhatsApp number (international digits only)" full>
             <input type="tel" inputMode="numeric" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} required minLength={8} maxLength={15} pattern="[1-9][0-9]{7,14}" data-testid="input-contact-whatsapp" />

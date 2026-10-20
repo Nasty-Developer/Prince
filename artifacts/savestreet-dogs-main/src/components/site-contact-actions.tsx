@@ -52,10 +52,9 @@ export function ContactActionLinks({
         <Mail size={15} aria-hidden="true" />
         {contact.email}
       </a>
-      <a href={makePhoneHref(contact)}>
-        <Phone size={15} aria-hidden="true" />
-        Call {contact.phone}
-      </a>
+      {contact.phone
+        ? <a href={makePhoneHref(contact)}><Phone size={15} aria-hidden="true" />Call {contact.phone}</a>
+        : <span><Phone size={15} aria-hidden="true" />Phone details coming soon</span>}
     </div>
   );
 }
