@@ -1,0 +1,192 @@
+# SAVESTREET DOGS: WHATSAPP INTEGRATION + PERSONAL AI ASSISTANT
+
+Update the existing SaveStreet Dogs website directly in the current project. Implement the following features professionally, preserve all existing functionality, and test the finished implementation.
+
+## 1. Update the Official WhatsApp Contact Number
+
+The confirmed WhatsApp contact number is:
+
+**8955438209**
+
+Use this number consistently for the website's WhatsApp contact functionality.
+
+Requirements:
+
+- Update the existing floating WhatsApp button to use this number.
+- Every WhatsApp contact button throughout the website must use the same number.
+- Puppy adoption enquiries should open WhatsApp with a relevant prefilled message containing the puppy's name, when available.
+- Rescue reports should open WhatsApp with an appropriate rescue enquiry message.
+- General contact buttons should open WhatsApp with a friendly, relevant message.
+- Product enquiries should include the product name when applicable.
+- Preserve the existing website content, forms, navigation, and functionality.
+
+Use the international-format WhatsApp link:
+
+`https://wa.me/918955438209`
+
+Use properly URL-encoded text for prefilled messages, for example:
+
+`https://wa.me/918955438209?text=Hello%2C%20SaveStreet%20Dogs!`
+
+Centralize the phone number in one shared configuration or contact utility so that changing the number later updates every WhatsApp integration.
+
+Do not display or link to any old WhatsApp number. Do not create a second floating WhatsApp button if one already exists.
+
+The floating button must:
+- Remain fixed near the bottom-right corner.
+- Have a professional WhatsApp icon and accessible label.
+- Work on mobile and desktop.
+- Avoid overlapping important buttons, forms, or mobile navigation.
+- Use an appropriate stacking order without covering the AI assistant.
+- Open the correct WhatsApp conversation when clicked.
+
+## 2. Build a Personal AI Assistant for SaveStreet Dogs
+
+Create a beautiful, interactive chatbot integrated into the existing SaveStreet Dogs website.
+
+**Critical requirement: It must work without any external AI API key, paid AI service, or backend AI integration.**
+
+Do not request or expose OpenAI, Gemini, Anthropic, or any other provider's API keys.
+
+Build a local, rule-based conversational assistant using JavaScript or TypeScript and the existing frontend stack. The assistant must provide useful responses through predefined conversation logic, keyword matching, simple intent detection, and contextual response templates.
+
+Be honest about its capabilities. It should behave like a helpful website chatbot, not falsely claim to be a full generative AI model.
+
+### A. Visual Design
+
+Design a premium, modern chatbot with a polished interface.
+
+Design direction:
+- Clean, warm, welcoming, animal-welfare-inspired design.
+- Match the existing SaveStreet Dogs branding and color palette.
+- Soft neutral backgrounds, subtle green accents, elegant typography, rounded corners, and restrained shadows.
+- Smooth, lightweight animations and transitions.
+- Excellent spacing, readable text, and clear visual hierarchy.
+- Professional iconography and attractive empty states.
+- No clutter, oversized elements, or excessive gradients.
+
+The chatbot should include:
+- A floating assistant launcher.
+- A polished chat window or panel.
+- A friendly assistant avatar using an existing project asset or a simple CSS/icon-based illustration.
+- A header showing the assistant's name, a short description, and a close button.
+- Clearly differentiated user and assistant message bubbles.
+- Message timestamps where appropriate.
+- A typing indicator while preparing a response.
+- A message input with a send button.
+- An Enter-to-send interaction and Shift+Enter for a new line where supported.
+- Suggested prompt chips for common questions.
+- A welcome message and helpful first-time suggestions.
+- A clear conversation or reset option.
+- Responsive behavior for mobile, tablet, and desktop.
+
+Give the assistant a friendly identity, such as **PawPal**, the personal assistant for SaveStreet Dogs.
+
+### B. Conversational Capabilities
+
+Implement local responses for the following topics:
+
+1. **About SaveStreet Dogs**
+   - Explain the website's purpose using existing website content.
+   - Describe its focus on helping street dogs and connecting visitors with relevant services.
+
+2. **Puppy adoption**
+   - Help visitors understand how to explore available puppies.
+   - Direct them to the existing puppy listings and adoption request functionality.
+   - Explain the next steps using actual implemented website features.
+   - Never invent puppy names, availability, ages, or locations.
+
+3. **Rescue reports**
+   - Explain how visitors can report a dog needing help.
+   - Direct them to the existing rescue report form or WhatsApp contact.
+   - Provide a suitable prefilled WhatsApp message when requested.
+
+4. **Volunteering and fostering**
+   - Direct users to the existing volunteer and foster application forms.
+   - Explain the application process only to the extent supported by the website.
+
+5. **Products and donations**
+   - Help users navigate the existing product catalog.
+   - Explain available purchasing or donation options only when they are implemented and confirmed by the existing website.
+
+6. **Contact information**
+   - Provide the configured WhatsApp contact number: 8955438209.
+   - Offer a button or link to open the correct WhatsApp conversation.
+
+7. **General conversation**
+   - Handle greetings, thanks, basic questions, and common website navigation questions.
+   - Provide friendly fallback responses when a question is outside the assistant's capabilities.
+
+### C. Smart Website Navigation
+
+The chatbot must be connected to the actual website interface.
+
+Where the corresponding sections exist, provide clickable actions to:
+- Explore puppies.
+- Submit an adoption request.
+- Report a dog.
+- Browse products.
+- Apply to volunteer.
+- Apply to foster.
+- Contact SaveStreet Dogs on WhatsApp.
+
+Use the correct existing routes, anchors, components, and forms. Inspect the project before implementing these actions.
+
+Do not create broken routes, duplicate forms, or nonfunctional buttons.
+
+If the website has actual puppy or product data available in its existing frontend state, use that data to answer relevant questions. Do not hardcode invented inventory.
+
+### D. No-API-Key Architecture
+
+Implement the chatbot entirely on the frontend.
+
+- Use deterministic local response logic.
+- Organize intents, keywords, response templates, and navigation actions into maintainable modules.
+- Support simple context, such as remembering whether the current conversation concerns adoption or rescue.
+- Normalize user input and handle common spelling variations.
+- Include a helpful fallback response for unsupported questions.
+- Do not call external AI APIs.
+- Do not require an API key, paid subscription, or additional server.
+- Do not add Firebase or other backend dependencies specifically for the chatbot.
+- Do not claim the chatbot can understand arbitrary questions like a large language model.
+
+If a browser-local language model is already available in the environment, it may be used as an optional enhancement, but the basic chatbot must remain functional without it. Do not make the chatbot dependent on downloading a large model or connecting to an external service.
+
+### E. Privacy and Accessibility
+
+- Keep chat processing local in the browser.
+- Do not send user messages to third-party AI services.
+- Do not collect unnecessary personal information.
+- Do not request passwords, payment credentials, or sensitive information.
+- Make the interface keyboard-accessible.
+- Add accessible labels, visible focus states, and appropriate contrast.
+- Respect reduced-motion preferences.
+- Ensure the chatbot launcher, panel, and message controls work on mobile devices.
+
+### F. Integration With Existing Features
+
+Integrate the chatbot into the existing website without damaging its current design.
+
+- Keep the existing header, hero section, puppy listings, product catalog, forms, and admin panel intact.
+- Preserve Firebase authentication and Firestore functionality used by existing features.
+- Do not modify admin authorization rules.
+- Do not replace real data with sample data.
+- Avoid unnecessary package installations.
+- Reuse existing UI components and icons when appropriate.
+- Keep the floating WhatsApp button and chatbot launcher visually separate and ensure neither blocks the other.
+
+## 3. Testing and Acceptance Criteria
+
+Before declaring the work complete:
+
+1. Search the entire codebase for old WhatsApp numbers and update all relevant contact links.
+2. Verify that every WhatsApp button opens `https://wa.me/918955438209` with the correct optional message.
+3. Verify that the chatbot opens, closes, accepts messages, and returns local responses.
+4. Test all suggested prompts and navigation actions.
+5. Test greetings, adoption questions, rescue questions, contact requests, and unsupported questions.
+6. Confirm that the chatbot works with no AI API key configured and without external AI requests.
+7. Verify mobile responsiveness and the positioning of both floating buttons.
+8. Run the existing project build and fix any errors introduced by the changes.
+9. Confirm that all previously implemented website features still work.
+
+Implement these changes directly in the existing SaveStreet Dogs codebase. Do not merely describe the solution or provide a mockup. Deliver working functionality with a polished UI.
