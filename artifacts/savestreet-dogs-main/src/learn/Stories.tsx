@@ -145,7 +145,7 @@ function StoriesFeed({
               {stories.map((story) => (
                 <article className="story-card" key={story.id || story.slug}>
                   <Link href={`/stories/${encodeURIComponent(story.slug)}`} className="story-card-link" aria-label={`Read story: ${story.title}`}>
-                    <div className="story-card-image">
+                    <div className="story-card-image image-frame">
                       <StoryImage story={story} />
                     </div>
                     <div className="story-card-content">
@@ -306,7 +306,7 @@ export function StoryDetailPage() {
                 <div className="story-related-links"><Link className="btn btn-ghost" href="/contact">Ask the team <ArrowRight size={14} aria-hidden="true" /></Link></div>
               )}
             </div>
-            <div className="story-detail-image">
+            <div className="story-detail-image image-frame">
               {story && <StoryImage story={story} detail />}
             </div>
           </div>
