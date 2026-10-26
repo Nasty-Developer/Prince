@@ -1,1 +1,2 @@
 - [Nested artifact preview routing](artifact-proxy-paths.md) — registered artifacts inside imported subfolders may not receive a shared-proxy route; top-level artifacts did.
+- [Upstream Git merges](replit-upstream-merges.md) — preserve active Replit configuration; review upstream `.replit` files and environment blocks rather than importing them blindly.
