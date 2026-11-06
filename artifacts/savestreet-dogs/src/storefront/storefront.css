@@ -462,3 +462,32 @@
   .storefront-items { padding: 0 20px; }
   .storefront-success h2 { font-size: 30px; }
 }
+/* --- WhatsApp ordering ---------------------------------------------------- */
+.whatsapp-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.whatsapp-order-actions .btn { flex: 1 1 auto; }
+.whatsapp-order-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: #526a64;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.whatsapp-order-note svg { flex: none; margin-top: 2px; }
+.storefront-order-lines { display: grid; gap: 12px; margin-bottom: 18px; }
+.storefront-order-line .qty { margin-top: 7px; }
+.storefront-summary .storefront-order-line .qty button { background: rgba(248, 241, 231, 0.12); color: #f8f1e7; }
+.storefront-summary .storefront-order-line .qty span { color: #f8f1e7; }
+.storefront-summary > .btn-ghost {
+  color: #f8f1e7;
+  border-color: rgba(248, 241, 231, 0.35);
+  margin-top: 14px;
+}
+.storefront-alert ul { margin: 8px 0 0; padding-left: 18px; }
+.storefront-alert li { margin-bottom: 4px; }

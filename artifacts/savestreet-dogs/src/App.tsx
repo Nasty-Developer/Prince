@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type Reac
 import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, Search, Send, ShieldCheck, ShoppingBag, Stethoscope, UserRound, X, MessageCircle, Instagram, Facebook, BookOpen } from "lucide-react";
 import { Link, Route, Switch, useLocation, useRoute } from "wouter";
 import { ProductImage } from "@/components/product-image";
+import WhatsAppOrderPage from "@/storefront/WhatsAppOrderPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   getGetProductQueryKey,
@@ -160,7 +161,7 @@ function Shell({ children, cart, setCart }: { children: ReactNode; cart: CartLin
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   const total = cart.reduce((sum, item) => sum + item.quantity * item.priceRupees, 0);
   const change = (id: string, amount: number) => setCart((lines) => lines.map((line) => line.id === id ? { ...line, quantity: Math.max(0, line.quantity + amount) } : line).filter((line) => line.quantity));
-  return <div className="site-shell"><Header cartCount={count} onCart={() => setCartOpen(true)} />{children}<Footer /><div className={`drawer-backdrop ${cartOpen ? "open" : ""}`} onClick={() => setCartOpen(false)} /><aside className={`cart-drawer ${cartOpen ? "open" : ""}`}><div className="drawer-head"><h2>Your cart</h2><button className="icon-btn" onClick={() => setCartOpen(false)}><X size={18} /></button></div>{!cart.length ? <EmptyState title="Your cart is waiting for something kind." text="Browse the shop to support the work." action={<Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)}>Browse the shop</Link>} /> : <><div className="cart-items">{cart.map((item) => { const image = storageImageUrl(item.imageUrls?.[0]); return <div className="cart-row" key={item.id}><div className="cart-thumb">{image ? <img src={image} alt="" loading="lazy" decoding="async" /> : <PawPrint size={20} />}</div><div><strong>{item.name}</strong><small>{money(item.priceRupees)} each</small><div className="qty"><button onClick={() => change(item.id, -1)}><Minus size={12} /></button><span>{item.quantity}</span><button onClick={() => change(item.id, 1)}>+</button></div></div></div>; })}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>{money(total)}</strong></div><Link href="/checkout" className="btn btn-dark" style={{ width: "100%" }} onClick={() => setCartOpen(false)}>Continue to checkout <ArrowRight size={15} /></Link><p style={{ color: "#7d8982", fontSize: 11 }}>Payment is collected after your order is reviewed.</p></div></>}</aside></div>;
+  return <div className="site-shell"><Header cartCount={count} onCart={() => setCartOpen(true)} />{children}<Footer /><div className={`drawer-backdrop ${cartOpen ? "open" : ""}`} onClick={() => setCartOpen(false)} /><aside className={`cart-drawer ${cartOpen ? "open" : ""}`}><div className="drawer-head"><h2>Your cart</h2><button className="icon-btn" onClick={() => setCartOpen(false)}><X size={18} /></button></div>{!cart.length ? <EmptyState title="Your cart is waiting for something kind." text="Browse the shop to support the work." action={<Link href="/products" className="btn btn-ghost" onClick={() => setCartOpen(false)}>Browse the shop</Link>} /> : <><div className="cart-items">{cart.map((item) => { const image = storageImageUrl(item.imageUrls?.[0]); return <div className="cart-row" key={item.id}><div className="cart-thumb">{image ? <img src={image} alt="" loading="lazy" decoding="async" /> : <PawPrint size={20} />}</div><div><strong>{item.name}</strong><small>{money(item.priceRupees)} each</small><div className="qty"><button onClick={() => change(item.id, -1)}><Minus size={12} /></button><span>{item.quantity}</span><button onClick={() => change(item.id, 1)}>+</button></div></div></div>; })}</div><div className="drawer-total"><div className="drawer-total-line"><span>Estimated total</span><strong>{money(total)}</strong></div><Link href="/order" className="btn btn-dark" style={{ width: "100%" }} onClick={() => setCartOpen(false)}>Order on WhatsApp <MessageCircle size={15} /></Link><Link href="/checkout" className="btn btn-ghost" style={{ width: "100%", marginTop: 8 }} onClick={() => setCartOpen(false)}>Pay on the site instead</Link><p style={{ color: "#7d8982", fontSize: 11 }}>Delivery details come next, then the order opens in WhatsApp.</p></div></>}</aside></div>;
 }
 function Home({ setCart }: { setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
   const products = useListProducts(undefined, { query: { queryKey: getListProductsQueryKey(), staleTime: 30_000 } });
@@ -300,6 +301,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
   const images = productImages(product);
   const image = images[selectedImage] ?? images[0];
   const add = () => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + quantity } : line) : [...lines, { ...product, quantity }]);
+  const orderOnWhatsApp = () => { add(); navigate("/order"); };
   return (
     <>
       <Meta title={product.name} description={product.description || `Support SaveStreet Dogs with ${product.name}.`} />
@@ -317,6 +319,7 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
                <div className="qty detail-qty" aria-label="Quantity"><button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((value) => Math.max(1, value - 1))}><Minus size={13} /></button><span>{quantity}</span><button type="button" aria-label="Increase quantity" onClick={() => setQuantity((value) => value + 1)}>+</button><small>{money(product.priceRupees * quantity)} total</small></div>
               <div className="detail-actions">
                  <button className="btn btn-primary" onClick={add} disabled={product.stock === 0 || !product.available}>{product.stock === 0 ? "Out of stock" : "Add to cart"} <ShoppingBag size={15} /></button>
+                <button type="button" className="btn btn-dark" onClick={orderOnWhatsApp} disabled={product.stock === 0 || !product.available}>Order on WhatsApp <MessageCircle size={15} /></button>
                 <Link href="/products" className="btn btn-ghost">Keep browsing</Link>
                 <WhatsAppAction message={productQuestionMessage(product.name)} label="Ask about this product" className="btn btn-ghost" />
               </div>
@@ -627,6 +630,7 @@ function AppRoutes() {
         <Route path="/puppies" component={Puppies} />
         <Route path="/products/:id"><ProductDetail cart={cart} setCart={setCart} /></Route>
         <Route path="/products"><Products cart={cart} setCart={setCart} /></Route>
+        <Route path="/order"><WhatsAppOrderPage cart={cart} onQuantityChange={(id, delta) => setCart((lines) => lines.map((line) => line.id === id ? { ...line, quantity: Math.max(0, line.quantity + delta) } : line).filter((line) => line.quantity > 0))} /></Route>
         <Route path="/checkout"><CheckoutPage cart={cart} setCart={setCart} /></Route>
         <Route path="/rescue"><FormPage kind="rescue" /></Route>
         <Route path="/adopt"><FormPage kind="adopt" /></Route>
