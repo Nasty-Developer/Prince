@@ -3,6 +3,7 @@ import { ArrowRight, Check, Heart, Menu, Minus, PawPrint, Search, Send, ShieldCh
 import { Link, Route, Switch, useLocation, useRoute } from "wouter";
 import { ProductImage } from "@/components/product-image";
 import WhatsAppOrderPage from "@/storefront/WhatsAppOrderPage";
+import { FALLBACK_COLLAR_ID, fallbackCollarProduct } from "@/storefront/catalog-fallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   getGetProductQueryKey,
@@ -165,11 +166,16 @@ function Shell({ children, cart, setCart }: { children: ReactNode; cart: CartLin
 }
 function Home({ setCart }: { setCart: React.Dispatch<React.SetStateAction<CartLine[]>> }) {
   const products = useListProducts(undefined, { query: { queryKey: getListProductsQueryKey(), staleTime: 30_000 } });
-  const collar = products.data?.find((product) => product.name.toLowerCase().includes("reflective collar"));
+  const liveCollar = products.data?.find((product) => product.name.toLowerCase().includes("reflective collar"));
+  // The collar is the product the team keeps in stock, and both photos are of it.
+  // If the live catalog cannot be reached, still show it rather than an empty section.
+  const catalogUnavailable = Boolean(products.error) || (products.data !== undefined && products.data.length === 0);
+  const collar = liveCollar ?? (catalogUnavailable ? fallbackCollarProduct() : undefined);
+  const [photo, setPhoto] = useState(0);
   const add = (product: Product) => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { ...product, quantity: 1 }]);
   return <><Meta title="Street by street" description="SaveStreet Dogs helps people turn concern for street dogs into simple, compassionate action." /><main>
     <section className="hero"><div className="reveal"><div className="eyebrow">Community care for street dogs</div><h1>Small actions.<br /><em>Real chances.</em></h1><p className="hero-copy">A dog on the roadside can change the shape of your day. We make the next step clearer — report an injury, open your home, learn what helps.</p><div className="hero-actions"><Link href="/rescue" className="btn btn-primary">Report a dog <ArrowRight size={16} /></Link><Link href="/puppies" className="btn btn-ghost">Meet the puppies</Link></div><div className="hero-note"><ShieldCheck size={15} /> Clear guidance. Respectful care.</div></div><div className="hero-art reveal delay-2"><img className="hero-photo" src={dogImages.hero(960)} srcSet={`${dogImages.hero(480)} 480w, ${dogImages.hero(960)} 960w`} sizes="(max-width: 760px) 80vw, 40vw" alt="A calm tan dog outdoors" loading="eager" fetchPriority="high" decoding="async" /><div className="art-sticker"><PawPrint size={24} /><span>Every paw<br />deserves<br />a chance</span></div></div></section>
-    <section className="home-shop-section"><div className="container home-shop-inner"><div className="home-shop-heading"><span className="eyebrow">Useful things, chosen with care</span><h2>Shop for dogs.</h2><p>Practical gear for safer moments outside, selected from the live shop catalog.</p><Link className="btn btn-ghost" href="/products">Shop all products <ArrowRight size={14} /></Link></div>{products.isLoading && !products.data ? <div className="shop-feature-placeholder" role="status">Loading the live shop…</div> : products.error ? <div className="shop-feature-placeholder">The shop is temporarily unavailable. <button className="text-action" onClick={() => void products.refetch()}>Try again</button></div> : collar ? <article className="home-product-feature"><Link href={`/products/${collar.id}`} className="home-product-image" aria-label="View Reflective Collars"><ProductImage src={collarImages[0]} alt="Reflective collars in several colors" fallbackSize={56} /></Link><div className="home-product-copy"><div className="eyebrow">{collar.category || "Dog Accessories / Collars"}</div><h3>{collar.name}</h3><p>{collar.description}</p><strong className="home-product-price">{money(collar.priceRupees)} <small>/ piece</small></strong>{collar.stock === null && <p className="stock-note">Stock is not tracked; staff will confirm availability after your order request.</p>}<div className="hero-actions"><Link href={`/products/${collar.id}`} className="btn btn-dark">View product <ArrowRight size={14} /></Link><button className="btn btn-primary" onClick={() => add(collar)} disabled={collar.stock === 0 || !collar.available}>{collar.stock === 0 ? "Out of stock" : "Add to cart"} <ShoppingBag size={14} /></button></div></div></article> : <div className="shop-feature-placeholder">Reflective Collars are not currently listed in the live catalog. <Link href="/products">Visit the shop</Link></div>}</div></section>
+    <section className="home-shop-section"><div className="container home-shop-inner"><div className="home-shop-heading"><span className="eyebrow">Useful things, chosen with care</span><h2>Shop for dogs.</h2><p>Practical gear for safer moments outside, selected from the live shop catalog.</p><Link className="btn btn-ghost" href="/products">Shop all products <ArrowRight size={14} /></Link></div>{products.isLoading && !products.data ? <div className="shop-feature-placeholder" role="status">Loading the live shop…</div> : collar ? <article className="home-product-feature"><div className="home-product-gallery"><ProductImage src={collarImages[photo] ?? collarImages[0]} alt={`Reflective collars, photo ${photo + 1} of ${collarImages.length}`} fallbackSize={56} className="home-product-main" /><div className="home-product-thumbs" role="group" aria-label="Reflective collar photos">{collarImages.map((src, index) => <button key={src} type="button" aria-label={`Show collar photo ${index + 1}`} aria-pressed={photo === index} onClick={() => setPhoto(index)}><ProductImage src={src} alt="" fallbackSize={14} /></button>)}</div></div><div className="home-product-copy"><div className="eyebrow">{collar.category || "Dog Accessories / Collars"}</div><h3>{collar.name}</h3><p>{collar.description}</p><strong className="home-product-price">{money(collar.priceRupees)} <small>/ piece</small></strong>{collar.stock === null && <p className="stock-note">Stock is not tracked; staff will confirm availability after your order request.</p>}<div className="hero-actions"><Link href={`/products/${collar.id}`} className="btn btn-dark">View product <ArrowRight size={14} /></Link><button className="btn btn-primary" onClick={() => add(collar)} disabled={collar.stock === 0 || !collar.available}>{collar.stock === 0 ? "Out of stock" : "Add to cart"} <ShoppingBag size={14} /></button></div></div></article> : <div className="shop-feature-placeholder">Reflective Collars are not currently listed in the live catalog. <Link href="/products">Visit the shop</Link></div>}{catalogUnavailable && collar ? <p className="shop-feature-note">The live catalog could not be reached just now, so this is the collar the team keeps in stock. Availability is confirmed on WhatsApp. <button className="text-action" onClick={() => void products.refetch()}>Try again</button></p> : null}</div></section>
     <div className="band"><div className="container band-inner"><strong>Start where you are.</strong><p>One form. One conversation. One bowl of water can be the beginning.</p><Link href="/learn" className="btn btn-dark">What helps most <ArrowRight size={14} /></Link></div></div>
     <section className="section container"><div className="section-head"><div><div className="eyebrow">Choose your next step</div><h2>Care is a practice,<br />not a perfect moment.</h2></div><p className="section-intro">You do not need to know everything to help. Pick the path that fits what you can offer today.</p></div><div className="action-grid"><Link href="/rescue" className="action-card primary"><div><Stethoscope size={25} /><h3>There is a dog who needs help</h3><p>Tell us what you see. A clear report gives the right people a place to begin.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/foster" className="action-card sage"><div><Heart size={24} /><h3>I can open my home</h3><p>Even a temporary landing place makes recovery possible.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link><Link href="/volunteer" className="action-card cream"><div><UserRound size={24} /><h3>I have time to give</h3><p>Good work is built by neighbors who show up steadily.</p></div><span className="arrow"><ArrowRight size={17} /></span></Link></div></section><section className="section container"><div className="split"><img className="split-photo" src={dogImages.calm(800)} srcSet={`${dogImages.calm(480)} 480w, ${dogImages.calm(800)} 800w`} sizes="(max-width: 760px) 100vw, 50vw" alt="A dog resting outdoors" loading="lazy" decoding="async" /><div><div className="eyebrow">A slower kind of change</div><div className="quote-mark">“</div><p className="quote">Every Paw Deserves a Chance.</p><p className="section-intro">We believe the most trustworthy rescue work is specific and patient: listen first, offer realistic choices, and keep the dog’s dignity at the center.</p><Link href="/about" className="btn btn-ghost">How we work <ArrowRight size={15} /></Link></div></div></section></main></>;
 }
@@ -238,6 +244,13 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
   const [search, setSearch] = useState("");
   const params = { search: search || undefined };
   const query = useListProducts(params, { query: { queryKey: getListProductsQueryKey(params), staleTime: 30_000 } });
+  // One collar, two photos. If the catalog endpoint cannot be reached the collar is
+  // still listed so the photos stay visible and the WhatsApp order path keeps working.
+  const catalog = query.data?.length
+    ? query.data
+    : query.error
+      ? [fallbackCollarProduct()].filter((product) => !search || product.name.toLowerCase().includes(search.toLowerCase()))
+      : [];
   const add = (product: Product) => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { ...product, quantity: 1 }]);
   return (
     <>
@@ -249,10 +262,10 @@ function Products({ cart, setCart }: { cart: CartLine[]; setCart: React.Dispatch
             <div className="eyebrow">Live catalog</div>
             <div className="search"><Search size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search the catalog" /></div>
           </div>
-          {query.error && query.data?.length ? <div className="notice error" role="alert">We couldn’t refresh the catalog. <button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button></div> : null}
-          {query.isLoading && !query.data ? <div className="empty-state" role="status">Loading the live catalog…</div> : query.data?.length ? (
+          {query.error ? <div className="notice error" role="alert">{query.data?.length ? "We couldn’t refresh the catalog." : "The live catalog could not be reached, so the collar the team keeps in stock is shown. Orders still reach them on WhatsApp."} <button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button></div> : null}
+          {query.isLoading && !query.data ? <div className="empty-state" role="status">Loading the live catalog…</div> : catalog.length ? (
             <div className="product-grid">
-              {query.data.map((product) => {
+              {catalog.map((product) => {
                 const images = productImages(product);
                 const image = images[0];
                 return (
@@ -295,9 +308,10 @@ function ProductDetail({ cart, setCart }: { cart: CartLine[]; setCart: React.Dis
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   if (query.isLoading && !query.data) return <main><div className="content-section container"><div className="empty-state" role="status">Loading product…</div></div></main>;
-  if (query.error && !query.data) return <main><div className="content-section container"><EmptyState title="This product is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
-  if (!query.data) return <NotFound />;
-  const product = query.data;
+  const fallbackProduct = productId === FALLBACK_COLLAR_ID ? fallbackCollarProduct() : null;
+  if (query.error && !query.data && !fallbackProduct) return <main><div className="content-section container"><EmptyState title="This product is temporarily unavailable." text="Please try again in a moment." action={<button className="btn btn-ghost" onClick={() => query.refetch()}>Try again</button>} /></div></main>;
+  if (!query.data && !fallbackProduct) return <NotFound />;
+  const product = (query.data ?? fallbackProduct) as Product;
   const images = productImages(product);
   const image = images[selectedImage] ?? images[0];
   const add = () => setCart((lines) => lines.some((line) => line.id === product.id) ? lines.map((line) => line.id === product.id ? { ...line, quantity: line.quantity + quantity } : line) : [...lines, { ...product, quantity }]);
