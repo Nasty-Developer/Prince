@@ -659,3 +659,9 @@ body.nav-open .burger span::after{transform:translateY(-6px) rotate(-45deg)}
 /* contrast: amber #c96a3a is 3.3:1 on cream, so text links use --amber-ink */
 .prod-copy .fine a,.fine a,.step-note a,.trust a{color:var(--amber-ink)}
 .prod-copy .fine a:hover,.fine a:hover{color:var(--green)}
+
+/* footer base row: the light footer text must never land on the cream page surface (contrast 1.02) */
+:root{--green-2:#12332c}
+.foot{background:var(--green-2,#12332c)}
+.foot-base{background:var(--green-2,#12332c);color:#efeade}
+.foot-base span{color:#efeade}
