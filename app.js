@@ -14,47 +14,182 @@ document.querySelectorAll('[data-wa]').forEach((el) => {
 
 // ---------------------------------------------------------------- Collar order
 const PRICE = 60
+const PRODUCT = 'Reflective dog collar'
 const form = document.getElementById('collarForm')
+
+const clampQty = (v) => Math.min(20, Math.max(1, parseInt(v, 10) || 1))
+const checked = (scope, name) => {
+  const el = scope && scope.querySelector(`input[name="${name}"]:checked`)
+  return el ? el.value : ''
+}
+
 if (form) {
   const qty = form.querySelector('#qty')
   const totalEl = form.querySelector('#total')
-  const orderBtn = form.querySelector('#orderBtn')
-
-  const readQty = () => {
-    const n = Math.min(20, Math.max(1, parseInt(qty.value, 10) || 1))
-    qty.value = String(n)
-    return n
-  }
-  const readSize = () => (form.querySelector('input[name="size"]:checked') || {}).value || 'Medium'
-  const readColor = () => (form.querySelector('input[name="color"]:checked') || {}).value || ''
-
   const sync = () => {
-    const n = readQty()
-    totalEl.textContent = `₹${n * PRICE}`
-    orderBtn.setAttribute(
-      'href',
-      wa(
-        `Hello SaveStreet Dogs, I'd like to order ${n} × reflective collar (${readSize()}${readColor() ? ', ' + readColor() : ''}) — ₹${n * PRICE} total. ` +
-          `Please confirm availability and delivery.`
-      )
-    )
+    const n = clampQty(qty.value)
+    qty.value = String(n)
+    if (totalEl) totalEl.textContent = `₹${n * PRICE}`
   }
-
   form.querySelectorAll('[data-step]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      qty.value = String(readQty() + Number(btn.dataset.step))
+      qty.value = String(clampQty(qty.value) + Number(btn.dataset.step))
       sync()
     })
   })
   qty.addEventListener('input', sync)
   qty.addEventListener('blur', sync)
-  form.querySelectorAll('input[name="size"]').forEach((r) => r.addEventListener('change', sync))
-  form.querySelectorAll('input[name="color"]').forEach((r) => r.addEventListener('change', sync))
-  orderBtn.setAttribute('target', '_blank')
-  orderBtn.setAttribute('rel', 'noopener')
   sync()
 }
 
+// ---- order dialog: collects name, mobile and address, then opens WhatsApp pre-filled
+const dlg = document.getElementById('orderDialog')
+if (dlg && form) {
+  const openBtn = document.getElementById('orderNow')
+  const orderForm = document.getElementById('orderForm')
+  const qtyIn = dlg.querySelector('#ordQty')
+  const priceEl = dlg.querySelector('#ordPrice')
+  const totalIn = dlg.querySelector('#ordTotal')
+  const productEl = dlg.querySelector('#ordProductName')
+  const note = dlg.querySelector('#ordNote')
+  const fields = {
+    name: { el: dlg.querySelector('#ordName'), err: dlg.querySelector('#ordNameErr') },
+    phone: { el: dlg.querySelector('#ordPhone'), err: dlg.querySelector('#ordPhoneErr') },
+    address: { el: dlg.querySelector('#ordAddress'), err: dlg.querySelector('#ordAddressErr') },
+  }
+  const NOTE_DEFAULT = note ? note.textContent : ''
+
+  const productLine = () => {
+    const size = checked(form, 'size') || 'Medium'
+    const colour = checked(form, 'color')
+    return `${PRODUCT} (${size}${colour ? ', ' + colour : ''})`
+  }
+
+  const paint = () => {
+    const n = clampQty(qtyIn.value)
+    qtyIn.value = String(n)
+    if (priceEl) priceEl.textContent = `₹${PRICE}`
+    if (totalIn) totalIn.textContent = `₹${n * PRICE}`
+    if (productEl) productEl.textContent = productLine()
+  }
+
+  // Indian mobile: accept +91 / 91 / 0 prefix, spaces, dashes; require 10 digits starting 6-9
+  const normalisePhone = (raw) => {
+    let d = String(raw || '').replace(/[^\d]/g, '')
+    if (d.length === 12 && d.startsWith('91')) d = d.slice(2)
+    else if (d.length === 11 && d.startsWith('0')) d = d.slice(1)
+    return /^[6-9]\d{9}$/.test(d) ? '+91' + d : ''
+  }
+
+  const setError = (key, message) => {
+    const f = fields[key]
+    if (!f || !f.el) return
+    if (f.err) {
+      f.err.textContent = message || ''
+      f.err.hidden = !message
+    }
+    if (message) f.el.setAttribute('aria-invalid', 'true')
+    else f.el.removeAttribute('aria-invalid')
+  }
+
+  const validate = () => {
+    const name = fields.name.el.value.trim()
+    const phoneRaw = fields.phone.el.value
+    const address = fields.address.el.value.trim().replace(/\s*\n+\s*/g, ', ')
+    let first = null
+
+    if (name.length < 2) { setError('name', 'Please enter your full name.'); first = first || fields.name.el }
+    else setError('name', '')
+
+    const phone = normalisePhone(phoneRaw)
+    if (!phoneRaw.trim()) { setError('phone', 'Please enter your mobile number.'); first = first || fields.phone.el }
+    else if (!phone) { setError('phone', 'Enter a 10-digit Indian mobile number, for example 98765 43210.'); first = first || fields.phone.el }
+    else setError('phone', '')
+
+    if (address.length < 12) { setError('address', 'Please add your full delivery address, including area and PIN code.'); first = first || fields.address.el }
+    else setError('address', '')
+
+    if (first) { first.focus(); return null }
+    return { name, phone, address }
+  }
+
+  const buildMessage = ({ name, phone, address }, qty) => [
+    'Hello SaveStreet Dogs! I would like to place an order.',
+    '',
+    `Customer Name: ${name}`,
+    `Mobile Number: ${phone}`,
+    `Delivery Address: ${address}`,
+    '',
+    `Product: ${productLine()}`,
+    `Price: ₹${PRICE}`,
+    `Quantity: ${qty}`,
+    `Total: ₹${qty * PRICE}`,
+    '',
+    'Please confirm my order and delivery details.',
+    '',
+    'Thank you!',
+  ].join('\n')
+
+  const openDialog = () => {
+    qtyIn.value = String(clampQty(form.querySelector('#qty').value))
+    paint()
+    if (note) note.textContent = NOTE_DEFAULT
+    Object.keys(fields).forEach((k) => setError(k, ''))
+    if (typeof dlg.showModal === 'function') dlg.showModal()
+    else dlg.setAttribute('open', '')
+    document.documentElement.classList.add('ord-open')
+    window.setTimeout(() => fields.name.el && fields.name.el.focus(), 60)
+  }
+
+  const closeDialog = () => {
+    if (typeof dlg.close === 'function') dlg.close()
+    else dlg.removeAttribute('open')
+    document.documentElement.classList.remove('ord-open')
+    if (openBtn) openBtn.focus()
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openDialog)
+  dlg.querySelectorAll('#ordClose, #ordCancel').forEach((b) => b.addEventListener('click', closeDialog))
+  dlg.addEventListener('close', () => {
+    document.documentElement.classList.remove('ord-open')
+    if (openBtn) openBtn.focus()
+  })
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) closeDialog() })
+
+  dlg.querySelectorAll('[data-ord-step]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      qtyIn.value = String(clampQty(qtyIn.value) + Number(btn.dataset.ordStep))
+      paint()
+    })
+  })
+  qtyIn.addEventListener('input', paint)
+  qtyIn.addEventListener('blur', paint)
+  ;['name', 'phone', 'address'].forEach((k) => {
+    fields[k].el.addEventListener('input', () => setError(k, ''))
+  })
+
+  orderForm.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const clean = validate()
+    if (!clean) return
+    const qty = clampQty(qtyIn.value)
+    const link = wa(buildMessage(clean, qty))
+    const a = document.createElement('a')
+    a.href = link
+    a.target = '_blank'
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    if (note) {
+      note.innerHTML = 'WhatsApp should have opened in a new tab with your order. Send that message to reach our team. ' +
+        'Your order is confirmed only when we reply there. ' +
+        `<a href="${link}" target="_blank" rel="noopener">Open WhatsApp again</a>`
+    }
+  })
+
+  paint()
+}
 
 // ---------------------------------------------------------------- Support / UPI
 const UPI_ID = '7413073410@ptaxis'

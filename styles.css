@@ -665,3 +665,59 @@ body.nav-open .burger span::after{transform:translateY(-6px) rotate(-45deg)}
 .foot{background:var(--green-2,#12332c)}
 .foot-base{background:var(--green-2,#12332c);color:#efeade}
 .foot-base span{color:#efeade}
+
+/* ---------------------------------------------------------------- order form dialog */
+.btn-primary{background:var(--green-2,#0f2c27);color:#f7f3ea;border-color:var(--green-2,#0f2c27);box-shadow:0 14px 26px -18px rgba(15,44,39,.9)}
+.btn-primary:hover{background:#15443c;transform:translateY(-1px)}
+.ord-arrow{margin-left:2px;transition:transform .2s}
+.btn-primary:hover .ord-arrow{transform:translateX(3px)}
+
+dialog.ord{border:0;padding:0;background:transparent;width:100%;max-width:min(560px,calc(100vw - 24px));margin:auto;color:var(--ink,#14211d)}
+dialog.ord::backdrop{background:rgba(9,24,21,.55);backdrop-filter:blur(3px)}
+dialog.ord[open]{animation:ordIn .26s cubic-bezier(.22,.9,.26,1)}
+@keyframes ordIn{from{opacity:0;transform:translateY(16px) scale(.99)}to{opacity:1;transform:none}}
+.ord-card{background:var(--cream,#f4f0e8);border:1px solid rgba(20,33,29,.12);border-radius:20px;padding:clamp(18px,3vw,26px);box-shadow:0 34px 70px -34px rgba(6,20,17,.6);display:grid;gap:15px;max-height:min(92dvh,860px);overflow-y:auto;overscroll-behavior:contain}
+.ord-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.ord-kicker{margin:0 0 5px;font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:#5d6c64}
+.ord-head h2{margin:0;font-family:var(--serif,Georgia,serif);font-size:clamp(21px,4.4vw,26px);line-height:1.12;letter-spacing:-.01em}
+.ord-x{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:1px solid rgba(20,33,29,.16);background:#fff;color:#31443c;cursor:pointer;transition:background .18s,transform .18s}
+.ord-x:hover{background:#efe9dd;transform:rotate(90deg)}
+
+.ord-sum{background:#fff;border:1px solid rgba(20,33,29,.12);border-radius:14px;padding:14px 16px}
+.ord-name{margin:0 0 10px;font-weight:600;font-size:15px;line-height:1.35;color:var(--green-2,#0f2c27)}
+.ord-lines{margin:0;display:grid;gap:8px}
+.ord-lines>div{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px}
+.ord-lines dt{margin:0;color:#5d6c64}
+.ord-lines dd{margin:0;font-weight:600}
+.ord-total{border-top:1px solid rgba(20,33,29,.1);padding-top:9px}
+.ord-total dd{font-size:17px;color:var(--green-2,#0f2c27)}
+
+.ord-form{display:grid;gap:13px}
+.ord-form .field{display:grid;gap:6px}
+.ord-form label{font-size:13px;font-weight:600;color:#31443c;letter-spacing:.01em}
+.ord-form .req{color:#a04520}
+.ord-form input,.ord-form textarea{width:100%;font:inherit;font-size:16px;color:var(--ink,#14211d);background:#fff;border:1px solid rgba(20,33,29,.18);border-radius:11px;padding:13px 14px;min-height:48px;transition:border-color .18s,box-shadow .18s}
+.ord-form textarea{min-height:88px;resize:vertical;line-height:1.45}
+.ord-form input::placeholder,.ord-form textarea::placeholder{color:#8b968f}
+.ord-form input:focus,.ord-form textarea:focus{outline:none;border-color:var(--green-2,#0f2c27);box-shadow:0 0 0 3px rgba(15,44,39,.14)}
+.ord-form [aria-invalid="true"]{border-color:#a02818;box-shadow:0 0 0 3px rgba(160,40,24,.12)}
+.err{margin:0;font-size:12.5px;line-height:1.4;color:#a02818;font-weight:500}
+.ord-note{margin:0;font-size:12.8px;line-height:1.5;color:#55655d}
+.ord-note a{color:#0f6b52;text-decoration:underline;font-weight:600}
+.ord-actions{display:flex;gap:10px;margin-top:2px}
+.ord-actions .btn{flex:0 0 auto}
+.ord-actions .btn-wa{flex:1 1 auto}
+.stepper-sm .step{width:34px;height:34px;font-size:17px}
+.stepper-sm input{width:52px;height:34px;font-size:15px;text-align:center}
+html.ord-open{overflow:hidden}
+
+@media (max-width:560px){
+  dialog.ord{max-width:100%;margin:auto auto 0;max-height:100dvh}
+  .ord-card{border-radius:20px 20px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom));max-height:94dvh}
+  .ord-actions{flex-direction:column-reverse}
+  .ord-actions .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  dialog.ord[open]{animation:none}
+  .btn-primary:hover,.ord-x:hover{transform:none}
+}

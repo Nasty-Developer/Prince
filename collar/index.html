@@ -101,9 +101,69 @@
             </div>
             <p class="total" aria-live="polite">Total <strong id="total">₹120</strong></p>
           </div>
-          <a class="btn btn-wa btn-block" id="orderBtn" href="#" target="_blank" rel="noopener"><span class="wa-ic" aria-hidden="true"></span> Order on WhatsApp</a>
+          <button class="btn btn-primary btn-block" type="button" id="orderNow" aria-haspopup="dialog" aria-controls="orderDialog">Order now<span class="ord-arrow" aria-hidden="true">→</span></button>
+        <noscript><a class="btn btn-wa btn-block" href="https://wa.me/918955438209?text=Hello%20SaveStreet%20Dogs%2C%20I%27d%20like%20to%20order%20a%20reflective%20collar.">Order on WhatsApp</a></noscript>
           <p class="fine">The button opens WhatsApp with your size, quantity and total already written. The team confirms colour availability, delivery and payment in that chat.</p>
         </form>
+
+    <dialog id="orderDialog" class="ord" aria-labelledby="ordTitle">
+      <div class="ord-card">
+        <div class="ord-head">
+          <div>
+            <p class="ord-kicker">SaveStreet Dogs</p>
+            <h2 id="ordTitle">Place your order</h2>
+          </div>
+          <button type="button" class="ord-x" id="ordClose" aria-label="Close order form">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="ord-sum">
+          <p class="ord-name" id="ordProductName">Reflective dog collar</p>
+          <dl class="ord-lines">
+            <div><dt>Price</dt><dd id="ordPrice">₹60</dd></div>
+            <div><dt>Quantity</dt><dd>
+              <div class="stepper stepper-sm">
+                <button type="button" class="step" data-ord-step="-1" aria-label="One less">−</button>
+                <input id="ordQty" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="Quantity" />
+                <button type="button" class="step" data-ord-step="1" aria-label="One more">+</button>
+              </div>
+            </dd></div>
+            <div class="ord-total"><dt>Total</dt><dd id="ordTotal">₹60</dd></div>
+          </dl>
+        </div>
+
+        <form id="orderForm" class="ord-form" novalidate>
+          <div class="field">
+            <label for="ordName">Full name <span class="req">*</span></label>
+            <input id="ordName" name="name" type="text" autocomplete="name" required
+                   aria-describedby="ordNameErr" placeholder="Your full name" />
+            <p class="err" id="ordNameErr" role="alert" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="ordPhone">Mobile number <span class="req">*</span></label>
+            <input id="ordPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" required
+                   aria-describedby="ordPhoneErr" placeholder="10-digit mobile number" />
+            <p class="err" id="ordPhoneErr" role="alert" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="ordAddress">Delivery address <span class="req">*</span></label>
+            <textarea id="ordAddress" name="address" rows="3" autocomplete="street-address" required
+                      aria-describedby="ordAddressErr" placeholder="House or flat number, street, area, city, PIN code"></textarea>
+            <p class="err" id="ordAddressErr" role="alert" hidden></p>
+          </div>
+
+          <p class="ord-note" id="ordNote">Delivery is arranged on WhatsApp. Your order counts once our team replies to confirm stock, total and delivery.</p>
+
+          <div class="ord-actions">
+            <button type="button" class="btn btn-ghost" id="ordCancel">Cancel</button>
+            <button type="submit" class="btn btn-wa" id="ordSubmit"><span class="wa-ic" aria-hidden="true"></span> Continue to WhatsApp</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
 
         <ul class="trust">
           <li>No account, no cart, no checkout page: one message does it.</li>
